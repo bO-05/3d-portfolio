@@ -1,0 +1,51 @@
+/**
+ * ProgressHUD - Top-right progress counter showing collectibles and buildings
+ * @module components/UI/ProgressHUD
+ */
+
+import { memo } from 'react';
+import { useCollectibleStore } from '../../stores/collectibleStore';
+import { useGameStore } from '../../stores/gameStore';
+import './ProgressHUD.css';
+
+// Total buildings and collectibles in the game
+const TOTAL_BUILDINGS = 5;
+const TOTAL_COLLECTIBLES = 15;
+
+export const ProgressHUD = memo(function ProgressHUD() {
+    // Select primitive values to avoid infinite re-render from new object
+    const collectedCount = useCollectibleStore((state) => state.collected.size);
+    const visitedBuildings = useGameStore((state) => state.game.visitedBuildings);
+    const toggleJournal = useGameStore((state) => state.toggleJournal);
+
+    const buildingsVisited = visitedBuildings.length;
+    const totalProgress = Math.round(
+        ((buildingsVisited / TOTAL_BUILDINGS) * 50 + (collectedCount / TOTAL_COLLECTIBLES) * 50)
+    );
+
+    return (
+        <div className="progress-hud">
+            <button className="progress-hud__button" onClick={toggleJournal} title="Open Journal (J)">
+                <div className="progress-hud__stats">
+                    <span className="progress-hud__item">
+                        <span className="progress-hud__icon">🏛️</span>
+                        <span className="progress-hud__value">{buildingsVisited}/{TOTAL_BUILDINGS}</span>
+                    </span>
+                    <span className="progress-hud__item">
+                        <span className="progress-hud__icon">⭐</span>
+                        <span className="progress-hud__value">{collectedCount}/{TOTAL_COLLECTIBLES}</span>
+                    </span>
+                </div>
+                <div className="progress-hud__bar-container">
+                    <div
+                        className="progress-hud__bar"
+                        style={{ width: `${totalProgress}%` }}
+                    />
+                </div>
+                <div className="progress-hud__percent">{totalProgress}%</div>
+            </button>
+        </div>
+    );
+});
+
+export default ProgressHUD;

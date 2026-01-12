@@ -1,0 +1,106 @@
+/**
+ * InWorldHints - Floating 3D text hints above Bajaj
+ * Shows contextual hints like "Press E to start engine"
+ * @module components/UI/InWorldHints
+ */
+
+import { memo, useState, useEffect } from 'react';
+import { Text } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
+import { useGameStore } from '../../stores/gameStore';
+
+interface Hint {
+    id: string;
+    text: string;
+    condition: () => boolean;
+    priority: number;
+}
+
+export const InWorldHints = memo(function InWorldHints() {
+    const playerPosition = useGameStore((state) => state.player.position);
+    const engineOn = useGameStore((state) => state.vehicle.engineOn);
+    const playerSpeed = useGameStore((state) => state.player.speed);
+    const visitedBuildings = useGameStore((state) => state.game.visitedBuildings);
+
+    const [currentHint, setCurrentHint] = useState<string | null>(null);
+    const [opacity, setOpacity] = useState(0);
+    const [yOffset, setYOffset] = useState(0);
+
+    // Define hints with conditions
+    const hints: Hint[] = [
+        {
+            id: 'start-engine',
+            text: 'Press E to start engine',
+            condition: () => !engineOn,
+            priority: 1,
+        },
+        {
+            id: 'drive-hint',
+            text: 'Use WASD to drive',
+            condition: () => engineOn && playerSpeed < 1,
+            priority: 2,
+        },
+        {
+            id: 'boost-hint',
+            text: 'Hold SHIFT for boost!',
+            condition: () => engineOn && playerSpeed > 5 && playerSpeed < 10,
+            priority: 3,
+        },
+        {
+            id: 'explore-buildings',
+            text: 'Explore buildings to see projects',
+            condition: () => visitedBuildings.length === 0 && playerSpeed > 3,
+            priority: 4,
+        },
+    ];
+
+    // Check which hint to show
+    useEffect(() => {
+        const activeHint = hints
+            .filter((h) => h.condition())
+            .sort((a, b) => a.priority - b.priority)[0];
+
+        if (activeHint && activeHint.text !== currentHint) {
+            setCurrentHint(activeHint.text);
+            setOpacity(1);
+        } else if (!activeHint && currentHint) {
+            // Fade out
+            setOpacity(0);
+            setTimeout(() => setCurrentHint(null), 500);
+        }
+    }, [engineOn, playerSpeed, visitedBuildings.length]);
+
+    // Floating animation
+    useFrame((state) => {
+        setYOffset(Math.sin(state.clock.elapsedTime * 2) * 0.1);
+    });
+
+    if (!currentHint) return null;
+
+    return (
+        <group position={[playerPosition.x, playerPosition.y + 4 + yOffset, playerPosition.z]}>
+            {/* Background pill */}
+            <mesh position={[0, 0, -0.1]}>
+                <planeGeometry args={[4, 0.6]} />
+                <meshBasicMaterial
+                    color="#000000"
+                    transparent
+                    opacity={0.6 * opacity}
+                />
+            </mesh>
+
+            {/* Hint text */}
+            <Text
+                fontSize={0.3}
+                color="#ffd700"
+                anchorX="center"
+                anchorY="middle"
+                fillOpacity={opacity}
+            >
+                {currentHint}
+            </Text>
+        </group>
+    );
+});
+
+export default InWorldHints;
