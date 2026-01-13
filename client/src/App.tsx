@@ -13,6 +13,7 @@ import { ControlsTooltip } from './components/UI/ControlsTooltip';
 import { ProgressHUD } from './components/UI/ProgressHUD';
 import { JournalModal } from './components/UI/JournalModal';
 import { OnboardingOverlay } from './components/UI/OnboardingOverlay';
+import { AchievementToast } from './components/UI/AchievementToast';
 import { Experience } from './components/Experience';
 
 // Lazy load overlays for performance
@@ -96,6 +97,9 @@ export function App() {
 
             {/* First-visit onboarding overlay */}
             {!isLoading && <OnboardingOverlay />}
+
+            {/* Achievement notifications */}
+            <AchievementToast />
 
             {/* Project modal overlay */}
             {showModal && (

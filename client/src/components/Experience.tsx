@@ -23,6 +23,7 @@ import { CollectibleManager } from './Collectibles/CollectibleManager';
 import { InWorldHints } from './UI/InWorldHints';
 import { usePerformanceGate } from '../hooks/usePerformanceGate';
 import { useAudio } from '../hooks/useAudio';
+import { useAchievements } from '../hooks/useAchievements';
 
 /**
  * Main 3D Experience that contains all scene elements
@@ -45,6 +46,9 @@ export const Experience = memo(function Experience() {
 
     // Audio - engine sound with pitch based on speed
     useAudio();
+
+    // Achievement tracking
+    useAchievements();
 
     // Track first vehicle movement
     useEffect(() => {
