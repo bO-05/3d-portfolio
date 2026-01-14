@@ -4,12 +4,15 @@
  */
 
 import { memo, useState, useEffect } from 'react';
-import { subscribeToEasterEggs, getEasterEggState } from '../../hooks/useEasterEggs';
+import { subscribeToEasterEggs, getEasterEggState, useEasterEggs } from '../../hooks/useEasterEggs';
 import './EasterEggEffects.css';
 
 export const EasterEggEffects = memo(function EasterEggEffects() {
     const [state, setState] = useState(getEasterEggState());
     const [elapsedTime, setElapsedTime] = useState('00:00.000');
+
+    // Register keyboard event listeners for easter eggs
+    useEasterEggs();
 
     // Subscribe to easter egg state changes
     useEffect(() => {
