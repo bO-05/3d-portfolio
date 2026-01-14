@@ -137,7 +137,13 @@ export const useCollectibleStore = create<CollectibleState>((set, get) => ({
             revealedBoxes: new Set(),
             resetSignal: state.resetSignal + 1
         }));
-        localStorage.removeItem(STORAGE_KEY);
+
+        // Write empty state explicitly (not removeItem) to ensure atomicity
+        // This prevents any delayed saves from restoring stale data
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            collected: [],
+            revealedBoxes: []
+        }));
     },
 }));
 
