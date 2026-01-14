@@ -14,6 +14,7 @@ import { ProgressHUD } from './components/UI/ProgressHUD';
 import { JournalModal } from './components/UI/JournalModal';
 import { OnboardingOverlay } from './components/UI/OnboardingOverlay';
 import { AchievementToast } from './components/UI/AchievementToast';
+import { EasterEggEffects } from './components/UI/EasterEggEffects';
 import { Experience } from './components/Experience';
 
 // Lazy load overlays for performance
@@ -100,6 +101,9 @@ export function App() {
 
             {/* Achievement notifications */}
             <AchievementToast />
+
+            {/* Easter egg effects */}
+            <EasterEggEffects />
 
             {/* Project modal overlay */}
             {showModal && (

@@ -1,0 +1,117 @@
+/* Easter Egg Effects */
+
+/* Konami Code - Rainbow flash */
+.easter-egg-konami {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 4000;
+    animation: rainbowFlash 0.5s ease-out forwards;
+}
+
+@keyframes rainbowFlash {
+    0% {
+        background: linear-gradient(
+            45deg,
+            rgba(255, 0, 0, 0.3),
+            rgba(255, 127, 0, 0.3),
+            rgba(255, 255, 0, 0.3),
+            rgba(0, 255, 0, 0.3),
+            rgba(0, 0, 255, 0.3),
+            rgba(139, 0, 255, 0.3)
+        );
+        background-size: 600% 600%;
+    }
+    100% {
+        background: transparent;
+    }
+}
+
+.konami-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 24px;
+    color: #ffd700;
+    text-shadow: 
+        0 0 10px #ffd700,
+        0 0 20px #ff8c00,
+        0 0 30px #ff0000;
+    animation: konamiPulse 0.5s ease-out forwards;
+    white-space: nowrap;
+}
+
+@keyframes konamiPulse {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+}
+
+/* Disco Mode - Flashing colors */
+.easter-egg-disco {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 3999;
+    animation: discoFlash 0.5s infinite;
+    mix-blend-mode: overlay;
+}
+
+@keyframes discoFlash {
+    0% { background-color: rgba(255, 0, 0, 0.2); }
+    16% { background-color: rgba(255, 165, 0, 0.2); }
+    33% { background-color: rgba(255, 255, 0, 0.2); }
+    50% { background-color: rgba(0, 255, 0, 0.2); }
+    66% { background-color: rgba(0, 0, 255, 0.2); }
+    83% { background-color: rgba(238, 130, 238, 0.2); }
+    100% { background-color: rgba(255, 0, 0, 0.2); }
+}
+
+/* Speed Run Timer */
+.easter-egg-speedrun {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #00ff00;
+    border-radius: 8px;
+    padding: 8px 16px;
+    z-index: 3000;
+    text-align: center;
+}
+
+.speedrun-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #00ff00;
+    letter-spacing: 2px;
+}
+
+.speedrun-timer {
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .konami-text {
+        font-size: 14px;
+    }
+    
+    .speedrun-timer {
+        font-size: 20px;
+    }
+}
