@@ -10,7 +10,6 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { useGameStore } from '../stores/gameStore';
 
 // Konami Code sequence
 const KONAMI_CODE = [
@@ -43,13 +42,16 @@ const notifyListeners = () => {
     listeners.forEach(fn => fn());
 };
 
-export function getEasterEggState() {
-    return easterEggState;
+export function getEasterEggState(): Readonly<EasterEggState> {
+    // Return a frozen shallow copy to prevent external mutation
+    return Object.freeze({ ...easterEggState });
 }
 
-export function subscribeToEasterEggs(callback: () => void) {
+export function subscribeToEasterEggs(callback: () => void): () => void {
     listeners.add(callback);
-    return () => listeners.delete(callback);
+    return () => {
+        listeners.delete(callback);
+    };
 }
 
 export function useEasterEggs() {
@@ -97,8 +99,12 @@ export function useEasterEggs() {
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Skip if typing in an input
-            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+            // Skip if typing in an input, textarea, or contenteditable element
+            if (
+                e.target instanceof HTMLInputElement ||
+                e.target instanceof HTMLTextAreaElement ||
+                (e.target instanceof HTMLElement && e.target.isContentEditable)
+            ) {
                 return;
             }
 
@@ -136,7 +142,14 @@ export function useEasterEggs() {
         };
 
         window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            // Clear any pending timeout on unmount
+            if (textTimeout.current) {
+                clearTimeout(textTimeout.current);
+                textTimeout.current = null;
+            }
+        };
     }, [activateKonami, activateDisco, activateSpeedRun]);
 }
 

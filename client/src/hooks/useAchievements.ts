@@ -74,9 +74,11 @@ export function useAchievements() {
     // Speed Demon - boost for 10 seconds total (use ref, no state updates)
     useEffect(() => {
         if (!isBoosting) {
-            lastBoostCheck.current = Date.now();
             return;
         }
+
+        // Reset timestamp at the START of boosting to avoid counting downtime
+        lastBoostCheck.current = Date.now();
 
         const interval = setInterval(() => {
             const now = Date.now();

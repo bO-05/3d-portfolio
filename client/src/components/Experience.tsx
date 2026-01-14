@@ -24,7 +24,6 @@ import { InWorldHints } from './UI/InWorldHints';
 import { usePerformanceGate } from '../hooks/usePerformanceGate';
 import { useAudio } from '../hooks/useAudio';
 import { useAchievements } from '../hooks/useAchievements';
-import { useEasterEggs } from '../hooks/useEasterEggs';
 
 /**
  * Main 3D Experience that contains all scene elements
@@ -50,9 +49,6 @@ export const Experience = memo(function Experience() {
 
     // Achievement tracking
     useAchievements();
-
-    // Easter eggs detection
-    useEasterEggs();
 
     // Track first vehicle movement
     useEffect(() => {

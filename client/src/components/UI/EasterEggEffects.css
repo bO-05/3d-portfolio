@@ -14,17 +14,16 @@
 
 @keyframes rainbowFlash {
     0% {
-        background: linear-gradient(
-            45deg,
-            rgba(255, 0, 0, 0.3),
-            rgba(255, 127, 0, 0.3),
-            rgba(255, 255, 0, 0.3),
-            rgba(0, 255, 0, 0.3),
-            rgba(0, 0, 255, 0.3),
-            rgba(139, 0, 255, 0.3)
-        );
+        background: linear-gradient(45deg,
+                rgba(255, 0, 0, 0.3),
+                rgba(255, 127, 0, 0.3),
+                rgba(255, 255, 0, 0.3),
+                rgba(0, 255, 0, 0.3),
+                rgba(0, 0, 255, 0.3),
+                rgba(139, 0, 255, 0.3));
         background-size: 600% 600%;
     }
+
     100% {
         background: transparent;
     }
@@ -38,7 +37,7 @@
     font-family: 'Press Start 2P', 'Courier New', monospace;
     font-size: 24px;
     color: #ffd700;
-    text-shadow: 
+    text-shadow:
         0 0 10px #ffd700,
         0 0 20px #ff8c00,
         0 0 30px #ff0000;
@@ -47,9 +46,20 @@
 }
 
 @keyframes konamiPulse {
-    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.5);
+    }
 }
 
 /* Disco Mode - Flashing colors */
@@ -66,13 +76,33 @@
 }
 
 @keyframes discoFlash {
-    0% { background-color: rgba(255, 0, 0, 0.2); }
-    16% { background-color: rgba(255, 165, 0, 0.2); }
-    33% { background-color: rgba(255, 255, 0, 0.2); }
-    50% { background-color: rgba(0, 255, 0, 0.2); }
-    66% { background-color: rgba(0, 0, 255, 0.2); }
-    83% { background-color: rgba(238, 130, 238, 0.2); }
-    100% { background-color: rgba(255, 0, 0, 0.2); }
+    0% {
+        background-color: rgba(255, 0, 0, 0.2);
+    }
+
+    16% {
+        background-color: rgba(255, 165, 0, 0.2);
+    }
+
+    33% {
+        background-color: rgba(255, 255, 0, 0.2);
+    }
+
+    50% {
+        background-color: rgba(0, 255, 0, 0.2);
+    }
+
+    66% {
+        background-color: rgba(0, 0, 255, 0.2);
+    }
+
+    83% {
+        background-color: rgba(238, 130, 238, 0.2);
+    }
+
+    100% {
+        background-color: rgba(255, 0, 0, 0.2);
+    }
 }
 
 /* Speed Run Timer */
@@ -110,8 +140,26 @@
     .konami-text {
         font-size: 14px;
     }
-    
+
     .speedrun-timer {
         font-size: 20px;
+    }
+}
+
+/* Accessibility: Reduce or disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .easter-egg-konami {
+        animation: none;
+        background: rgba(255, 215, 0, 0.2);
+    }
+
+    .konami-text {
+        animation: none;
+        opacity: 1;
+    }
+
+    .easter-egg-disco {
+        animation: none;
+        background-color: rgba(128, 0, 128, 0.1);
     }
 }
