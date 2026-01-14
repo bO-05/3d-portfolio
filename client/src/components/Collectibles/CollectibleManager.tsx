@@ -9,17 +9,23 @@ import { COLLECTIBLES } from '../../data/collectibles';
 import Collectible from './Collectible';
 import BreakableBox from './BreakableBox';
 import HiddenBush from './HiddenBush';
+import { useCollectibleStore } from '../../stores/collectibleStore';
 
 export const CollectibleManager = memo(function CollectibleManager() {
+    const resetSignal = useCollectibleStore((state) => state.resetSignal);
+
     return (
         <group>
             {COLLECTIBLES.map((collectible) => {
+                // Key includes resetSignal to force full remount/physics reset
+                const resetKey = `${collectible.id}-${resetSignal}`;
+
                 switch (collectible.container) {
                     case 'none':
                         // Visible floating collectible
                         return (
                             <Collectible
-                                key={collectible.id}
+                                key={resetKey}
                                 id={collectible.id}
                                 type={collectible.type}
                                 position={collectible.position}
@@ -30,7 +36,7 @@ export const CollectibleManager = memo(function CollectibleManager() {
                         // Hidden in breakable box
                         return (
                             <BreakableBox
-                                key={collectible.id}
+                                key={resetKey}
                                 collectibleId={collectible.id}
                                 position={collectible.position}
                                 collectibleType={collectible.type}
@@ -41,7 +47,7 @@ export const CollectibleManager = memo(function CollectibleManager() {
                         // Hidden in passable bush
                         return (
                             <HiddenBush
-                                key={collectible.id}
+                                key={resetKey}
                                 collectibleId={collectible.id}
                                 position={collectible.position}
                                 collectibleType={collectible.type}

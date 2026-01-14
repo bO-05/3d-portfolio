@@ -45,7 +45,6 @@ export const BreakableBox = memo(function BreakableBox({
             hasRevealedRef.current = false;
         }
     }, [isBoxRevealed]);
-
     const [, api] = useBox<Mesh>(() => ({
         type: 'Dynamic',
         mass: 8,

@@ -69,6 +69,7 @@ interface CollectibleState {
     isCollected: (id: string) => boolean;
     isBoxRevealed: (id: string) => boolean;
     getProgress: () => { collected: number; total: number; percent: number };
+    resetSignal: number;
     reset: () => void;
 }
 
@@ -122,9 +123,27 @@ export const useCollectibleStore = create<CollectibleState>((set, get) => ({
         };
     },
 
+    resetSignal: 0,
+
     reset: () => {
-        set({ collected: new Set(), revealedBoxes: new Set() });
-        localStorage.removeItem(STORAGE_KEY);
+        // Cancel any pending debounced save to prevent race condition
+        if (saveTimeout) {
+            clearTimeout(saveTimeout);
+            saveTimeout = null;
+        }
+
+        set((state) => ({
+            collected: new Set(),
+            revealedBoxes: new Set(),
+            resetSignal: state.resetSignal + 1
+        }));
+
+        // Write empty state explicitly (not removeItem) to ensure atomicity
+        // This prevents any delayed saves from restoring stale data
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            collected: [],
+            revealedBoxes: []
+        }));
     },
 }));
 

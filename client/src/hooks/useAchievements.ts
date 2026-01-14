@@ -1,99 +1,135 @@
 /**
  * useAchievements Hook - Checks and unlocks achievements based on game state
+ * 
+ * CRITICAL: Uses refs and getState() to avoid infinite re-render loops.
+ * DO NOT add unlock/unlocked/store functions to useEffect dependencies!
+ * 
  * @module hooks/useAchievements
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useGameStore } from '../stores/gameStore';
 import { useCollectibleStore } from '../stores/collectibleStore';
 import { useAchievementStore } from '../stores/achievementStore';
 
 export function useAchievements() {
+    // Game state subscriptions
     const playerSpeed = useGameStore((state) => state.player.speed);
     const engineOn = useGameStore((state) => state.vehicle.engineOn);
     const isBoosting = useGameStore((state) => state.vehicle.isBoosting);
     const visitedBuildings = useGameStore((state) => state.game.visitedBuildings);
     const timeOfDay = useGameStore((state) => state.game.timeOfDay);
 
-    const collected = useCollectibleStore((state) => state.collected);
+    const collectedSize = useCollectibleStore((state) => state.collected.size);
 
-    const unlock = useAchievementStore((state) => state.unlock);
-    const unlocked = useAchievementStore((state) => state.unlocked);
-    const incrementEngineToggle = useAchievementStore((state) => state.incrementEngineToggle);
-    const addBoostTime = useAchievementStore((state) => state.addBoostTime);
-    const engineToggles = useAchievementStore((state) => state.engineToggles);
-    const boostSeconds = useAchievementStore((state) => state.boostSeconds);
-
+    // Refs for tracking (don't cause re-renders)
     const hasMoved = useRef(false);
     const lastEngineState = useRef(engineOn);
+    const engineToggleCount = useRef(0);
+    const boostTime = useRef(0);
     const lastBoostCheck = useRef(Date.now());
+    const boostIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    // Stable unlock function using getState (no dependency changes)
+    const tryUnlock = useCallback((id: string) => {
+        const { unlocked, unlock } = useAchievementStore.getState();
+        if (!unlocked.has(id)) {
+            unlock(id);
+        }
+    }, []);
 
     // First Drive - move for the first time
     useEffect(() => {
-        if (playerSpeed > 1 && !hasMoved.current && !unlocked.has('first_drive')) {
+        if (playerSpeed > 1 && !hasMoved.current) {
             hasMoved.current = true;
-            unlock('first_drive');
+            tryUnlock('first_drive');
         }
-    }, [playerSpeed, unlock, unlocked]);
+    }, [playerSpeed, tryUnlock]);
 
     // Engine Master - toggle engine 10 times
     useEffect(() => {
         if (engineOn !== lastEngineState.current) {
             lastEngineState.current = engineOn;
-            incrementEngineToggle();
+            engineToggleCount.current += 1;
 
-            if (engineToggles + 1 >= 10 && !unlocked.has('engine_master')) {
-                unlock('engine_master');
+            if (engineToggleCount.current >= 10) {
+                tryUnlock('engine_master');
             }
         }
-    }, [engineOn, incrementEngineToggle, engineToggles, unlock, unlocked]);
+    }, [engineOn, tryUnlock]);
 
     // Explorer - visit all 5 buildings
     useEffect(() => {
-        if (visitedBuildings.length >= 5 && !unlocked.has('all_buildings')) {
-            unlock('all_buildings');
+        if (visitedBuildings.length >= 5) {
+            tryUnlock('all_buildings');
         }
-    }, [visitedBuildings, unlock, unlocked]);
+    }, [visitedBuildings.length, tryUnlock]);
 
     // Night Owl - play during night
     useEffect(() => {
-        if (timeOfDay === 'night' && !unlocked.has('night_owl')) {
-            unlock('night_owl');
+        if (timeOfDay === 'night') {
+            tryUnlock('night_owl');
         }
-    }, [timeOfDay, unlock, unlocked]);
+    }, [timeOfDay, tryUnlock]);
 
-    // Speed Demon - boost for 10 seconds total
+    // Speed Demon - boost for 10 seconds total (use ref, no state updates)
     useEffect(() => {
-        if (isBoosting) {
+        // Clear any existing interval when boosting stops
+        if (!isBoosting) {
+            if (boostIntervalRef.current) {
+                clearInterval(boostIntervalRef.current);
+                boostIntervalRef.current = null;
+            }
+            return;
+        }
+
+        // Clear any existing interval before creating a new one (defensive)
+        if (boostIntervalRef.current) {
+            clearInterval(boostIntervalRef.current);
+        }
+
+        // Reset timestamp at the START of boosting to avoid counting downtime
+        lastBoostCheck.current = Date.now();
+
+        boostIntervalRef.current = setInterval(() => {
             const now = Date.now();
             const elapsed = (now - lastBoostCheck.current) / 1000;
             lastBoostCheck.current = now;
 
-            if (elapsed < 1) {
-                addBoostTime(elapsed);
-            }
+            boostTime.current += elapsed;
 
-            if (boostSeconds >= 10 && !unlocked.has('speed_demon')) {
-                unlock('speed_demon');
+            if (boostTime.current >= 10) {
+                tryUnlock('speed_demon');
+                // Cap the value to prevent unbounded growth
+                boostTime.current = 10;
+                if (boostIntervalRef.current) {
+                    clearInterval(boostIntervalRef.current);
+                    boostIntervalRef.current = null;
+                }
             }
-        } else {
-            lastBoostCheck.current = Date.now();
-        }
-    }, [isBoosting, addBoostTime, boostSeconds, unlock, unlocked]);
+        }, 500);
+
+        return () => {
+            if (boostIntervalRef.current) {
+                clearInterval(boostIntervalRef.current);
+                boostIntervalRef.current = null;
+            }
+        };
+    }, [isBoosting, tryUnlock]);
 
     // Collector - find 10 collectibles
     useEffect(() => {
-        if (collected.size >= 10 && !unlocked.has('collector')) {
-            unlock('collector');
+        if (collectedSize >= 10) {
+            tryUnlock('collector');
         }
-    }, [collected.size, unlock, unlocked]);
+    }, [collectedSize, tryUnlock]);
 
     // Completionist - all collectibles + all buildings
     useEffect(() => {
-        if (collected.size >= 15 && visitedBuildings.length >= 5 && !unlocked.has('completionist')) {
-            unlock('completionist');
+        if (collectedSize >= 15 && visitedBuildings.length >= 5) {
+            tryUnlock('completionist');
         }
-    }, [collected.size, visitedBuildings.length, unlock, unlocked]);
+    }, [collectedSize, visitedBuildings.length, tryUnlock]);
 }
 
 export default useAchievements;
