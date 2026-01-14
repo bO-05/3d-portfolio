@@ -28,6 +28,7 @@ export function useAchievements() {
     const engineToggleCount = useRef(0);
     const boostTime = useRef(0);
     const lastBoostCheck = useRef(Date.now());
+    const boostIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Stable unlock function using getState (no dependency changes)
     const tryUnlock = useCallback((id: string) => {
@@ -73,14 +74,24 @@ export function useAchievements() {
 
     // Speed Demon - boost for 10 seconds total (use ref, no state updates)
     useEffect(() => {
+        // Clear any existing interval when boosting stops
         if (!isBoosting) {
+            if (boostIntervalRef.current) {
+                clearInterval(boostIntervalRef.current);
+                boostIntervalRef.current = null;
+            }
             return;
+        }
+
+        // Clear any existing interval before creating a new one (defensive)
+        if (boostIntervalRef.current) {
+            clearInterval(boostIntervalRef.current);
         }
 
         // Reset timestamp at the START of boosting to avoid counting downtime
         lastBoostCheck.current = Date.now();
 
-        const interval = setInterval(() => {
+        boostIntervalRef.current = setInterval(() => {
             const now = Date.now();
             const elapsed = (now - lastBoostCheck.current) / 1000;
             lastBoostCheck.current = now;
@@ -91,11 +102,19 @@ export function useAchievements() {
                 tryUnlock('speed_demon');
                 // Cap the value to prevent unbounded growth
                 boostTime.current = 10;
-                clearInterval(interval);
+                if (boostIntervalRef.current) {
+                    clearInterval(boostIntervalRef.current);
+                    boostIntervalRef.current = null;
+                }
             }
         }, 500);
 
-        return () => clearInterval(interval);
+        return () => {
+            if (boostIntervalRef.current) {
+                clearInterval(boostIntervalRef.current);
+                boostIntervalRef.current = null;
+            }
+        };
     }, [isBoosting, tryUnlock]);
 
     // Collector - find 10 collectibles
