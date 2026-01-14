@@ -24,19 +24,25 @@ export const EasterEggEffects = memo(function EasterEggEffects() {
 
     // Speed run timer
     useEffect(() => {
-        if (!state.speedRunActive || !state.speedRunStart) return;
+        let interval: ReturnType<typeof setInterval> | null = null;
 
-        const interval = setInterval(() => {
-            const elapsed = Date.now() - (state.speedRunStart || 0);
-            const minutes = Math.floor(elapsed / 60000);
-            const seconds = Math.floor((elapsed % 60000) / 1000);
-            const ms = elapsed % 1000;
-            setElapsedTime(
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`
-            );
-        }, 16);
+        if (state.speedRunActive && state.speedRunStart) {
+            interval = setInterval(() => {
+                const elapsed = Date.now() - (state.speedRunStart || 0);
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                const ms = elapsed % 1000;
+                setElapsedTime(
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`
+                );
+            }, 16);
+        }
 
-        return () => clearInterval(interval);
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
     }, [state.speedRunActive, state.speedRunStart]);
 
     return (
