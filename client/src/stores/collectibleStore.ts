@@ -69,6 +69,7 @@ interface CollectibleState {
     isCollected: (id: string) => boolean;
     isBoxRevealed: (id: string) => boolean;
     getProgress: () => { collected: number; total: number; percent: number };
+    resetSignal: number;
     reset: () => void;
 }
 
@@ -122,8 +123,14 @@ export const useCollectibleStore = create<CollectibleState>((set, get) => ({
         };
     },
 
+    resetSignal: 0,
+
     reset: () => {
-        set({ collected: new Set(), revealedBoxes: new Set() });
+        set((state) => ({
+            collected: new Set(),
+            revealedBoxes: new Set(),
+            resetSignal: state.resetSignal + 1
+        }));
         localStorage.removeItem(STORAGE_KEY);
     },
 }));

@@ -8,6 +8,7 @@ import { memo, useRef, useEffect } from 'react';
 import { useBox } from '@react-three/cannon';
 import * as THREE from 'three';
 import type { Mesh, Group } from 'three';
+import { useCollectibleStore } from '../../stores/collectibleStore';
 
 // ═══════════════════════════════════════════════════════════════
 // LAMPPOST - Pole with diamond light on top (STATIC)
@@ -130,6 +131,17 @@ function Bench({ position }: { position: [number, number, number] }) {
         linearDamping: 0.3,
     }));
 
+    // Reset physics on signal
+    const resetSignal = useCollectibleStore((state) => state.resetSignal);
+    useEffect(() => {
+        if (resetSignal > 0) {
+            api.velocity.set(0, 0, 0);
+            api.angularVelocity.set(0, 0, 0);
+            api.position.set(position[0], position[1] + 0.7, position[2]);
+            api.rotation.set(0, 0, 0);
+        }
+    }, [resetSignal, api, position]);
+
     // Sync visual mesh to physics body position/rotation
     useEffect(() => {
         const unsubPosition = api.position.subscribe((p) => {
@@ -193,6 +205,17 @@ function TrashBin({ position }: { position: [number, number, number] }) {
         angularDamping: 0.3,
         linearDamping: 0.2,
     }));
+
+    // Reset physics on signal
+    const resetSignal = useCollectibleStore((state) => state.resetSignal);
+    useEffect(() => {
+        if (resetSignal > 0) {
+            api.velocity.set(0, 0, 0);
+            api.angularVelocity.set(0, 0, 0);
+            api.position.set(position[0], position[1] + 0.6, position[2]);
+            api.rotation.set(0, 0, 0);
+        }
+    }, [resetSignal, api, position]);
 
     useEffect(() => {
         const unsubPosition = api.position.subscribe((p) => {
@@ -286,6 +309,17 @@ function FoodCart({ position }: { position: [number, number, number] }) {
         angularDamping: 0.4,
         linearDamping: 0.3,
     }));
+
+    // Reset physics on signal
+    const resetSignal = useCollectibleStore((state) => state.resetSignal);
+    useEffect(() => {
+        if (resetSignal > 0) {
+            api.velocity.set(0, 0, 0);
+            api.angularVelocity.set(0, 0, 0);
+            api.position.set(position[0], position[1] + 1, position[2]);
+            api.rotation.set(0, 0, 0);
+        }
+    }, [resetSignal, api, position]);
 
     useEffect(() => {
         const unsubPosition = api.position.subscribe((p) => {
