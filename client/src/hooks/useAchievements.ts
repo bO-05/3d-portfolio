@@ -89,6 +89,8 @@ export function useAchievements() {
 
             if (boostTime.current >= 10) {
                 tryUnlock('speed_demon');
+                // Cap the value to prevent unbounded growth
+                boostTime.current = 10;
                 clearInterval(interval);
             }
         }, 500);
