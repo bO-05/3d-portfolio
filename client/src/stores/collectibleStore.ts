@@ -126,6 +126,12 @@ export const useCollectibleStore = create<CollectibleState>((set, get) => ({
     resetSignal: 0,
 
     reset: () => {
+        // Cancel any pending debounced save to prevent race condition
+        if (saveTimeout) {
+            clearTimeout(saveTimeout);
+            saveTimeout = null;
+        }
+
         set((state) => ({
             collected: new Set(),
             revealedBoxes: new Set(),
