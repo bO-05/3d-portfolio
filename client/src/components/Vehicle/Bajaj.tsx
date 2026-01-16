@@ -10,8 +10,8 @@ import { memo, useRef, useEffect, useState, useSyncExternalStore, useMemo } from
 import { useBox } from '@react-three/cannon';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
-import { Box3, Object3D } from 'three';
-import type { Mesh, Group } from 'three';
+import { Box3, Object3D, Mesh, Material } from 'three';
+import type { Group } from 'three';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import { useGameStore } from '../../stores/gameStore';
 import { getEasterEggState, subscribeToEasterEggs } from '../../hooks/useEasterEggs';
@@ -87,6 +87,27 @@ export const Bajaj = memo(function Bajaj() {
   // Select current model and memoize clone to prevent new objects every render
   const currentScene = isTransJakarta ? tjModel.scene : bajajModel.scene;
   const clonedScene = useMemo(() => currentScene.clone(), [currentScene]);
+
+  // Cleanup clonedScene on vehicle change to prevent memory leak
+  useEffect(() => {
+    return () => {
+      clonedScene.traverse((object) => {
+        if (object instanceof Mesh) {
+          // Dispose geometry
+          if (object.geometry) {
+            object.geometry.dispose();
+          }
+          // Dispose material(s)
+          if (object.material) {
+            const materials = Array.isArray(object.material) ? object.material : [object.material];
+            materials.forEach((material: Material) => {
+              material.dispose();
+            });
+          }
+        }
+      });
+    };
+  }, [clonedScene]);
 
   // Calculate Y offset once model is loaded
   useEffect(() => {

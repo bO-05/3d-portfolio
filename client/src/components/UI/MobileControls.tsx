@@ -5,7 +5,7 @@
  * @module components/UI/MobileControls
  */
 
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import { useGameStore } from '../../stores/gameStore';
 import './MobileControls.css';
 
@@ -25,12 +25,13 @@ export const MobileControls = memo(function MobileControls() {
     const activeKeys = useRef<Set<string>>(new Set());
 
     // Track if device supports touch to prevent duplicate touch+mouse events
-    const [isTouchDevice, setIsTouchDevice] = useState(false);
+    // Using useRef instead of useState to avoid race condition on first touch
+    const isTouchDevice = useRef(false);
 
-    // Detect touch device on first touch
+    // Detect touch device on first touch (synchronous update via ref)
     useEffect(() => {
         const handleFirstTouch = () => {
-            setIsTouchDevice(true);
+            isTouchDevice.current = true;
             window.removeEventListener('touchstart', handleFirstTouch);
         };
         window.addEventListener('touchstart', handleFirstTouch, { passive: true });
@@ -53,18 +54,18 @@ export const MobileControls = memo(function MobileControls() {
         }
     }, []);
 
-    // Mouse handlers - only fire if NOT a touch device
+    // Mouse handlers - only fire if NOT a touch device (synchronous check via ref)
     const handleMouseDown = useCallback((key: string) => {
-        if (!isTouchDevice) {
+        if (!isTouchDevice.current) {
             handleTouchStart(key);
         }
-    }, [isTouchDevice, handleTouchStart]);
+    }, [handleTouchStart]);
 
     const handleMouseUp = useCallback((key: string) => {
-        if (!isTouchDevice) {
+        if (!isTouchDevice.current) {
             handleTouchEnd(key);
         }
-    }, [isTouchDevice, handleTouchEnd]);
+    }, [handleTouchEnd]);
 
     // Clean up on unmount
     useEffect(() => {
@@ -135,9 +136,9 @@ export const MobileControls = memo(function MobileControls() {
                 className="action-btn"
                 onTouchStart={() => simulateKey('Space', 'keydown')}
                 onTouchEnd={() => simulateKey('Space', 'keyup')}
-                onMouseDown={() => !isTouchDevice && simulateKey('Space', 'keydown')}
-                onMouseUp={() => !isTouchDevice && simulateKey('Space', 'keyup')}
-                onMouseLeave={() => !isTouchDevice && simulateKey('Space', 'keyup')}
+                onMouseDown={() => !isTouchDevice.current && simulateKey('Space', 'keydown')}
+                onMouseUp={() => !isTouchDevice.current && simulateKey('Space', 'keyup')}
+                onMouseLeave={() => !isTouchDevice.current && simulateKey('Space', 'keyup')}
                 onContextMenu={(e) => e.preventDefault()}
             >
                 🔊

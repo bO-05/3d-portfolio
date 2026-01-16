@@ -301,26 +301,32 @@ TEST:
 ```
 START: Core experience complete
 DO:
-1. Hidden collectible behind warung (requires reversing)
-   - Unlocks special "Secret Finder" achievement
+1. Konami Code (↑↑↓↓←→←→BA) → Bajaj swaps to TransJakarta bus
+   - Uses TJ.glb model, scaled appropriately
+   - Toggle back by entering code again
 
-2. Honk 5 times quickly → Bajaj does a wheelie animation
-   - "Stunt Driver" hidden achievement
+2. Honk 5 times quickly (Spacebar) → Bajaj does a wheelie animation
+   - 1.5 second tilt animation (20° back)
+   - Visual indicator appears during wheelie
 
-3. Drive in circles 3 times → confetti effect
-   - Reference to loading screen
+3. Drive circles around music studio 5 times → confetti effect
+   - Music studio at position [25, 25]
+   - Tracks angle rotation, triggers at 10π total
 
-4. Night mode + visit all buildings → northern lights appear
-   - "Jakarta Aurora" achievement
+4. Day mode + visit all 5 buildings → Jakarta Sky unlocked
+   - Displays beautiful sky.webp texture on sky dome
+   - Toggle button appears to switch between dynamic/textured sky
 
-5. Type "konami" on keyboard (up up down down left right left right)
-   - Switches to retro pixelated shader briefly
-   - "Old School" achievement
+5. Type "disco" → Flashing disco lights overlay
+   - Toggle on/off with repeated typing
+
+6. Type "speedrun" → Speed run timer appears
+   - Shows elapsed time in MM:SS.mmm format
 
 END: Explorers are rewarded for curiosity
 TEST:
 - Each Easter egg triggers correctly
-- Hidden achievements don't show until unlocked
+- Effects auto-clear or provide toggle
 ```
 
 ---
