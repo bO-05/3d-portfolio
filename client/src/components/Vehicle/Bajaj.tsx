@@ -10,7 +10,7 @@ import { memo, useRef, useEffect, useState, useSyncExternalStore, useMemo } from
 import { useBox } from '@react-three/cannon';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
-import { Box3, Object3D, Mesh, Material } from 'three';
+import { Box3, Object3D, Mesh } from 'three';
 import type { Group } from 'three';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import { useGameStore } from '../../stores/gameStore';
@@ -88,36 +88,22 @@ export const Bajaj = memo(function Bajaj() {
   const currentScene = isTransJakarta ? tjModel.scene : bajajModel.scene;
   const clonedScene = useMemo(() => currentScene.clone(), [currentScene]);
 
-  // Cleanup clonedScene on vehicle change to prevent memory leak
-  useEffect(() => {
-    return () => {
-      clonedScene.traverse((object) => {
-        if (object instanceof Mesh) {
-          // Dispose geometry
-          if (object.geometry) {
-            object.geometry.dispose();
-          }
-          // Dispose material(s)
-          if (object.material) {
-            const materials = Array.isArray(object.material) ? object.material : [object.material];
-            materials.forEach((material: Material) => {
-              material.dispose();
-            });
-          }
-        }
-      });
-    };
-  }, [clonedScene]);
+  // NOTE: We intentionally do NOT dispose clonedScene geometry/materials
+  // because clone() shares references with the cached useGLTF models.
+  // Disposing would corrupt the original cached models.
 
-  // Calculate Y offset once model is loaded
+  // Calculate Y offset from ORIGINAL unscaled scene (not clonedScene which gets scaled)
+  // This prevents compounding errors when swapping vehicles
   useEffect(() => {
-    if (modelRef.current) {
-      const box = new Box3().setFromObject(modelRef.current);
-      const minY = box.min.y;
-      const offset = -minY;
-      setYOffset(offset);
-    }
-  }, [isTransJakarta]); // Recalculate when vehicle changes
+    // Use the original scene for bounding box to avoid scale accumulation
+    const box = new Box3().setFromObject(currentScene);
+    const minY = box.min.y;
+    const scaleFactor = isTransJakarta ? 5 : 3;
+    // Offset = how much to lift the model so its bottom sits at ground level
+    const offset = -minY * scaleFactor;
+    setYOffset(offset);
+    console.log(`[Vehicle] ${isTransJakarta ? 'TransJakarta' : 'Bajaj'}: originalMinY=${minY.toFixed(2)}, scale=${scaleFactor}, offset=${offset.toFixed(2)}`);
+  }, [currentScene, isTransJakarta]);
 
   // Physics body
   const [physicsRef, api] = useBox<Mesh>(() => ({
@@ -185,8 +171,10 @@ export const Bajaj = memo(function Bajaj() {
     }
 
     // Update model position with wheelie tilt
+    // TransJakarta needs extra Y offset due to different model origin
+    const vehicleYOffset = isTransJakarta ? yOffset + 2.5 : yOffset + 0.5;
     if (modelRef.current) {
-      modelRef.current.position.set(px, yOffset + 0.5, pz);
+      modelRef.current.position.set(px, vehicleYOffset, pz);
       modelRef.current.rotation.set(-wheelieTilt, rotationY.current + Math.PI, 0);
     }
 
@@ -261,7 +249,7 @@ export const Bajaj = memo(function Bajaj() {
       >
         <primitive
           object={clonedScene}
-          scale={isTransJakarta ? 2 : 3}
+          scale={isTransJakarta ? 5 : 3}
         />
 
         {/* Headlight (only show for Bajaj) */}

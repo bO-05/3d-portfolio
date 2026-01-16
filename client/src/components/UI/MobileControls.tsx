@@ -131,14 +131,14 @@ export const MobileControls = memo(function MobileControls() {
                 </button>
             </div>
 
-            {/* Action button (honk) */}
+            {/* Action button (honk) - uses same handlers to track activeKeys for cleanup */}
             <button
                 className="action-btn"
-                onTouchStart={() => simulateKey('Space', 'keydown')}
-                onTouchEnd={() => simulateKey('Space', 'keyup')}
-                onMouseDown={() => !isTouchDevice.current && simulateKey('Space', 'keydown')}
-                onMouseUp={() => !isTouchDevice.current && simulateKey('Space', 'keyup')}
-                onMouseLeave={() => !isTouchDevice.current && simulateKey('Space', 'keyup')}
+                onTouchStart={() => handleTouchStart('Space')}
+                onTouchEnd={() => handleTouchEnd('Space')}
+                onMouseDown={() => handleMouseDown('Space')}
+                onMouseUp={() => handleMouseUp('Space')}
+                onMouseLeave={() => handleMouseUp('Space')}
                 onContextMenu={(e) => e.preventDefault()}
             >
                 🔊
