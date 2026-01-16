@@ -156,7 +156,8 @@ export const Bajaj = memo(function Bajaj() {
     let wheelieTilt = 0;
     if (isWheelie && typeof wheelieStartTime === 'number') {
       const elapsed = Date.now() - wheelieStartTime;
-      const progress = elapsed / WHEELIE_DURATION;
+      // Clamp progress to [0, 1] to prevent unexpected behavior
+      const progress = Math.min(elapsed / WHEELIE_DURATION, 1.0);
 
       if (progress < 0.2) {
         // Tilt up (0-20%)
@@ -168,6 +169,7 @@ export const Bajaj = memo(function Bajaj() {
         // Tilt down (80-100%)
         wheelieTilt = WHEELIE_MAX_TILT * (1 - (progress - 0.8) / 0.2);
       }
+      // When progress >= 1.0, wheelieTilt remains 0 (animation complete)
     }
 
     // Update model position with wheelie tilt

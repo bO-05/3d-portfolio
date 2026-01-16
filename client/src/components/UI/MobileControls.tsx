@@ -11,9 +11,20 @@ import './MobileControls.css';
 
 /**
  * Simulate keyboard events for vehicle control
+ * Maps key names to correct KeyboardEvent key/code values
  */
-function simulateKey(key: string, type: 'keydown' | 'keyup') {
-    window.dispatchEvent(new KeyboardEvent(type, { key, code: key }));
+function simulateKey(keyName: string, type: 'keydown' | 'keyup') {
+    // Map key names to correct key property values
+    // Space key should have key: ' ' (space character), not key: 'Space'
+    const keyMap: Record<string, { key: string; code: string }> = {
+        'ArrowUp': { key: 'ArrowUp', code: 'ArrowUp' },
+        'ArrowDown': { key: 'ArrowDown', code: 'ArrowDown' },
+        'ArrowLeft': { key: 'ArrowLeft', code: 'ArrowLeft' },
+        'ArrowRight': { key: 'ArrowRight', code: 'ArrowRight' },
+        'Space': { key: ' ', code: 'Space' },
+    };
+    const { key, code } = keyMap[keyName] || { key: keyName, code: keyName };
+    window.dispatchEvent(new KeyboardEvent(type, { key, code }));
 }
 
 /**
