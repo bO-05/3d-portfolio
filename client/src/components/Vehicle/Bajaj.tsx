@@ -152,9 +152,9 @@ export const Bajaj = memo(function Bajaj() {
 
     api.rotation.set(0, rotationY.current, 0);
 
-    // Calculate wheelie tilt
+    // Calculate wheelie tilt (use typeof to prevent NaN if wheelieStartTime is truthy but not a number)
     let wheelieTilt = 0;
-    if (isWheelie && wheelieStartTime) {
+    if (isWheelie && typeof wheelieStartTime === 'number') {
       const elapsed = Date.now() - wheelieStartTime;
       const progress = elapsed / WHEELIE_DURATION;
 

@@ -4,7 +4,7 @@
  * @module components/UI/EasterEggEffects
  */
 
-import { memo, useState, useEffect, useSyncExternalStore } from 'react';
+import { memo, useState, useEffect, useSyncExternalStore, useMemo } from 'react';
 import { subscribeToEasterEggs, getEasterEggState, useEasterEggs, toggleJakartaSky } from '../../hooks/useEasterEggs';
 import './EasterEggEffects.css';
 
@@ -16,43 +16,62 @@ function useEasterEggState() {
 }
 
 /**
- * Confetti particle component
+ * Confetti particle configuration (generated once)
  */
-const ConfettiParticle = memo(function ConfettiParticle({ index }: { index: number }) {
-    const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#1dd1a1', '#5f27cd'];
-    const color = colors[index % colors.length];
-    const left = Math.random() * 100;
-    const delay = Math.random() * 0.5;
-    const duration = 2 + Math.random() * 2;
-    const size = 8 + Math.random() * 8;
-    const rotation = Math.random() * 360;
+interface ParticleConfig {
+    left: number;
+    delay: number;
+    duration: number;
+    size: number;
+    rotation: number;
+    color: string;
+}
 
+const CONFETTI_COLORS = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#1dd1a1', '#5f27cd'];
+
+/**
+ * Confetti particle component with stable config
+ */
+const ConfettiParticle = memo(function ConfettiParticle({ config }: { config: ParticleConfig }) {
     return (
         <div
             className="confetti-particle"
             style={{
-                left: `${left}%`,
-                backgroundColor: color,
-                width: `${size}px`,
-                height: `${size}px`,
-                animationDelay: `${delay}s`,
-                animationDuration: `${duration}s`,
-                transform: `rotate(${rotation}deg)`,
+                left: `${config.left}%`,
+                backgroundColor: config.color,
+                width: `${config.size}px`,
+                height: `${config.size}px`,
+                animationDelay: `${config.delay}s`,
+                animationDuration: `${config.duration}s`,
+                transform: `rotate(${config.rotation}deg)`,
             }}
         />
     );
 });
 
 /**
- * Confetti burst effect
+ * Confetti burst effect with stable particle configs
  */
 const Confetti = memo(function Confetti() {
-    const particles = Array.from({ length: 50 }, (_, i) => i);
+    // Generate particle configs once with useMemo to prevent flicker
+    const particles = useMemo(() =>
+        Array.from({ length: 50 }, (_, i) => ({
+            index: i,
+            config: {
+                left: Math.random() * 100,
+                delay: Math.random() * 0.5,
+                duration: 2 + Math.random() * 2,
+                size: 8 + Math.random() * 8,
+                rotation: Math.random() * 360,
+                color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+            } as ParticleConfig
+        }))
+        , []);
 
     return (
         <div className="confetti-container">
-            {particles.map(i => (
-                <ConfettiParticle key={i} index={i} />
+            {particles.map(p => (
+                <ConfettiParticle key={p.index} config={p.config} />
             ))}
             <div className="confetti-text">🎊 Music Studio Circled 5x! 🎊</div>
         </div>
