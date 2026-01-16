@@ -4,9 +4,9 @@
  * @module components/Scene/Sky
  */
 
-import { memo, useMemo, useSyncExternalStore, useEffect, useRef, useState } from 'react';
+import { memo, useMemo, useSyncExternalStore, useEffect, useRef } from 'react';
 import { Stars, useTexture } from '@react-three/drei';
-import { BackSide, Color, SRGBColorSpace, MeshBasicMaterial, Texture } from 'three';
+import { BackSide, Color, SRGBColorSpace, MeshBasicMaterial } from 'three';
 import { useGameStore } from '../../stores/gameStore';
 import { getEasterEggState, subscribeToEasterEggs } from '../../hooks/useEasterEggs';
 
@@ -46,25 +46,14 @@ function useSkyConfig() {
 }
 
 /**
- * Hook to safely load texture with error handling
+ * Load sky texture with color space configuration
+ * Uses useTexture which is Suspense-compatible - parent Suspense handles loading
+ * If texture fails to load, drei's useTexture will throw and ErrorBoundary can catch
  */
-function useSafeTexture(path: string): Texture | null {
-    const [textureLoaded, setTextureLoaded] = useState(true);
-
-    // Try to load texture - useTexture will throw if it fails, caught by error boundary
-    // But we handle the success case here
-    try {
-        const texture = useTexture(path, () => {
-            // onLoad callback - texture loaded successfully
-            setTextureLoaded(true);
-        });
-        texture.colorSpace = SRGBColorSpace;
-        return textureLoaded ? texture : null;
-    } catch {
-        // If there's an error, return null and use fallback
-        console.warn('[Sky] Failed to load sky texture, using fallback');
-        return null;
-    }
+function useSkyTexture(path: string) {
+    const texture = useTexture(path);
+    texture.colorSpace = SRGBColorSpace;
+    return texture;
 }
 
 /**
@@ -77,11 +66,11 @@ export const Sky = memo(function Sky() {
     const easterEggState = useEasterEggState();
     const materialRef = useRef<MeshBasicMaterial>(null);
 
-    // Load sky texture with error handling - returns null on failure
-    const skyTexture = useSafeTexture('/textures/sky.webp');
+    // Load sky texture (Suspense handles loading, ErrorBoundary handles errors)
+    const skyTexture = useSkyTexture('/textures/sky.webp');
 
-    // Only show Jakarta Sky if texture loaded successfully AND easter egg is active
-    const showJakartaSky = easterEggState.jakartaSkyActive && skyTexture !== null;
+    // Show Jakarta Sky when easter egg is active
+    const showJakartaSky = easterEggState.jakartaSkyActive;
 
     // Update material when Jakarta Sky state changes
     useEffect(() => {
