@@ -163,3 +163,132 @@
         background-color: rgba(128, 0, 128, 0.1);
     }
 }
+
+/* Confetti Container */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 4001;
+    overflow: hidden;
+}
+
+.confetti-particle {
+    position: absolute;
+    top: -20px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+.confetti-text {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 
+        0 0 10px rgba(255, 107, 107, 0.8),
+        0 0 20px rgba(254, 202, 87, 0.6),
+        0 0 30px rgba(72, 219, 251, 0.4);
+    animation: confettiTextPulse 0.5s ease-out;
+    white-space: nowrap;
+}
+
+@keyframes confettiTextPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Wheelie Indicator */
+.wheelie-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    animation: wheelieAppear 0.3s ease-out;
+    z-index: 4002;
+    pointer-events: none;
+}
+
+.wheelie-emoji {
+    font-size: 64px;
+    animation: wheelieShake 0.15s infinite;
+}
+
+.wheelie-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: #ffd700;
+    text-shadow: 
+        0 0 10px rgba(255, 215, 0, 0.8),
+        0 0 20px rgba(255, 140, 0, 0.6),
+        2px 2px 0 #000;
+    letter-spacing: 4px;
+}
+
+@keyframes wheelieAppear {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes wheelieShake {
+    0%, 100% {
+        transform: rotate(-5deg);
+    }
+    50% {
+        transform: rotate(5deg);
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .confetti-text {
+        font-size: 18px;
+    }
+    
+    .wheelie-emoji {
+        font-size: 48px;
+    }
+    
+    .wheelie-text {
+        font-size: 24px;
+    }
+}

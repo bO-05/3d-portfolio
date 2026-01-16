@@ -2,10 +2,11 @@
  * Bajaj vehicle component with realistic controls
  * Engine must be ON to move, turning requires forward speed
  * OPTIMIZED: Throttled state updates to prevent jitter
+ * EASTER EGGS: Konami swaps to TransJakarta, Honk wheelie
  * @module components/Vehicle/Bajaj
  */
 
-import { memo, useRef, useEffect, useState } from 'react';
+import { memo, useRef, useEffect, useState, useSyncExternalStore } from 'react';
 import { useBox } from '@react-three/cannon';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
@@ -13,21 +14,34 @@ import { Box3, Object3D } from 'three';
 import type { Mesh, Group } from 'three';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import { useGameStore } from '../../stores/gameStore';
+import { getEasterEggState, subscribeToEasterEggs } from '../../hooks/useEasterEggs';
 
-// Preload the model
+// Preload both vehicle models
 useGLTF.preload('/models/vehicles/bajaj.glb');
+useGLTF.preload('/models/vehicles/TJ.glb');
 
 // Movement constants
 const MOVE_SPEED = 12;
 const REVERSE_SPEED = 6;
 const BOOST_MULTIPLIER = 1.5;
 const TURN_SPEED = 2.5;
-const MIN_TURN_SPEED = 3; // Minimum speed required to turn
+const MIN_TURN_SPEED = 3;
 
 // Throttle constants
-const POSITION_UPDATE_INTERVAL = 100; // ms between position updates
-const POSITION_CHANGE_THRESHOLD = 0.1; // minimum distance to trigger update
-const SPEED_UPDATE_INTERVAL = 200; // ms between speed updates
+const POSITION_UPDATE_INTERVAL = 100;
+const POSITION_CHANGE_THRESHOLD = 0.1;
+const SPEED_UPDATE_INTERVAL = 200;
+
+// Wheelie animation constants
+const WHEELIE_MAX_TILT = 0.35; // ~20 degrees in radians
+const WHEELIE_DURATION = 1500; // ms
+
+/**
+ * Hook to subscribe to easter egg state changes
+ */
+function useEasterEggState() {
+  return useSyncExternalStore(subscribeToEasterEggs, getEasterEggState, getEasterEggState);
+}
 
 /**
  * Bajaj vehicle with realistic controls:
@@ -35,6 +49,10 @@ const SPEED_UPDATE_INTERVAL = 200; // ms between speed updates
  * - W/S: Forward/Reverse (engine must be ON)
  * - A/D: Turn (requires movement speed)
  * - Shift: Boost
+ * 
+ * Easter Eggs:
+ * - Konami Code: Swap to TransJakarta
+ * - Honk 5x: Wheelie animation
  */
 export const Bajaj = memo(function Bajaj() {
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
@@ -43,21 +61,31 @@ export const Bajaj = memo(function Bajaj() {
   const isBoosting = useGameStore((state) => state.vehicle.isBoosting);
   const engineOn = useGameStore((state) => state.vehicle.engineOn);
 
+  // Easter egg state
+  const easterEggState = useEasterEggState();
+  const isTransJakarta = easterEggState.vehicleSwapped;
+  const isWheelie = easterEggState.wheelieActive;
+  const wheelieStartTime = easterEggState.wheelieStartTime;
+
   const keyboard = useKeyboard();
   const rotationY = useRef(0);
   const modelRef = useRef<Group>(null);
   const [yOffset, setYOffset] = useState(0);
   const currentSpeed = useRef(0);
 
-  // Spotlight target ref - controls light direction
+  // Spotlight target ref
   const spotlightTargetRef = useRef<Object3D>(null);
 
-  // THROTTLING REFS - prevents 60x/second state updates
+  // Throttling refs
   const lastPositionUpdate = useRef({ time: 0, pos: [0, 0, 0] as [number, number, number] });
   const lastSpeedUpdate = useRef({ time: 0, speed: 0 });
 
-  // Load the GLB model
-  const { scene } = useGLTF('/models/vehicles/bajaj.glb');
+  // Load both vehicle models
+  const bajajModel = useGLTF('/models/vehicles/bajaj.glb');
+  const tjModel = useGLTF('/models/vehicles/TJ.glb');
+
+  // Select current model
+  const currentScene = isTransJakarta ? tjModel.scene : bajajModel.scene;
 
   // Calculate Y offset once model is loaded
   useEffect(() => {
@@ -67,7 +95,7 @@ export const Bajaj = memo(function Bajaj() {
       const offset = -minY;
       setYOffset(offset);
     }
-  }, []);
+  }, [isTransJakarta]); // Recalculate when vehicle changes
 
   // Physics body
   const [physicsRef, api] = useBox<Mesh>(() => ({
@@ -92,8 +120,7 @@ export const Bajaj = memo(function Bajaj() {
     const [px, py, pz] = position.current;
     const now = performance.now();
 
-    // THROTTLED POSITION UPDATE
-    // Only update React state every 100ms OR when position changes significantly
+    // Throttled position update
     const dx = Math.abs(px - lastPositionUpdate.current.pos[0]);
     const dz = Math.abs(pz - lastPositionUpdate.current.pos[2]);
     const timeSinceLastUpdate = now - lastPositionUpdate.current.time;
@@ -103,17 +130,12 @@ export const Bajaj = memo(function Bajaj() {
       lastPositionUpdate.current = { time: now, pos: [px, py, pz] };
     }
 
-    // Calculate base speed to determine if turning is allowed
     const absSpeed = Math.abs(currentSpeed.current);
     const isReversing = currentSpeed.current < 0;
 
-    // TURNING: Only allowed when moving above MIN_TURN_SPEED
+    // Turning when moving
     if (absSpeed > MIN_TURN_SPEED) {
-      // Turn rate scales with speed for natural feel
       const turnRate = TURN_SPEED * (absSpeed / MOVE_SPEED);
-
-      // When reversing, invert steering direction
-      // (front wheel steering in reverse turns vehicle opposite way)
       const steerDirection = isReversing ? -1 : 1;
 
       if (keyboard.left) rotationY.current += turnRate * delta * steerDirection;
@@ -122,10 +144,28 @@ export const Bajaj = memo(function Bajaj() {
 
     api.rotation.set(0, rotationY.current, 0);
 
-    // Update model position (direct ref mutation, no React state)
+    // Calculate wheelie tilt
+    let wheelieTilt = 0;
+    if (isWheelie && wheelieStartTime) {
+      const elapsed = Date.now() - wheelieStartTime;
+      const progress = elapsed / WHEELIE_DURATION;
+
+      if (progress < 0.2) {
+        // Tilt up (0-20%)
+        wheelieTilt = WHEELIE_MAX_TILT * (progress / 0.2);
+      } else if (progress < 0.8) {
+        // Hold (20-80%)
+        wheelieTilt = WHEELIE_MAX_TILT;
+      } else if (progress < 1.0) {
+        // Tilt down (80-100%)
+        wheelieTilt = WHEELIE_MAX_TILT * (1 - (progress - 0.8) / 0.2);
+      }
+    }
+
+    // Update model position with wheelie tilt
     if (modelRef.current) {
       modelRef.current.position.set(px, yOffset + 0.5, pz);
-      modelRef.current.rotation.set(0, rotationY.current + Math.PI, 0);
+      modelRef.current.rotation.set(-wheelieTilt, rotationY.current + Math.PI, 0);
     }
 
     // Movement direction
@@ -137,12 +177,10 @@ export const Bajaj = memo(function Bajaj() {
     let velocityZ = 0;
     let shouldBoost = false;
 
-    // Only move if engine is ON
     if (engineOn) {
       if (keyboard.forward) {
         let speed = MOVE_SPEED;
 
-        // Apply boost if holding Shift
         if (keyboard.boost) {
           speed *= BOOST_MULTIPLIER;
           shouldBoost = true;
@@ -158,19 +196,17 @@ export const Bajaj = memo(function Bajaj() {
       }
     }
 
-    // GUARDED BOOSTING UPDATE - only when value CHANGES
     if (shouldBoost && !isBoosting) {
       setBoosting(true);
     } else if (!shouldBoost && isBoosting) {
       setBoosting(false);
     }
 
-    // Smooth speed transition
     currentSpeed.current += (targetSpeed - currentSpeed.current) * 0.1;
 
     api.velocity.set(velocityX, 0, velocityZ);
 
-    // THROTTLED SPEED UPDATE - only every 200ms when changed
+    // Throttled speed update
     const speedTimeSinceUpdate = now - lastSpeedUpdate.current.time;
     const speedChanged = Math.abs(Math.abs(currentSpeed.current) - lastSpeedUpdate.current.speed) > 0.5;
 
@@ -180,7 +216,6 @@ export const Bajaj = memo(function Bajaj() {
     }
   });
 
-  // Get showControlsTooltip action from store
   const showControls = useGameStore((state) => state.showControlsTooltip);
   const headlightsOn = useGameStore((state) => state.vehicle.headlightsOn);
 
@@ -195,86 +230,75 @@ export const Bajaj = memo(function Bajaj() {
         <boxGeometry args={[2, 2, 3]} />
       </mesh>
 
-      {/* Visible 3D model - click to show controls */}
+      {/* Visible 3D model */}
       <group
         ref={modelRef}
         onClick={handleClick}
         onPointerOver={() => { document.body.style.cursor = 'pointer'; }}
         onPointerOut={() => { document.body.style.cursor = 'auto'; }}
       >
-        <primitive object={scene.clone()} scale={3} />
+        <primitive
+          object={currentScene.clone()}
+          scale={isTransJakarta ? 2 : 3}
+        />
 
-        {/* 
-          HEADLIGHT - on front fender above single front wheel
-          Red arrow in user's image shows the exact location
-          Need high +Z (far forward) and low Y (wheel level)
-        */}
-
-        {/* Headlight bulb - at front wheel fender */}
-        <mesh position={[0.01, -0.53, 2.8]}>
-          <sphereGeometry args={[0.15, 12, 12]} />
-          <meshStandardMaterial
-            color={headlightsOn ? "#ffffcc" : "#555555"}
-            emissive={headlightsOn ? "#ffff00" : "#000000"}
-            emissiveIntensity={headlightsOn ? 7 : 0}
-          />
-        </mesh>
-
-        {/* Housing behind bulb */}
-        <mesh position={[0.01, -0.53, 2.6]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.2, 0.15, 0.25, 12]} />
-          <meshStandardMaterial color="#1a1a1a" metalness={0.9} roughness={0.1} />
-        </mesh>
-
-        {/* 
-          HEADLIGHT SPOTLIGHT - uses TARGET to aim forward
-          Target position: [0, Y, Z] where:
-          - Negative Z = forward (toward front wheel direction)
-          - Negative Y = down toward road
-          Adjust target position to change light direction!
-        */}
-        {headlightsOn && (
+        {/* Headlight (only show for Bajaj) */}
+        {!isTransJakarta && (
           <>
-            {/* TARGET - where the light points TO */}
-            {/* Change this position to adjust light direction */}
-            <object3D
-              ref={spotlightTargetRef}
-              position={[0, -5, 15]}
-            />
+            <mesh position={[0.01, -0.53, 2.8]}>
+              <sphereGeometry args={[0.15, 12, 12]} />
+              <meshStandardMaterial
+                color={headlightsOn ? "#ffffcc" : "#555555"}
+                emissive={headlightsOn ? "#ffff00" : "#000000"}
+                emissiveIntensity={headlightsOn ? 7 : 0}
+              />
+            </mesh>
 
-            {/* Main beam */}
-            <spotLight
-              ref={(spot) => {
-                if (spot && spotlightTargetRef.current) {
-                  spot.target = spotlightTargetRef.current;
-                }
-              }}
-              position={[0, -0.53, 2.8]}
-              angle={0.5}
-              penumbra={0.8}
-              intensity={8}
-              distance={20}
-              color="#fffee0"
-              castShadow
-              shadow-mapSize-width={256}
-              shadow-mapSize-height={256}
-            />
+            <mesh position={[0.01, -0.53, 2.6]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.2, 0.15, 0.25, 12]} />
+              <meshStandardMaterial color="#1a1a1a" metalness={0.9} roughness={0.1} />
+            </mesh>
 
-            {/* Wide fill beam */}
-            <spotLight
-              ref={(spot) => {
-                if (spot && spotlightTargetRef.current) {
-                  spot.target = spotlightTargetRef.current;
-                }
-              }}
-              position={[0, -0.53, 2.8]}
-              angle={0.8}
-              penumbra={0.8}
-              intensity={6}
-              distance={25}
-              color="#fffee0"
-              castShadow={false}
-            />
+            {headlightsOn && (
+              <>
+                <object3D
+                  ref={spotlightTargetRef}
+                  position={[0, -5, 15]}
+                />
+
+                <spotLight
+                  ref={(spot) => {
+                    if (spot && spotlightTargetRef.current) {
+                      spot.target = spotlightTargetRef.current;
+                    }
+                  }}
+                  position={[0, -0.53, 2.8]}
+                  angle={0.5}
+                  penumbra={0.8}
+                  intensity={8}
+                  distance={20}
+                  color="#fffee0"
+                  castShadow
+                  shadow-mapSize-width={256}
+                  shadow-mapSize-height={256}
+                />
+
+                <spotLight
+                  ref={(spot) => {
+                    if (spot && spotlightTargetRef.current) {
+                      spot.target = spotlightTargetRef.current;
+                    }
+                  }}
+                  position={[0, -0.53, 2.8]}
+                  angle={0.8}
+                  penumbra={0.8}
+                  intensity={6}
+                  distance={25}
+                  color="#fffee0"
+                  castShadow={false}
+                />
+              </>
+            )}
           </>
         )}
       </group>

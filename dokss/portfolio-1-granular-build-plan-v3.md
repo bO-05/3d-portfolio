@@ -206,7 +206,7 @@ PERFORMANCE CHECK:
 ### Task 2.1 — Generate 3D Assets with AI
 ```
 START: Phase 1 complete
-DO: Use Multiple AI Tools in Parallel:
+DO: Make Assets
 
 ASSETS - Hunyuan 3d-v3 via FAL.ai (Buildings):
 - Go to (Hunyuan 3d-v3 model)[https://fal.ai/models/fal-ai/hunyuan3d-v3/text-to-3d], use `LowPoly` type,  `40000` as Face Count, and 'triangle' as Polygon Type
@@ -217,7 +217,8 @@ ASSETS - Hunyuan 3d-v3 via FAL.ai (Buildings):
   4. `music-studio.glb`: "low poly music studio, colorful, artsy walls motif, Indonesian flag framed on wall, game asset"
   5. `house.glb`: "low poly house, traditional Indonesian javanese architecture, small, game asset style"
   6. `bajaj.glb`: "low poly bajaj auto rickshaw, Indonesian style, orange and black, game asset"
-- Download all 6 as .glb when generated (~5 minutes each)
+  7. `TJ.glb`: "low poly transjakarta bus, Indonesian style, orange and black, game asset" -> this is for easter egg where user press konami buttons and vehicle turns into Transjakarta bus
+- Download all 7 as .glb when generated (~5 minutes each)
 - Save in public/models/buildings/ for buildings and public/models/vehicles/ for vehicle
 
 SESSION 3 - Imagen 4 via Fal.ai (Textures):
@@ -229,7 +230,7 @@ SESSION 3 - Imagen 4 via Fal.ai (Textures):
   3. grass: "Seamless interlocking grass texture, simple, flat lighting, game texture"
 - Save as '.webp' in public/textures/
 
-END: 6 .glb files (5 buildings + 1 vehicle), 3 textures ready
+END: 6 .glb files (5 buildings + 2 vehicle), 3 textures ready
 TEST:
 - Open each .glb in https://gltf-viewer.donmccurdy.com/
 - Verify: <15MB each, textures embedded, no broken materials
@@ -239,7 +240,7 @@ TEST:
 - If any model >2MB, use gltf-pipeline to compress:
   npx gltf-pipeline -i model.glb -o model-compressed.glb -d -->
 
-TIME: ~20-30 minutes for all 6 models
+TIME: ~20-30 minutes for all 7 models
 COST (as defined in their fal playground page): 
   - Hunyuan 3d-v3: 
     ````

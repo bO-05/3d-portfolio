@@ -57,6 +57,9 @@ export const MobileControls = memo(function MobileControls() {
                     className="dpad-btn dpad-up"
                     onTouchStart={() => handleTouchStart('ArrowUp')}
                     onTouchEnd={() => handleTouchEnd('ArrowUp')}
+                    onMouseDown={() => handleTouchStart('ArrowUp')}
+                    onMouseUp={() => handleTouchEnd('ArrowUp')}
+                    onMouseLeave={() => handleTouchEnd('ArrowUp')}
                     onContextMenu={(e) => e.preventDefault()}
                 >
                     ▲
@@ -66,6 +69,9 @@ export const MobileControls = memo(function MobileControls() {
                         className="dpad-btn dpad-left"
                         onTouchStart={() => handleTouchStart('ArrowLeft')}
                         onTouchEnd={() => handleTouchEnd('ArrowLeft')}
+                        onMouseDown={() => handleTouchStart('ArrowLeft')}
+                        onMouseUp={() => handleTouchEnd('ArrowLeft')}
+                        onMouseLeave={() => handleTouchEnd('ArrowLeft')}
                         onContextMenu={(e) => e.preventDefault()}
                     >
                         ◀
@@ -75,6 +81,9 @@ export const MobileControls = memo(function MobileControls() {
                         className="dpad-btn dpad-right"
                         onTouchStart={() => handleTouchStart('ArrowRight')}
                         onTouchEnd={() => handleTouchEnd('ArrowRight')}
+                        onMouseDown={() => handleTouchStart('ArrowRight')}
+                        onMouseUp={() => handleTouchEnd('ArrowRight')}
+                        onMouseLeave={() => handleTouchEnd('ArrowRight')}
                         onContextMenu={(e) => e.preventDefault()}
                     >
                         ▶
@@ -84,16 +93,23 @@ export const MobileControls = memo(function MobileControls() {
                     className="dpad-btn dpad-down"
                     onTouchStart={() => handleTouchStart('ArrowDown')}
                     onTouchEnd={() => handleTouchEnd('ArrowDown')}
+                    onMouseDown={() => handleTouchStart('ArrowDown')}
+                    onMouseUp={() => handleTouchEnd('ArrowDown')}
+                    onMouseLeave={() => handleTouchEnd('ArrowDown')}
                     onContextMenu={(e) => e.preventDefault()}
                 >
                     ▼
                 </button>
             </div>
 
-            {/* Action button (future: honk) */}
+            {/* Action button (honk) */}
             <button
                 className="action-btn"
-                onTouchStart={() => console.log('Honk!')}
+                onTouchStart={() => simulateKey('KeyH', 'keydown')}
+                onTouchEnd={() => simulateKey('KeyH', 'keyup')}
+                onMouseDown={() => simulateKey('KeyH', 'keydown')}
+                onMouseUp={() => simulateKey('KeyH', 'keyup')}
+                onMouseLeave={() => simulateKey('KeyH', 'keyup')}
                 onContextMenu={(e) => e.preventDefault()}
             >
                 🔊
