@@ -1,13 +1,15 @@
 /**
- * InWorldHints - Floating 3D text hints above Bajaj
+ * InWorldHints - Floating 3D text hints above vehicle
  * Shows contextual hints like "Press E to start engine"
+ * Adjusts height based on vehicle type (Bajaj vs TransJakarta)
  * @module components/UI/InWorldHints
  */
 
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, useSyncExternalStore, useRef } from 'react';
 import { Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useGameStore } from '../../stores/gameStore';
+import { getEasterEggState, subscribeToEasterEggs } from '../../hooks/useEasterEggs';
 
 interface Hint {
     id: string;
@@ -16,15 +18,27 @@ interface Hint {
     priority: number;
 }
 
+/**
+ * Hook to subscribe to easter egg state changes
+ */
+function useEasterEggState() {
+    return useSyncExternalStore(subscribeToEasterEggs, getEasterEggState, getEasterEggState);
+}
+
 export const InWorldHints = memo(function InWorldHints() {
     const playerPosition = useGameStore((state) => state.player.position);
     const engineOn = useGameStore((state) => state.vehicle.engineOn);
     const playerSpeed = useGameStore((state) => state.player.speed);
     const visitedBuildings = useGameStore((state) => state.game.visitedBuildings);
 
+    // Get vehicle swap state to adjust hint height
+    const easterEggState = useEasterEggState();
+    const isTransJakarta = easterEggState.vehicleSwapped;
+
     const [currentHint, setCurrentHint] = useState<string | null>(null);
     const [opacity, setOpacity] = useState(0);
     const [yOffset, setYOffset] = useState(0);
+    const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Define hints with conditions
     const hints: Hint[] = [
@@ -61,13 +75,25 @@ export const InWorldHints = memo(function InWorldHints() {
             .sort((a, b) => a.priority - b.priority)[0];
 
         if (activeHint && activeHint.text !== currentHint) {
+            // Cancel pending fade-out timeout to avoid stale clears
+            if (fadeTimeoutRef.current) {
+                clearTimeout(fadeTimeoutRef.current);
+                fadeTimeoutRef.current = null;
+            }
             setCurrentHint(activeHint.text);
             setOpacity(1);
         } else if (!activeHint && currentHint) {
             // Fade out
             setOpacity(0);
-            setTimeout(() => setCurrentHint(null), 500);
+            fadeTimeoutRef.current = setTimeout(() => setCurrentHint(null), 500);
         }
+
+        // Cleanup on unmount
+        return () => {
+            if (fadeTimeoutRef.current) {
+                clearTimeout(fadeTimeoutRef.current);
+            }
+        };
     }, [engineOn, playerSpeed, visitedBuildings.length]);
 
     // Floating animation
@@ -77,8 +103,12 @@ export const InWorldHints = memo(function InWorldHints() {
 
     if (!currentHint) return null;
 
+    // TransJakarta bus is taller (scale 5 vs 3), so raise hints higher
+    // Bajaj: +4 above player, TransJakarta: +8 above player
+    const hintHeight = isTransJakarta ? 8 : 4;
+
     return (
-        <group position={[playerPosition.x, playerPosition.y + 4 + yOffset, playerPosition.z]}>
+        <group position={[playerPosition.x, playerPosition.y + hintHeight + yOffset, playerPosition.z]}>
             {/* Background pill */}
             <mesh position={[0, 0, -0.1]}>
                 <planeGeometry args={[4, 0.6]} />
