@@ -1,10 +1,11 @@
 /**
  * Mobile Touch Controls Component
  * D-pad for vehicle control on mobile devices
+ * Supports both touch (mobile) and mouse (desktop testing) with duplicate prevention
  * @module components/UI/MobileControls
  */
 
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../../stores/gameStore';
 import './MobileControls.css';
 
@@ -17,10 +18,24 @@ function simulateKey(key: string, type: 'keydown' | 'keyup') {
 
 /**
  * Mobile-only touch controls for vehicle movement
+ * Uses touch detection to prevent duplicate events on touch devices
  */
 export const MobileControls = memo(function MobileControls() {
     const showMobileControls = useGameStore((state) => state.ui.showMobileControls);
     const activeKeys = useRef<Set<string>>(new Set());
+
+    // Track if device supports touch to prevent duplicate touch+mouse events
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+    // Detect touch device on first touch
+    useEffect(() => {
+        const handleFirstTouch = () => {
+            setIsTouchDevice(true);
+            window.removeEventListener('touchstart', handleFirstTouch);
+        };
+        window.addEventListener('touchstart', handleFirstTouch, { passive: true });
+        return () => window.removeEventListener('touchstart', handleFirstTouch);
+    }, []);
 
     // Handle touch start
     const handleTouchStart = useCallback((key: string) => {
@@ -37,6 +52,19 @@ export const MobileControls = memo(function MobileControls() {
             simulateKey(key, 'keyup');
         }
     }, []);
+
+    // Mouse handlers - only fire if NOT a touch device
+    const handleMouseDown = useCallback((key: string) => {
+        if (!isTouchDevice) {
+            handleTouchStart(key);
+        }
+    }, [isTouchDevice, handleTouchStart]);
+
+    const handleMouseUp = useCallback((key: string) => {
+        if (!isTouchDevice) {
+            handleTouchEnd(key);
+        }
+    }, [isTouchDevice, handleTouchEnd]);
 
     // Clean up on unmount
     useEffect(() => {
@@ -57,9 +85,9 @@ export const MobileControls = memo(function MobileControls() {
                     className="dpad-btn dpad-up"
                     onTouchStart={() => handleTouchStart('ArrowUp')}
                     onTouchEnd={() => handleTouchEnd('ArrowUp')}
-                    onMouseDown={() => handleTouchStart('ArrowUp')}
-                    onMouseUp={() => handleTouchEnd('ArrowUp')}
-                    onMouseLeave={() => handleTouchEnd('ArrowUp')}
+                    onMouseDown={() => handleMouseDown('ArrowUp')}
+                    onMouseUp={() => handleMouseUp('ArrowUp')}
+                    onMouseLeave={() => handleMouseUp('ArrowUp')}
                     onContextMenu={(e) => e.preventDefault()}
                 >
                     ▲
@@ -69,9 +97,9 @@ export const MobileControls = memo(function MobileControls() {
                         className="dpad-btn dpad-left"
                         onTouchStart={() => handleTouchStart('ArrowLeft')}
                         onTouchEnd={() => handleTouchEnd('ArrowLeft')}
-                        onMouseDown={() => handleTouchStart('ArrowLeft')}
-                        onMouseUp={() => handleTouchEnd('ArrowLeft')}
-                        onMouseLeave={() => handleTouchEnd('ArrowLeft')}
+                        onMouseDown={() => handleMouseDown('ArrowLeft')}
+                        onMouseUp={() => handleMouseUp('ArrowLeft')}
+                        onMouseLeave={() => handleMouseUp('ArrowLeft')}
                         onContextMenu={(e) => e.preventDefault()}
                     >
                         ◀
@@ -81,9 +109,9 @@ export const MobileControls = memo(function MobileControls() {
                         className="dpad-btn dpad-right"
                         onTouchStart={() => handleTouchStart('ArrowRight')}
                         onTouchEnd={() => handleTouchEnd('ArrowRight')}
-                        onMouseDown={() => handleTouchStart('ArrowRight')}
-                        onMouseUp={() => handleTouchEnd('ArrowRight')}
-                        onMouseLeave={() => handleTouchEnd('ArrowRight')}
+                        onMouseDown={() => handleMouseDown('ArrowRight')}
+                        onMouseUp={() => handleMouseUp('ArrowRight')}
+                        onMouseLeave={() => handleMouseUp('ArrowRight')}
                         onContextMenu={(e) => e.preventDefault()}
                     >
                         ▶
@@ -93,9 +121,9 @@ export const MobileControls = memo(function MobileControls() {
                     className="dpad-btn dpad-down"
                     onTouchStart={() => handleTouchStart('ArrowDown')}
                     onTouchEnd={() => handleTouchEnd('ArrowDown')}
-                    onMouseDown={() => handleTouchStart('ArrowDown')}
-                    onMouseUp={() => handleTouchEnd('ArrowDown')}
-                    onMouseLeave={() => handleTouchEnd('ArrowDown')}
+                    onMouseDown={() => handleMouseDown('ArrowDown')}
+                    onMouseUp={() => handleMouseUp('ArrowDown')}
+                    onMouseLeave={() => handleMouseUp('ArrowDown')}
                     onContextMenu={(e) => e.preventDefault()}
                 >
                     ▼
@@ -105,11 +133,11 @@ export const MobileControls = memo(function MobileControls() {
             {/* Action button (honk) */}
             <button
                 className="action-btn"
-                onTouchStart={() => simulateKey('KeyH', 'keydown')}
-                onTouchEnd={() => simulateKey('KeyH', 'keyup')}
-                onMouseDown={() => simulateKey('KeyH', 'keydown')}
-                onMouseUp={() => simulateKey('KeyH', 'keyup')}
-                onMouseLeave={() => simulateKey('KeyH', 'keyup')}
+                onTouchStart={() => simulateKey('Space', 'keydown')}
+                onTouchEnd={() => simulateKey('Space', 'keyup')}
+                onMouseDown={() => !isTouchDevice && simulateKey('Space', 'keydown')}
+                onMouseUp={() => !isTouchDevice && simulateKey('Space', 'keyup')}
+                onMouseLeave={() => !isTouchDevice && simulateKey('Space', 'keyup')}
                 onContextMenu={(e) => e.preventDefault()}
             >
                 🔊

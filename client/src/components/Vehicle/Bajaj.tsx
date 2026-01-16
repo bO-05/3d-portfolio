@@ -6,7 +6,7 @@
  * @module components/Vehicle/Bajaj
  */
 
-import { memo, useRef, useEffect, useState, useSyncExternalStore } from 'react';
+import { memo, useRef, useEffect, useState, useSyncExternalStore, useMemo } from 'react';
 import { useBox } from '@react-three/cannon';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
@@ -84,8 +84,9 @@ export const Bajaj = memo(function Bajaj() {
   const bajajModel = useGLTF('/models/vehicles/bajaj.glb');
   const tjModel = useGLTF('/models/vehicles/TJ.glb');
 
-  // Select current model
+  // Select current model and memoize clone to prevent new objects every render
   const currentScene = isTransJakarta ? tjModel.scene : bajajModel.scene;
+  const clonedScene = useMemo(() => currentScene.clone(), [currentScene]);
 
   // Calculate Y offset once model is loaded
   useEffect(() => {
@@ -238,7 +239,7 @@ export const Bajaj = memo(function Bajaj() {
         onPointerOut={() => { document.body.style.cursor = 'auto'; }}
       >
         <primitive
-          object={currentScene.clone()}
+          object={clonedScene}
           scale={isTransJakarta ? 2 : 3}
         />
 

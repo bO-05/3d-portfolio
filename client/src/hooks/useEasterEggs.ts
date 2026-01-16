@@ -141,8 +141,18 @@ function activateWheelie() {
 }
 
 // Called to update circle tracking based on player position
+// Throttled to 200ms to reduce unnecessary trig calculations
+const CIRCLE_TRACK_THROTTLE = 200;
+let lastCircleTrackTime = 0;
+
 export function updateCircleTracking(px: number, pz: number) {
     const now = Date.now();
+
+    // Throttle updates to every 200ms
+    if (now - lastCircleTrackTime < CIRCLE_TRACK_THROTTLE) {
+        return;
+    }
+    lastCircleTrackTime = now;
 
     // Calculate distance from music studio center
     const dx = px - MUSIC_STUDIO_CENTER.x;
@@ -303,8 +313,8 @@ export function useEasterEggs() {
                 return;
             }
 
-            // Register honk for wheelie detection
-            if (e.code === 'KeyH') {
+            // Register honk for wheelie detection (Spacebar is honk)
+            if (e.code === 'Space') {
                 registerHonk();
             }
 

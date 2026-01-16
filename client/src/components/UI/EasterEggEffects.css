@@ -292,3 +292,26 @@
         font-size: 24px;
     }
 }
+
+/* Accessibility: Reduce motion for confetti and wheelie animations */
+@media (prefers-reduced-motion: reduce) {
+    .confetti-particle {
+        animation: none;
+        opacity: 1;
+        transform: translateY(50vh);
+    }
+    
+    .confetti-text {
+        animation: none;
+        opacity: 1;
+    }
+    
+    .wheelie-indicator {
+        animation: none;
+        opacity: 1;
+    }
+    
+    .wheelie-emoji {
+        animation: none;
+    }
+}

@@ -230,7 +230,7 @@ SESSION 3 - Imagen 4 via Fal.ai (Textures):
   3. grass: "Seamless interlocking grass texture, simple, flat lighting, game texture"
 - Save as '.webp' in public/textures/
 
-END: 6 .glb files (5 buildings + 2 vehicle), 3 textures ready
+END: 7 .glb files (5 buildings + 2 vehicles), 3 textures ready
 TEST:
 - Open each .glb in https://gltf-viewer.donmccurdy.com/
 - Verify: <15MB each, textures embedded, no broken materials
