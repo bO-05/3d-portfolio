@@ -86,6 +86,7 @@ export const MobileControls = memo(function MobileControls() {
                     className="dpad-btn dpad-up"
                     onTouchStart={() => handleTouchStart('ArrowUp')}
                     onTouchEnd={() => handleTouchEnd('ArrowUp')}
+                    onTouchCancel={() => handleTouchEnd('ArrowUp')}
                     onMouseDown={() => handleMouseDown('ArrowUp')}
                     onMouseUp={() => handleMouseUp('ArrowUp')}
                     onMouseLeave={() => handleMouseUp('ArrowUp')}
@@ -98,6 +99,7 @@ export const MobileControls = memo(function MobileControls() {
                         className="dpad-btn dpad-left"
                         onTouchStart={() => handleTouchStart('ArrowLeft')}
                         onTouchEnd={() => handleTouchEnd('ArrowLeft')}
+                        onTouchCancel={() => handleTouchEnd('ArrowLeft')}
                         onMouseDown={() => handleMouseDown('ArrowLeft')}
                         onMouseUp={() => handleMouseUp('ArrowLeft')}
                         onMouseLeave={() => handleMouseUp('ArrowLeft')}
@@ -110,6 +112,7 @@ export const MobileControls = memo(function MobileControls() {
                         className="dpad-btn dpad-right"
                         onTouchStart={() => handleTouchStart('ArrowRight')}
                         onTouchEnd={() => handleTouchEnd('ArrowRight')}
+                        onTouchCancel={() => handleTouchEnd('ArrowRight')}
                         onMouseDown={() => handleMouseDown('ArrowRight')}
                         onMouseUp={() => handleMouseUp('ArrowRight')}
                         onMouseLeave={() => handleMouseUp('ArrowRight')}
@@ -122,6 +125,7 @@ export const MobileControls = memo(function MobileControls() {
                     className="dpad-btn dpad-down"
                     onTouchStart={() => handleTouchStart('ArrowDown')}
                     onTouchEnd={() => handleTouchEnd('ArrowDown')}
+                    onTouchCancel={() => handleTouchEnd('ArrowDown')}
                     onMouseDown={() => handleMouseDown('ArrowDown')}
                     onMouseUp={() => handleMouseUp('ArrowDown')}
                     onMouseLeave={() => handleMouseUp('ArrowDown')}
@@ -136,6 +140,7 @@ export const MobileControls = memo(function MobileControls() {
                 className="action-btn"
                 onTouchStart={() => handleTouchStart('Space')}
                 onTouchEnd={() => handleTouchEnd('Space')}
+                onTouchCancel={() => handleTouchEnd('Space')}
                 onMouseDown={() => handleMouseDown('Space')}
                 onMouseUp={() => handleMouseUp('Space')}
                 onMouseLeave={() => handleMouseUp('Space')}

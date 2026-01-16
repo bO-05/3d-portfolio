@@ -5,7 +5,7 @@
  * @module components/UI/InWorldHints
  */
 
-import { memo, useState, useEffect, useSyncExternalStore } from 'react';
+import { memo, useState, useEffect, useSyncExternalStore, useRef } from 'react';
 import { Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useGameStore } from '../../stores/gameStore';
@@ -38,6 +38,7 @@ export const InWorldHints = memo(function InWorldHints() {
     const [currentHint, setCurrentHint] = useState<string | null>(null);
     const [opacity, setOpacity] = useState(0);
     const [yOffset, setYOffset] = useState(0);
+    const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Define hints with conditions
     const hints: Hint[] = [
@@ -74,13 +75,25 @@ export const InWorldHints = memo(function InWorldHints() {
             .sort((a, b) => a.priority - b.priority)[0];
 
         if (activeHint && activeHint.text !== currentHint) {
+            // Cancel pending fade-out timeout to avoid stale clears
+            if (fadeTimeoutRef.current) {
+                clearTimeout(fadeTimeoutRef.current);
+                fadeTimeoutRef.current = null;
+            }
             setCurrentHint(activeHint.text);
             setOpacity(1);
         } else if (!activeHint && currentHint) {
             // Fade out
             setOpacity(0);
-            setTimeout(() => setCurrentHint(null), 500);
+            fadeTimeoutRef.current = setTimeout(() => setCurrentHint(null), 500);
         }
+
+        // Cleanup on unmount
+        return () => {
+            if (fadeTimeoutRef.current) {
+                clearTimeout(fadeTimeoutRef.current);
+            }
+        };
     }, [engineOn, playerSpeed, visitedBuildings.length]);
 
     // Floating animation
