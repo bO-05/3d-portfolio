@@ -81,7 +81,7 @@ export function usePerformanceGate(options: PerformanceGateOptions = {}) {
 
         hasDegraded.current = true;
         console.log(`[Performance] Reduced quality to ${newQuality} due to low FPS (${Math.round(avgFPS)})`);
-    }, [autoUpdate, calculateAverageFPS, currentQuality, gl.shadowMap, options, updateSettings]);
+    }, [autoUpdate, calculateAverageFPS, currentQuality, gl, options, updateSettings]);
 
     useEffect(() => {
         startTime.current = performance.now();

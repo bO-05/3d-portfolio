@@ -341,7 +341,7 @@ TEST:
 - Progressive enhancement with device detection
 - Rollback procedure documented
 
-```
+```text
 START: All features complete
 DO:
 PHASE 1 - Safety Infrastructure:

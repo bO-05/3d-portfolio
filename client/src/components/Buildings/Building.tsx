@@ -58,7 +58,7 @@ export const Building = memo(function Building({
             groupRef.current.position.y = position[1] + offsetY;
             console.log(`[Building] ${buildingId}: minY=${minY.toFixed(2)}, offsetY=${offsetY.toFixed(2)}`);
         }
-    }, [modelPath, position, buildingId]);
+    }, [modelPath, position, buildingId, scale]);
 
     // Hover handlers
     const handlePointerOver = useCallback((e: ThreeEvent<PointerEvent>) => {
