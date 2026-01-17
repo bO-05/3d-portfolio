@@ -7,7 +7,7 @@
 import { memo, useEffect, useRef } from 'react';
 import { Perf } from 'r3f-perf';
 import { useThree } from '@react-three/fiber';
-import { trackFPS } from '../../lib/posthog';
+import { trackFPS } from '../../lib/analytics';
 
 /**
  * Check if debug mode is enabled via URL param

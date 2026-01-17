@@ -7,7 +7,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useGameStore } from '../stores/gameStore';
-import { trackPerformanceDegraded } from '../lib/posthog';
+import { trackPerformanceDegraded } from '../lib/analytics';
 
 const FPS_THRESHOLD = 25; // Below this, we reduce quality
 const SAMPLE_DURATION = 5000; // 5 seconds of monitoring

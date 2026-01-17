@@ -39,19 +39,28 @@ export function useContextRecovery() {
     const handleContextRestored = useCallback(() => {
         console.log('[WebGL] Context restored, reloading...');
 
-        setState(prev => ({
+        // Use sessionStorage as source of truth (persists across reloads)
+        const STORAGE_KEY = 'webglRecoveryAttempts';
+        const currentAttempts = parseInt(sessionStorage.getItem(STORAGE_KEY) || '0', 10);
+        const newAttempts = currentAttempts + 1;
+        sessionStorage.setItem(STORAGE_KEY, String(newAttempts));
+
+        // Update React state for in-session UI
+        setState({
             contextLost: false,
-            recoveryAttempts: prev.recoveryAttempts + 1,
-        }));
+            recoveryAttempts: newAttempts,
+        });
 
         // Safest recovery is full page reload
         // This ensures all GPU resources are properly re-initialized
-        if (state.recoveryAttempts < MAX_RECOVERY_ATTEMPTS) {
+        if (newAttempts < MAX_RECOVERY_ATTEMPTS) {
             window.location.reload();
         } else {
             console.error('[WebGL] Max recovery attempts reached');
+            // Clear for next session
+            sessionStorage.removeItem(STORAGE_KEY);
         }
-    }, [state.recoveryAttempts]);
+    }, []);
 
     useEffect(() => {
         const canvas = gl.domElement;

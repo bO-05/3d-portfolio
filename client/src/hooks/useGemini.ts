@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { trackAIChat } from '../lib/posthog';
+import { trackAIChat } from '../lib/analytics';
 import { captureError } from '../lib/sentry';
 import { projects } from '../utils/projectsData';
 

@@ -35,7 +35,6 @@ export default defineConfig({
                     'three-core': ['three'],
                     'three-r3f': ['@react-three/fiber', '@react-three/drei'],
                     'physics': ['@react-three/cannon'],
-                    'analytics': ['posthog-js', '@sentry/react'],
                     'audio': ['howler'],
                 },
             },
@@ -43,6 +42,19 @@ export default defineConfig({
         target: 'esnext',
         minify: 'esbuild',
         sourcemap: true,
+        modulePreload: {
+            resolveDependencies(_filename, deps, _context) {
+                const chunksToIgnore = [
+                    'three-core',
+                    'three-r3f',
+                    'physics',
+                    'SceneContainer'
+                ];
+                return deps.filter(dep => {
+                    return !chunksToIgnore.some(chunkName => dep.includes(chunkName));
+                });
+            },
+        },
     },
     server: {
         port: 5173,

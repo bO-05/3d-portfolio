@@ -12,7 +12,7 @@ import { ThreeEvent } from '@react-three/fiber';
 import { Box3, Vector3, Group } from 'three';
 import type { Mesh } from 'three';
 import { useGameStore } from '../../stores/gameStore';
-import { trackBuildingEntered } from '../../lib/posthog';
+import { trackBuildingEntered } from '../../lib/analytics';
 
 interface BuildingProps {
     /** Unique building identifier */
