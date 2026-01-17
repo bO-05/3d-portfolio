@@ -6,7 +6,7 @@
 import { memo } from 'react';
 import { useProgress } from '@react-three/drei';
 import { useGameStore } from '../../stores/gameStore';
-import { trackAssetsLoaded } from '../../lib/posthog';
+import { trackAssetsLoaded } from '../../lib/analytics';
 import { useEffect, useRef } from 'react';
 
 /**

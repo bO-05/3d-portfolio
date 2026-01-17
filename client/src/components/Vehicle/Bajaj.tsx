@@ -174,7 +174,7 @@ export const Bajaj = memo(function Bajaj() {
 
     // Update model position with wheelie tilt
     // TransJakarta needs extra Y offset due to different model origin
-    const vehicleYOffset = isTransJakarta ? yOffset + 2.5 : yOffset + 0.5;
+    const vehicleYOffset = isTransJakarta ? yOffset + 0.2 : yOffset + 0.5;
     if (modelRef.current) {
       modelRef.current.position.set(px, vehicleYOffset, pz);
       modelRef.current.rotation.set(-wheelieTilt, rotationY.current + Math.PI, 0);

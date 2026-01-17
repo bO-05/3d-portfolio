@@ -7,7 +7,7 @@
 import { memo, useEffect, useRef } from 'react';
 import { Perf } from 'r3f-perf';
 import { useThree } from '@react-three/fiber';
-import { trackFPS } from '../../lib/posthog';
+import { trackFPS } from '../../lib/analytics';
 
 /**
  * Check if debug mode is enabled via URL param
@@ -25,7 +25,6 @@ function isDebugMode(): boolean {
 export const PerformanceMonitor = memo(function PerformanceMonitor() {
     const { gl } = useThree();
     const lastSampleTime = useRef(performance.now());
-    const frameCountRef = useRef(0);
     const fpsHistoryRef = useRef<number[]>([]);
 
     // Sample FPS and send to PostHog every 10 seconds

@@ -87,78 +87,99 @@ export const MobileControls = memo(function MobileControls() {
         };
     }, []);
 
+    // Release all keys when controls are hidden to prevent stuck inputs
+    useEffect(() => {
+        if (!showMobileControls) {
+            const keysToRelease = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
+            keysToRelease.forEach(key => {
+                if (activeKeys.current.has(key)) {
+                    activeKeys.current.delete(key);
+                    simulateKey(key, 'keyup');
+                }
+            });
+        }
+    }, [showMobileControls]);
+
     if (!showMobileControls) return null;
 
     return (
         <div className="mobile-controls">
             {/* D-pad */}
-            <div className="dpad">
+            {/* Left Hand: Steering */}
+            <div className="steering-controls">
                 <button
-                    className="dpad-btn dpad-up"
-                    onTouchStart={() => handleTouchStart('ArrowUp')}
-                    onTouchEnd={() => handleTouchEnd('ArrowUp')}
-                    onTouchCancel={() => handleTouchEnd('ArrowUp')}
-                    onMouseDown={() => handleMouseDown('ArrowUp')}
-                    onMouseUp={() => handleMouseUp('ArrowUp')}
-                    onMouseLeave={() => handleMouseUp('ArrowUp')}
+                    className="dpad-btn dpad-left"
+                    aria-label="Turn Left"
+                    onTouchStart={() => handleTouchStart('ArrowLeft')}
+                    onTouchEnd={() => handleTouchEnd('ArrowLeft')}
+                    onTouchCancel={() => handleTouchEnd('ArrowLeft')}
+                    onMouseDown={() => handleMouseDown('ArrowLeft')}
+                    onMouseUp={() => handleMouseUp('ArrowLeft')}
+                    onMouseLeave={() => handleMouseUp('ArrowLeft')}
                     onContextMenu={(e) => e.preventDefault()}
                 >
-                    ▲
+                    ◀
                 </button>
-                <div className="dpad-row">
-                    <button
-                        className="dpad-btn dpad-left"
-                        onTouchStart={() => handleTouchStart('ArrowLeft')}
-                        onTouchEnd={() => handleTouchEnd('ArrowLeft')}
-                        onTouchCancel={() => handleTouchEnd('ArrowLeft')}
-                        onMouseDown={() => handleMouseDown('ArrowLeft')}
-                        onMouseUp={() => handleMouseUp('ArrowLeft')}
-                        onMouseLeave={() => handleMouseUp('ArrowLeft')}
-                        onContextMenu={(e) => e.preventDefault()}
-                    >
-                        ◀
-                    </button>
-                    <div className="dpad-center" />
-                    <button
-                        className="dpad-btn dpad-right"
-                        onTouchStart={() => handleTouchStart('ArrowRight')}
-                        onTouchEnd={() => handleTouchEnd('ArrowRight')}
-                        onTouchCancel={() => handleTouchEnd('ArrowRight')}
-                        onMouseDown={() => handleMouseDown('ArrowRight')}
-                        onMouseUp={() => handleMouseUp('ArrowRight')}
-                        onMouseLeave={() => handleMouseUp('ArrowRight')}
-                        onContextMenu={(e) => e.preventDefault()}
-                    >
-                        ▶
-                    </button>
-                </div>
                 <button
-                    className="dpad-btn dpad-down"
-                    onTouchStart={() => handleTouchStart('ArrowDown')}
-                    onTouchEnd={() => handleTouchEnd('ArrowDown')}
-                    onTouchCancel={() => handleTouchEnd('ArrowDown')}
-                    onMouseDown={() => handleMouseDown('ArrowDown')}
-                    onMouseUp={() => handleMouseUp('ArrowDown')}
-                    onMouseLeave={() => handleMouseUp('ArrowDown')}
+                    className="dpad-btn dpad-right"
+                    aria-label="Turn Right"
+                    onTouchStart={() => handleTouchStart('ArrowRight')}
+                    onTouchEnd={() => handleTouchEnd('ArrowRight')}
+                    onTouchCancel={() => handleTouchEnd('ArrowRight')}
+                    onMouseDown={() => handleMouseDown('ArrowRight')}
+                    onMouseUp={() => handleMouseUp('ArrowRight')}
+                    onMouseLeave={() => handleMouseUp('ArrowRight')}
                     onContextMenu={(e) => e.preventDefault()}
                 >
-                    ▼
+                    ▶
                 </button>
             </div>
 
-            {/* Action button (honk) - uses same handlers to track activeKeys for cleanup */}
-            <button
-                className="action-btn"
-                onTouchStart={() => handleTouchStart('Space')}
-                onTouchEnd={() => handleTouchEnd('Space')}
-                onTouchCancel={() => handleTouchEnd('Space')}
-                onMouseDown={() => handleMouseDown('Space')}
-                onMouseUp={() => handleMouseUp('Space')}
-                onMouseLeave={() => handleMouseUp('Space')}
-                onContextMenu={(e) => e.preventDefault()}
-            >
-                🔊
-            </button>
+            {/* Right Hand: Action (Gas, Brake, Horn) */}
+            <div className="action-controls">
+                <div className="gas-brake-group">
+                    <button
+                        className="dpad-btn dpad-up"
+                        aria-label="Accelerate"
+                        onTouchStart={() => handleTouchStart('ArrowUp')}
+                        onTouchEnd={() => handleTouchEnd('ArrowUp')}
+                        onTouchCancel={() => handleTouchEnd('ArrowUp')}
+                        onMouseDown={() => handleMouseDown('ArrowUp')}
+                        onMouseUp={() => handleMouseUp('ArrowUp')}
+                        onMouseLeave={() => handleMouseUp('ArrowUp')}
+                        onContextMenu={(e) => e.preventDefault()}
+                    >
+                        ▲
+                    </button>
+                    <button
+                        className="dpad-btn dpad-down"
+                        aria-label="Brake / Reverse"
+                        onTouchStart={() => handleTouchStart('ArrowDown')}
+                        onTouchEnd={() => handleTouchEnd('ArrowDown')}
+                        onTouchCancel={() => handleTouchEnd('ArrowDown')}
+                        onMouseDown={() => handleMouseDown('ArrowDown')}
+                        onMouseUp={() => handleMouseUp('ArrowDown')}
+                        onMouseLeave={() => handleMouseUp('ArrowDown')}
+                        onContextMenu={(e) => e.preventDefault()}
+                    >
+                        ▼
+                    </button>
+                </div>
+
+                <button
+                    className="action-btn"
+                    aria-label="Honk Horn"
+                    onTouchStart={() => handleTouchStart('Space')}
+                    onTouchEnd={() => handleTouchEnd('Space')}
+                    onTouchCancel={() => handleTouchEnd('Space')}
+                    onMouseDown={() => handleMouseDown('Space')}
+                    onMouseUp={() => handleMouseUp('Space')}
+                    onMouseLeave={() => handleMouseUp('Space')}
+                    onContextMenu={(e) => e.preventDefault()}
+                >
+                    🔊
+                </button>
+            </div>
         </div>
     );
 });

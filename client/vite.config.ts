@@ -2,7 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
 import compression from 'vite-plugin-compression';
-import path from 'path';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -21,22 +25,36 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            '@': path.resolve(__dirname, './src'),
+            '@': resolve(__dirname, './src'),
         },
     },
     build: {
         rollupOptions: {
             output: {
                 manualChunks: {
-                    'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
+                    'three-core': ['three'],
+                    'three-r3f': ['@react-three/fiber', '@react-three/drei'],
                     'physics': ['@react-three/cannon'],
-                    'analytics': ['posthog-js', '@sentry/react'],
+                    'audio': ['howler'],
                 },
             },
         },
         target: 'esnext',
         minify: 'esbuild',
         sourcemap: true,
+        modulePreload: {
+            resolveDependencies(_filename, deps, _context) {
+                const chunksToIgnore = [
+                    'three-core',
+                    'three-r3f',
+                    'physics',
+                    'SceneContainer'
+                ];
+                return deps.filter(dep => {
+                    return !chunksToIgnore.some(chunkName => dep.includes(chunkName));
+                });
+            },
+        },
     },
     server: {
         port: 5173,

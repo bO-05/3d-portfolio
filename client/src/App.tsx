@@ -3,8 +3,7 @@
  * Sets up the 3D canvas with React Three Fiber
  */
 
-import { Suspense, useEffect, lazy } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Suspense, useEffect, lazy, useState, ComponentType } from 'react';
 import { useGameStore } from './stores/gameStore';
 import { LoadingScreen } from './components/UI/LoadingScreen';
 import { VisitorCounter } from './components/UI/VisitorCounter';
@@ -15,9 +14,8 @@ import { JournalModal } from './components/UI/JournalModal';
 import { OnboardingOverlay } from './components/UI/OnboardingOverlay';
 import { AchievementToast } from './components/UI/AchievementToast';
 import { EasterEggEffects } from './components/UI/EasterEggEffects';
-import { Experience } from './components/Experience';
 
-// Lazy load overlays for performance
+
 const ProjectModal = lazy(() => import('./components/UI/ProjectModal'));
 const ChatOverlay = lazy(() => import('./components/UI/ChatOverlay'));
 
@@ -42,10 +40,26 @@ export function App() {
     const showModal = useGameStore((state) => state.ui.showModal);
     const showChat = useGameStore((state) => state.ui.showChat);
 
+    // Lazy-loaded SceneContainer - only imported after requestIdleCallback
+    const [SceneContainer, setSceneContainer] = useState<ComponentType | null>(null);
+
     // Set initial time of day and mobile detection
     useEffect(() => {
         setTimeOfDay(getTimeOfDay());
         setMobileControls(window.innerWidth < 768);
+
+        // Defer 3D scene loading until main thread is idle
+        const loadScene = () => {
+            import('./components/SceneContainer').then((module) => {
+                setSceneContainer(() => module.default);
+            });
+        };
+
+        if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(loadScene, { timeout: 3000 });
+        } else {
+            setTimeout(loadScene, 1000);
+        }
 
         // Update time every minute
         const interval = setInterval(() => {
@@ -67,19 +81,11 @@ export function App() {
     return (
         <>
             {isLoading && <LoadingScreen />}
-            <Canvas
-                shadows
-                camera={{ position: [0, 15, 12], fov: 50 }}
-                gl={{
-                    antialias: true,
-                    powerPreference: 'high-performance',
-                }}
-                dpr={[1, 2]}
-            >
+            {SceneContainer && (
                 <Suspense fallback={null}>
-                    <Experience />
+                    <SceneContainer />
                 </Suspense>
-            </Canvas>
+            )}
 
             {/* HUD - Visitor counter */}
             {!isLoading && <VisitorCounter />}

@@ -7,7 +7,7 @@
 import { memo, useRef } from 'react';
 import { useBox } from '@react-three/cannon';
 import { useFrame } from '@react-three/fiber';
-import type { Mesh, Group } from 'three';
+import type { Mesh } from 'three';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import { useGameStore } from '../../stores/gameStore';
 
@@ -19,7 +19,6 @@ const STEER_TORQUE = 50;
  * Demonstrates the physics setup for the future vehicle
  */
 export const TestCube = memo(function TestCube() {
-    const meshRef = useRef<Group>(null);
     const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
     const setPlayerSpeed = useGameStore((state) => state.setPlayerSpeed);
     const keyboard = useKeyboard();
@@ -52,13 +51,12 @@ export const TestCube = memo(function TestCube() {
     });
 
     useFrame(() => {
-        // Calculate speed from velocity
-        const [vx, , vz] = velocity.current;
+        const [vx = 0, , vz = 0] = velocity.current;
         const speed = Math.sqrt(vx * vx + vz * vz);
         setPlayerSpeed(speed);
 
         // Update player position in store
-        const [px, py, pz] = position.current;
+        const [px = 0, py = 0, pz = 0] = position.current;
         setPlayerPosition({ x: px, y: py, z: pz });
 
         // Apply forces based on keyboard input
@@ -66,8 +64,8 @@ export const TestCube = memo(function TestCube() {
         const [qx, qy, qz, qw] = rotation.current;
 
         // Calculate forward vector (simplified - assumes mostly Y-axis rotation)
-        const forwardX = 2 * (qx * qz + qw * qy);
-        const forwardZ = 1 - 2 * (qx * qx + qy * qy);
+        const forwardX = 2 * ((qx ?? 0) * (qz ?? 0) + (qw ?? 1) * (qy ?? 0));
+        const forwardZ = 1 - 2 * ((qx ?? 0) * (qx ?? 0) + (qy ?? 0) * (qy ?? 0));
 
         // Apply engine force
         let enginePower = 0;

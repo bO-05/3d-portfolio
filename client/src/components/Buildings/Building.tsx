@@ -12,7 +12,7 @@ import { ThreeEvent } from '@react-three/fiber';
 import { Box3, Vector3, Group } from 'three';
 import type { Mesh } from 'three';
 import { useGameStore } from '../../stores/gameStore';
-import { trackBuildingEntered } from '../../lib/posthog';
+import { trackBuildingEntered } from '../../lib/analytics';
 
 interface BuildingProps {
     /** Unique building identifier */
@@ -58,7 +58,7 @@ export const Building = memo(function Building({
             groupRef.current.position.y = position[1] + offsetY;
             console.log(`[Building] ${buildingId}: minY=${minY.toFixed(2)}, offsetY=${offsetY.toFixed(2)}`);
         }
-    }, [modelPath, position, buildingId]);
+    }, [modelPath, position, buildingId, scale]);
 
     // Hover handlers
     const handlePointerOver = useCallback((e: ThreeEvent<PointerEvent>) => {

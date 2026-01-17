@@ -8,7 +8,7 @@ import { memo, useRef, useEffect, Suspense } from 'react';
 import { Physics } from '@react-three/cannon';
 import { useProgress } from '@react-three/drei';
 import { useGameStore } from '../stores/gameStore';
-import { trackVehicleMoved } from '../lib/posthog';
+import { trackVehicleMoved } from '../lib/analytics';
 
 // Scene components
 import { Ground } from './Scene/Ground';

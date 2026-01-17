@@ -7,7 +7,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useGameStore } from '../stores/gameStore';
-import { trackPerformanceDegraded } from '../lib/posthog';
+import { trackPerformanceDegraded } from '../lib/analytics';
 
 const FPS_THRESHOLD = 25; // Below this, we reduce quality
 const SAMPLE_DURATION = 5000; // 5 seconds of monitoring
@@ -81,7 +81,7 @@ export function usePerformanceGate(options: PerformanceGateOptions = {}) {
 
         hasDegraded.current = true;
         console.log(`[Performance] Reduced quality to ${newQuality} due to low FPS (${Math.round(avgFPS)})`);
-    }, [autoUpdate, calculateAverageFPS, currentQuality, gl.shadowMap, options, updateSettings]);
+    }, [autoUpdate, calculateAverageFPS, currentQuality, gl, options, updateSettings]);
 
     useEffect(() => {
         startTime.current = performance.now();
