@@ -67,7 +67,7 @@ createRoot(rootElement).render(
                         maxWidth: '100%',
                         overflow: 'auto',
                     }}>
-                        {error?.message}
+                        {(error as Error)?.message}
                     </pre>
                     <button
                         onClick={() => window.location.reload()}

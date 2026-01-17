@@ -25,7 +25,6 @@ function isDebugMode(): boolean {
 export const PerformanceMonitor = memo(function PerformanceMonitor() {
     const { gl } = useThree();
     const lastSampleTime = useRef(performance.now());
-    const frameCountRef = useRef(0);
     const fpsHistoryRef = useRef<number[]>([]);
 
     // Sample FPS and send to PostHog every 10 seconds

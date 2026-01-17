@@ -69,9 +69,9 @@ DO:
    - Physics collision for all props
 
 3. Add road markings to Ground.tsx:
-   - Center line (dashed) ❌ TODO
-   - Crosswalks near intersections ❌ TODO
-   - "JALAN PORTFOLIO" painted text ❌ TODO
+   - Center line (dashed) ⏸️ DEFERRED (for future game map)
+   - Crosswalks near intersections ⏸️ DEFERRED
+   - "JALAN PORTFOLIO" painted text ⏸️ DEFERRED
 
 END: Street feels alive, not empty ✅
 TEST: 
@@ -186,7 +186,7 @@ TEST:
 
 ---
 
-## Task 5-Neo.3 — Progress HUD & Journal
+## Task 5-Neo.3 — Progress HUD & Journal ✅ COMPLETE
 
 **UX:** Always show user their progress
 
@@ -219,7 +219,7 @@ TEST:
 
 ---
 
-## Task 5-Neo.4 — Onboarding & Tutorial
+## Task 5-Neo.4 — Onboarding & Tutorial ✅ COMPLETE
 
 **First impression:** User knows what to do in <10 seconds
 
@@ -335,48 +335,50 @@ TEST:
 
 **Critical:** Must hit Lighthouse >85 mobile
 
+**Risk Mitigations Added:**
+- Self-hosted Draco decoders (no Google CDN dependency)
+- WebGL context loss recovery handlers
+- Progressive enhancement with device detection
+- Rollback procedure documented
+
 ```
 START: All features complete
 DO:
-1. Bundle Analysis:
-   - npm run build
-   - Analyze dist/bundle-analysis.html
-   - Identify largest chunks
-   - Further code-split if needed
+PHASE 1 - Safety Infrastructure:
+1. Copy Draco decoders to public/draco/ (self-hosted)
+2. Create src/lib/dracoLoader.ts with error handling
+3. Create src/hooks/useContextRecovery.ts for WebGL crash recovery
 
-2. Texture Optimization:
-   - Convert all textures to WebP
-   - Max resolution: 1024x1024
-   - Use texture compression (basis/ktx2)
+PHASE 2 - Model Optimization (~98MB → <5MB):
+4. Install gltf-pipeline globally
+5. Draco compress all 7 GLB files (buildings + vehicles)
+6. Keep original models as backup until verified
+7. Update useGLTF calls to use Draco loader
 
-3. Model Optimization:
-   - Draco compress all GLB files
-   - Target <100KB per building model
-   - Use LOD for distant objects
+PHASE 3 - Mobile Optimizations:
+8. Add mobile detection in App.tsx
+9. Disable shadows on low-end devices
+10. Cap DPR at 1.5 on mobile
+11. Reduce shadow map 2048→1024 (512 on mobile)
+12. Disable antialiasing on mobile
 
-4. Rendering Optimization:
-   - Enable frustum culling
-   - Implement distance-based quality:
-     - Far objects: no shadows
-     - Very far: simplified geometry
-   - Use <PerformanceMonitor> adaptive quality
+PHASE 4 - Bundle Optimization:
+13. Split three.js chunks in vite.config.ts
+14. Run build and analyze bundle
 
-5. Mobile-Specific:
-   - Disable shadows entirely on mobile
-   - Reduce particle counts 50%
-   - Lower texture resolution
-   - Disable post-processing
+PHASE 5 - Verification:
+15. Run Lighthouse audit (target >85)
+16. Test on real mobile device (>30 FPS)
+17. Test WebGL context loss/recovery
+18. Verify no console errors across browsers
 
-6. Lazy Loading:
-   - Defer non-critical components
-   - Progressive model loading
-   - Skeleton/placeholder during load
-
-END: Lighthouse mobile >85
+END: Lighthouse mobile >85, robust across devices
 TEST:
 - Run Lighthouse 3 times, average >85
 - Test on real mobile device: >30 FPS
 - Bundle gzipped <3MB
+- Test context loss recovery
+- Verify on iOS Safari, Samsung Internet
 ```
 
 ---

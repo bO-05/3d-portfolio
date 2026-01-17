@@ -21,6 +21,9 @@ import { Experience } from './components/Experience';
 const ProjectModal = lazy(() => import('./components/UI/ProjectModal'));
 const ChatOverlay = lazy(() => import('./components/UI/ChatOverlay'));
 
+// Mobile detection at module level (runs once)
+const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768;
+
 /**
  * Determine time of day based on current hour
  */
@@ -68,13 +71,14 @@ export function App() {
         <>
             {isLoading && <LoadingScreen />}
             <Canvas
-                shadows
+                shadows={!isMobileDevice}
                 camera={{ position: [0, 15, 12], fov: 50 }}
                 gl={{
-                    antialias: true,
+                    antialias: !isMobileDevice,
                     powerPreference: 'high-performance',
+                    failIfMajorPerformanceCaveat: false, // Allow software renderer
                 }}
-                dpr={[1, 2]}
+                dpr={isMobileDevice ? [1, 1.5] : [1, 2]}
             >
                 <Suspense fallback={null}>
                     <Experience />

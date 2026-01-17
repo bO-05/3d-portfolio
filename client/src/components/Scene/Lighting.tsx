@@ -16,6 +16,10 @@ const BUILDING_LIGHTS = [
     { position: [0, 5, -35] as [number, number, number] },   // warung
 ];
 
+// Mobile detection for shadow map optimization
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+const SHADOW_MAP_SIZE = isMobile ? 512 : 1024;
+
 /**
  * Get lighting config based on time of day
  */
@@ -77,7 +81,7 @@ export const Lighting = memo(function Lighting() {
                 intensity={config.directionalIntensity}
                 color={config.directionalColor}
                 castShadow
-                shadow-mapSize={[2048, 2048]}
+                shadow-mapSize={[SHADOW_MAP_SIZE, SHADOW_MAP_SIZE]}
                 shadow-camera-near={0.5}
                 shadow-camera-far={50}
                 shadow-camera-left={-30}
