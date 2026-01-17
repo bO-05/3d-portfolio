@@ -362,21 +362,21 @@ PHASE 2.5 - Lazy Loading & Deferred Analytics:
 11. Add lightweight error boundary for initial render
 
 PHASE 3 - Mobile Optimizations:
-8. Add mobile detection in App.tsx
-9. Disable shadows on low-end devices
-10. Cap DPR at 1.5 on mobile
-11. Reduce shadow map 2048→1024 (512 on mobile)
-12. Disable antialiasing on mobile
+12. Add mobile detection in App.tsx
+13. Disable shadows on low-end devices
+14. Cap DPR at 1.5 on mobile
+15. Reduce shadow map 2048→1024 (512 on mobile)
+16. Disable antialiasing on mobile
 
 PHASE 4 - Bundle Optimization:
-13. Split three.js chunks in vite.config.ts
-14. Run build and analyze bundle
+17. Split three.js chunks in vite.config.ts
+18. Run build and analyze bundle
 
 PHASE 5 - Verification:
-15. Run Lighthouse audit (target >85)
-16. Test on real mobile device (>30 FPS)
-17. Test WebGL context loss/recovery
-18. Verify no console errors across browsers
+19. Run Lighthouse audit (target >85)
+20. Test on real mobile device (>30 FPS)
+21. Test WebGL context loss/recovery
+22. Verify no console errors across browsers
 
 END: Lighthouse mobile >85, robust across devices
 TEST:
