@@ -87,6 +87,19 @@ export const MobileControls = memo(function MobileControls() {
         };
     }, []);
 
+    // Release all keys when controls are hidden to prevent stuck inputs
+    useEffect(() => {
+        if (!showMobileControls) {
+            const keysToRelease = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
+            keysToRelease.forEach(key => {
+                if (activeKeys.current.has(key)) {
+                    activeKeys.current.delete(key);
+                    simulateKey(key, 'keyup');
+                }
+            });
+        }
+    }, [showMobileControls]);
+
     if (!showMobileControls) return null;
 
     return (
@@ -96,6 +109,7 @@ export const MobileControls = memo(function MobileControls() {
             <div className="steering-controls">
                 <button
                     className="dpad-btn dpad-left"
+                    aria-label="Turn Left"
                     onTouchStart={() => handleTouchStart('ArrowLeft')}
                     onTouchEnd={() => handleTouchEnd('ArrowLeft')}
                     onTouchCancel={() => handleTouchEnd('ArrowLeft')}
@@ -108,6 +122,7 @@ export const MobileControls = memo(function MobileControls() {
                 </button>
                 <button
                     className="dpad-btn dpad-right"
+                    aria-label="Turn Right"
                     onTouchStart={() => handleTouchStart('ArrowRight')}
                     onTouchEnd={() => handleTouchEnd('ArrowRight')}
                     onTouchCancel={() => handleTouchEnd('ArrowRight')}
@@ -125,6 +140,7 @@ export const MobileControls = memo(function MobileControls() {
                 <div className="gas-brake-group">
                     <button
                         className="dpad-btn dpad-up"
+                        aria-label="Accelerate"
                         onTouchStart={() => handleTouchStart('ArrowUp')}
                         onTouchEnd={() => handleTouchEnd('ArrowUp')}
                         onTouchCancel={() => handleTouchEnd('ArrowUp')}
@@ -137,6 +153,7 @@ export const MobileControls = memo(function MobileControls() {
                     </button>
                     <button
                         className="dpad-btn dpad-down"
+                        aria-label="Brake / Reverse"
                         onTouchStart={() => handleTouchStart('ArrowDown')}
                         onTouchEnd={() => handleTouchEnd('ArrowDown')}
                         onTouchCancel={() => handleTouchEnd('ArrowDown')}
@@ -151,6 +168,7 @@ export const MobileControls = memo(function MobileControls() {
 
                 <button
                     className="action-btn"
+                    aria-label="Honk Horn"
                     onTouchStart={() => handleTouchStart('Space')}
                     onTouchEnd={() => handleTouchEnd('Space')}
                     onTouchCancel={() => handleTouchEnd('Space')}

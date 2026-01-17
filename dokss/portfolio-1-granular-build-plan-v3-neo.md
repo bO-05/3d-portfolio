@@ -349,11 +349,17 @@ PHASE 1 - Safety Infrastructure:
 2. Create src/lib/dracoLoader.ts with error handling
 3. Create src/hooks/useContextRecovery.ts for WebGL crash recovery
 
-PHASE 2 - Model Optimization (~98MB → <5MB):
+PHASE 2 - Model Optimization (98.5MB → 1.28MB / 98.7% reduction):
 4. Install gltf-pipeline globally
 5. Draco compress all 7 GLB files (buildings + vehicles)
 6. Keep original models as backup until verified
 7. Update useGLTF calls to use Draco loader
+
+PHASE 2.5 - Lazy Loading & Deferred Analytics:
+8. Implement `requestIdleCallback` for heavy scripts (PostHog, Sentry)
+9. Extract 3D scene to lazy-loaded `SceneContainer`
+10. Disable `modulePreload` for 3D chunks in Vite config
+11. Add lightweight error boundary for initial render
 
 PHASE 3 - Mobile Optimizations:
 8. Add mobile detection in App.tsx
