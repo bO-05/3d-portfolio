@@ -39,6 +39,8 @@ export const Building = memo(function Building({
 }: BuildingProps) {
     const { scene } = useGLTF(modelPath);
     const groupRef = useRef<Group>(null);
+    const spotlightTargetRef = useRef<Group>(null);
+    const dialogueTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const clonedScene = scene.clone();
     const [hovered, setHovered] = useState(false);
 
@@ -66,6 +68,15 @@ export const Building = memo(function Building({
         }
     }, [modelPath, position, buildingId, scale]);
 
+    // Cleanup dialogue timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (dialogueTimeoutRef.current) {
+                clearTimeout(dialogueTimeoutRef.current);
+            }
+        };
+    }, []);
+
     // Hover handlers
     const handlePointerOver = useCallback((e: ThreeEvent<PointerEvent>) => {
         e.stopPropagation();
@@ -89,7 +100,11 @@ export const Building = memo(function Building({
         if (parkedAt !== buildingId) {
             console.log(`[Building] Cannot enter ${buildingId} - not parked here`);
             setDialogue("I need to park in the designated zone to enter.");
-            setTimeout(clearDialogue, 3000);
+            // Clear any existing timeout before setting new one
+            if (dialogueTimeoutRef.current) {
+                clearTimeout(dialogueTimeoutRef.current);
+            }
+            dialogueTimeoutRef.current = setTimeout(clearDialogue, 3000);
             return;
         }
 
@@ -142,20 +157,27 @@ export const Building = memo(function Building({
             {/* Night spotlight - positioned in FRONT of building (world coords) */}
             {/* Uses building rotation to calculate front direction */}
             {isNight && (
-                <spotLight
-                    position={[
-                        position[0] + Math.sin(rotation[1]) * 8,  // Offset in X based on rotation
-                        10,                                        // Height above ground
-                        position[2] + Math.cos(rotation[1]) * 8   // Offset in Z based on rotation
-                    ]}
-                    target-position={[position[0], 0, position[2]]}
-                    angle={0.6}
-                    penumbra={0.5}
-                    intensity={50}
-                    distance={35}
-                    color="#ffcc66"
-                    castShadow
-                />
+                <>
+                    {/* Spotlight target group */}
+                    <group
+                        ref={spotlightTargetRef}
+                        position={[position[0], 0, position[2]]}
+                    />
+                    <spotLight
+                        position={[
+                            position[0] + Math.sin(rotation[1]) * 8,
+                            10,
+                            position[2] + Math.cos(rotation[1]) * 8
+                        ]}
+                        target={spotlightTargetRef.current || undefined}
+                        angle={0.6}
+                        penumbra={0.5}
+                        intensity={50}
+                        distance={35}
+                        color="#ffcc66"
+                        castShadow
+                    />
+                </>
             )}
         </>
     );

@@ -218,7 +218,7 @@ function activateConfetti() {
 
 // Check Jakarta Sky condition (called externally)
 // FIXED: Unlocks at ANY time of day once 5 buildings visited
-export function checkJakartaSky(timeOfDay: string, visitedCount: number) {
+export function checkJakartaSky(visitedCount: number) {
     // Only require visiting all 5 buildings, works at any time of day
     const shouldActivate = visitedCount >= 5;
 
@@ -249,14 +249,13 @@ export function useEasterEggs() {
     const textTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Subscribe to game state for Jakarta Sky check
-    const timeOfDay = useGameStore((state) => state.game.timeOfDay);
     const visitedBuildings = useGameStore((state) => state.game.visitedBuildings);
     const playerPosition = useGameStore((state) => state.player.position);
 
-    // Check Jakarta Sky condition
+    // Check Jakarta Sky condition (no longer depends on timeOfDay)
     useEffect(() => {
-        checkJakartaSky(timeOfDay, visitedBuildings.length);
-    }, [timeOfDay, visitedBuildings.length]);
+        checkJakartaSky(visitedBuildings.length);
+    }, [visitedBuildings.length]);
 
     // Update circle tracking based on position
     useEffect(() => {

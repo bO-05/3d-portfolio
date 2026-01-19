@@ -280,6 +280,11 @@ export const Minimap = memo(function Minimap() {
          * Main render function
          */
         const render = (timestamp: number): void => {
+            // Stop render loop if minimap is hidden
+            if (!showMinimap) {
+                return;
+            }
+
             // Frame rate limiting
             if (timestamp - lastFrameTimeRef.current < FRAME_INTERVAL) {
                 rafIdRef.current = requestAnimationFrame(render);
@@ -379,7 +384,7 @@ export const Minimap = memo(function Minimap() {
                 cancelAnimationFrame(rafIdRef.current);
             }
         };
-    }, [getCanvasSize]);
+    }, [getCanvasSize, showMinimap]);
 
     if (!showMinimap) return null;
 

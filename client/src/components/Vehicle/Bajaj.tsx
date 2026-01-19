@@ -75,6 +75,7 @@ export const Bajaj = memo(function Bajaj() {
   const modelRef = useRef<Group>(null);
   const [yOffset, setYOffset] = useState(0);
   const currentSpeed = useRef(0);
+  const lastParkedAt = useRef<string | null>(null); // Track last parked state to avoid redundant updates
 
   // Spotlight target ref
   const spotlightTargetRef = useRef<Object3D>(null);
@@ -155,7 +156,11 @@ export const Bajaj = memo(function Bajaj() {
           }
         }
       }
-      setParkedAt(foundParking);
+      // Only update store if parking state changed
+      if (foundParking !== lastParkedAt.current) {
+        lastParkedAt.current = foundParking;
+        setParkedAt(foundParking);
+      }
     }
 
     const absSpeed = Math.abs(currentSpeed.current);
