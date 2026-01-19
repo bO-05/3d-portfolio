@@ -46,6 +46,12 @@ export const Building = memo(function Building({
     const markBuildingVisited = useGameStore((state) => state.markBuildingVisited);
     const sessionStart = useGameStore((state) => state.game.sessionStart);
     const visitedBuildings = useGameStore((state) => state.game.visitedBuildings);
+    const timeOfDay = useGameStore((state) => state.game.timeOfDay);
+    const parkedAt = useGameStore((state) => state.game.parkedAt);
+    const setDialogue = useGameStore((state) => state.setDialogue);
+    const clearDialogue = useGameStore((state) => state.clearDialogue);
+
+    const isNight = timeOfDay === 'night' || timeOfDay === 'evening';
 
     // Calculate bounding box and adjust Y position
     useEffect(() => {
@@ -64,8 +70,12 @@ export const Building = memo(function Building({
     const handlePointerOver = useCallback((e: ThreeEvent<PointerEvent>) => {
         e.stopPropagation();
         setHovered(true);
-        document.body.style.cursor = 'pointer';
-    }, []);
+        if (parkedAt !== buildingId) {
+            document.body.style.cursor = 'not-allowed';
+        } else {
+            document.body.style.cursor = 'pointer';
+        }
+    }, [parkedAt, buildingId]);
 
     const handlePointerOut = useCallback(() => {
         setHovered(false);
@@ -75,11 +85,19 @@ export const Building = memo(function Building({
     // Click handler
     const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
         e.stopPropagation();
+
+        if (parkedAt !== buildingId) {
+            console.log(`[Building] Cannot enter ${buildingId} - not parked here`);
+            setDialogue("I need to park in the designated zone to enter.");
+            setTimeout(clearDialogue, 3000);
+            return;
+        }
+
         console.log(`[Building] Clicked: ${buildingId}`);
         enterBuilding(buildingId);
         markBuildingVisited(buildingId);
         trackBuildingEntered(buildingId, sessionStart, visitedBuildings);
-    }, [buildingId, enterBuilding, markBuildingVisited, sessionStart, visitedBuildings]);
+    }, [buildingId, enterBuilding, markBuildingVisited, sessionStart, visitedBuildings, parkedAt, setDialogue, clearDialogue]);
 
     // Static physics body for collision
     const [physicsRef] = useBox<Mesh>(() => ({
@@ -120,6 +138,25 @@ export const Building = memo(function Building({
             >
                 <primitive object={clonedScene} />
             </group>
+
+            {/* Night spotlight - positioned in FRONT of building (world coords) */}
+            {/* Uses building rotation to calculate front direction */}
+            {isNight && (
+                <spotLight
+                    position={[
+                        position[0] + Math.sin(rotation[1]) * 8,  // Offset in X based on rotation
+                        10,                                        // Height above ground
+                        position[2] + Math.cos(rotation[1]) * 8   // Offset in Z based on rotation
+                    ]}
+                    target-position={[position[0], 0, position[2]]}
+                    angle={0.6}
+                    penumbra={0.5}
+                    intensity={50}
+                    distance={35}
+                    color="#ffcc66"
+                    castShadow
+                />
+            )}
         </>
     );
 });

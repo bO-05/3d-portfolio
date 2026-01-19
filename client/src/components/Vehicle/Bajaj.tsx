@@ -15,6 +15,7 @@ import type { Group } from 'three';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import { useGameStore } from '../../stores/gameStore';
 import { getEasterEggState, subscribeToEasterEggs } from '../../hooks/useEasterEggs';
+import { BUILDINGS_CONFIG } from '../Buildings/Buildings';
 
 // Preload both vehicle models
 useGLTF.preload('/models/vehicles/bajaj.glb');
@@ -56,8 +57,10 @@ function useEasterEggState() {
  */
 export const Bajaj = memo(function Bajaj() {
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
+  const setPlayerRotation = useGameStore((state) => state.setPlayerRotation);
   const setPlayerSpeed = useGameStore((state) => state.setPlayerSpeed);
   const setBoosting = useGameStore((state) => state.setBoosting);
+  const setParkedAt = useGameStore((state) => state.setParkedAt); // Add setParkedAt
   const isBoosting = useGameStore((state) => state.vehicle.isBoosting);
   const engineOn = useGameStore((state) => state.vehicle.engineOn);
 
@@ -135,7 +138,24 @@ export const Bajaj = memo(function Bajaj() {
 
     if (timeSinceLastUpdate > POSITION_UPDATE_INTERVAL || dx > POSITION_CHANGE_THRESHOLD || dz > POSITION_CHANGE_THRESHOLD) {
       setPlayerPosition({ x: px, y: py, z: pz });
+      setPlayerRotation(rotationY.current);
       lastPositionUpdate.current = { time: now, pos: [px, py, pz] };
+
+      // Check parking spots (simple distance check)
+      let foundParking: string | null = null;
+      // Only allow parking if speed is very low (stopped)
+      if (Math.abs(currentSpeed.current) < 0.5) {
+        for (const building of BUILDINGS_CONFIG) {
+          const [bx, _, bz] = building.parkingPos;
+          const dist = Math.sqrt(Math.pow(px - bx, 2) + Math.pow(pz - bz, 2));
+          // Radius 3 units for parking
+          if (dist < 3) {
+            foundParking = building.id;
+            break;
+          }
+        }
+      }
+      setParkedAt(foundParking);
     }
 
     const absSpeed = Math.abs(currentSpeed.current);
@@ -255,21 +275,52 @@ export const Bajaj = memo(function Bajaj() {
         />
 
         {/* Headlight (only show for Bajaj) */}
-        {!isTransJakarta && (
+        {/* Headlights for both vehicles */}
+        {(
           <>
-            <mesh position={[0.01, -0.53, 2.8]}>
-              <sphereGeometry args={[0.15, 12, 12]} />
-              <meshStandardMaterial
-                color={headlightsOn ? "#ffffcc" : "#555555"}
-                emissive={headlightsOn ? "#ffff00" : "#000000"}
-                emissiveIntensity={headlightsOn ? 7 : 0}
-              />
-            </mesh>
+            {/* Physical headlight meshes (different positions for TJ vs Bajaj) */}
+            {/* Bajaj Mesh */}
+            {!isTransJakarta && (
+              <mesh position={[0.01, -0.53, 2.8]}>
+                <sphereGeometry args={[0.15, 12, 12]} />
+                <meshStandardMaterial
+                  color={headlightsOn ? "#ffffcc" : "#696666ff"}
+                  emissive={headlightsOn ? "#ffff00" : "#bebdbdff"}
+                  emissiveIntensity={headlightsOn ? 7 : 0}
+                />
+              </mesh>
+            )}
 
-            <mesh position={[0.01, -0.53, 2.6]} rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.2, 0.15, 0.25, 12]} />
-              <meshStandardMaterial color="#1a1a1a" metalness={0.9} roughness={0.1} />
-            </mesh>
+            {/* TransJakarta Mesh - BRIGHT front headlight bar */}
+            {isTransJakarta && (
+              <>
+                {/* Left headlight */}
+                <mesh position={[-1.275, -1.1, 4.5]}>
+                  <sphereGeometry args={[0.09, 12, 12]} />
+                  <meshStandardMaterial
+                    color={headlightsOn ? "#ffffcc" : "#696666ff"}
+                    emissive={headlightsOn ? "#ffff00" : "#bebdbdff"}
+                    emissiveIntensity={headlightsOn ? 15 : 0}
+                  />
+                </mesh>
+                {/* Right headlight */}
+                <mesh position={[1.275, -1.1, 4.5]}>
+                  <sphereGeometry args={[0.09, 12, 12]} />
+                  <meshStandardMaterial
+                    color={headlightsOn ? "#ffffcc" : "#696666ff"}
+                    emissive={headlightsOn ? "#ffff00" : "#bebdbdff"}
+                    emissiveIntensity={headlightsOn ? 15 : 0}
+                  />
+                </mesh>
+              </>
+            )}
+
+            {!isTransJakarta && (
+              <mesh position={[0.01, -0.53, 2.6]} rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[0.2, 0.15, 0.25, 12]} />
+                <meshStandardMaterial color="#c4c0c0ff" metalness={0.9} roughness={0.1} />
+              </mesh>
+            )}
 
             {headlightsOn && (
               <>
@@ -284,11 +335,11 @@ export const Bajaj = memo(function Bajaj() {
                       spot.target = spotlightTargetRef.current;
                     }
                   }}
-                  position={[0, -0.53, 2.8]}
-                  angle={0.5}
+                  position={isTransJakarta ? [0, 1.5, 5.5] : [0, -0.53, 2.8]}
+                  angle={isTransJakarta ? 0.6 : 0.5}
                   penumbra={0.8}
-                  intensity={8}
-                  distance={20}
+                  intensity={isTransJakarta ? 15 : 8}
+                  distance={isTransJakarta ? 30 : 20}
                   color="#fffee0"
                   castShadow
                   shadow-mapSize-width={256}
@@ -301,11 +352,11 @@ export const Bajaj = memo(function Bajaj() {
                       spot.target = spotlightTargetRef.current;
                     }
                   }}
-                  position={[0, -0.53, 2.8]}
-                  angle={0.8}
+                  position={isTransJakarta ? [0, 1.5, 5.5] : [0, -0.53, 2.8]}
+                  angle={isTransJakarta ? 0.9 : 0.8}
                   penumbra={0.8}
-                  intensity={6}
-                  distance={25}
+                  intensity={isTransJakarta ? 12 : 6}
+                  distance={isTransJakarta ? 35 : 25}
                   color="#fffee0"
                   castShadow={false}
                 />

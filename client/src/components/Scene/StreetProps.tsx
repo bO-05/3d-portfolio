@@ -48,17 +48,17 @@ function Lamppost({ position }: { position: [number, number, number] }) {
                 <meshStandardMaterial
                     color="#ffffcc"
                     emissive="#ffaa00"
-                    emissiveIntensity={55}
+                    emissiveIntensity={100}
                     toneMapped={false}
                 />
             </mesh>
 
-            {/* 360° PointLight */}
+            {/* 360° PointLight - 3x BRIGHTER */}
             <pointLight
                 position={[0, 6.5, 0]}
                 color="#ffcc66"
-                intensity={15}
-                distance={55}
+                intensity={45}
+                distance={75}
                 decay={2}
             />
         </group>

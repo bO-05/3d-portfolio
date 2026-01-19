@@ -217,8 +217,10 @@ function activateConfetti() {
 }
 
 // Check Jakarta Sky condition (called externally)
+// FIXED: Unlocks at ANY time of day once 5 buildings visited
 export function checkJakartaSky(timeOfDay: string, visitedCount: number) {
-    const shouldActivate = timeOfDay === 'day' && visitedCount >= 5;
+    // Only require visiting all 5 buildings, works at any time of day
+    const shouldActivate = visitedCount >= 5;
 
     if (shouldActivate && !easterEggState.jakartaSkyToggleVisible) {
         easterEggState.jakartaSkyToggleVisible = true;

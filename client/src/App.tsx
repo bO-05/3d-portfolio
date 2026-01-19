@@ -10,6 +10,8 @@ import { VisitorCounter } from './components/UI/VisitorCounter';
 import { MobileControls } from './components/UI/MobileControls';
 import { ControlsTooltip } from './components/UI/ControlsTooltip';
 import { ProgressHUD } from './components/UI/ProgressHUD';
+import { Minimap } from './components/UI/Minimap';
+import { SoundToggle } from './components/UI/SoundToggle';
 import { JournalModal } from './components/UI/JournalModal';
 import { OnboardingOverlay } from './components/UI/OnboardingOverlay';
 import { AchievementToast } from './components/UI/AchievementToast';
@@ -98,6 +100,12 @@ export function App() {
 
             {/* Progress HUD - top right */}
             {!isLoading && <ProgressHUD />}
+
+            {/* Sound toggle button - top right below HUD */}
+            {!isLoading && <SoundToggle />}
+
+            {/* Minimap - bottom left */}
+            {!isLoading && <Minimap />}
 
             {/* Journal Modal */}
             <JournalModal />

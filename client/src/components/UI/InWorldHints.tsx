@@ -105,7 +105,7 @@ export const InWorldHints = memo(function InWorldHints() {
 
     // TransJakarta bus is taller (scale 5 vs 3), so raise hints higher
     // Bajaj: +4 above player, TransJakarta: +8 above player
-    const hintHeight = isTransJakarta ? 8 : 4;
+    const hintHeight = isTransJakarta ? 6.5 : 4;
 
     return (
         <group position={[playerPosition.x, playerPosition.y + hintHeight + yOffset, playerPosition.z]}>

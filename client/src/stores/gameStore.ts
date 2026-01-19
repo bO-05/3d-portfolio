@@ -31,6 +31,8 @@ interface GameState {
     secretsFound: number;
     totalSecrets: number;
     sessionStart: number;
+    /** ID of the building the player is currently parked at, or null */
+    parkedAt: string | null;
 }
 
 interface UIState {
@@ -61,6 +63,7 @@ interface GameStore {
     // Player state
     player: PlayerState;
     setPlayerPosition: (pos: Vector3) => void;
+    setPlayerRotation: (rotation: number) => void;
     setPlayerSpeed: (speed: number) => void;
     enterBuilding: (buildingId: string) => void;
     exitBuilding: () => void;
@@ -72,6 +75,7 @@ interface GameStore {
     setTimeOfDay: (time: 'day' | 'evening' | 'night') => void;
     markBuildingVisited: (buildingId: string) => void;
     foundSecret: () => void;
+    setParkedAt: (buildingId: string | null) => void;
 
     // UI state
     ui: UIState;
@@ -95,6 +99,7 @@ interface GameStore {
     // Settings
     settings: SettingsState;
     updateSettings: (newSettings: Partial<SettingsState>) => void;
+    toggleSound: () => void;
 
     // Vehicle state
     vehicle: VehicleState;
@@ -121,6 +126,11 @@ export const useGameStore = create<GameStore>((set) => ({
     setPlayerPosition: (pos) =>
         set((state) => ({
             player: { ...state.player, position: pos },
+        })),
+
+    setPlayerRotation: (rotation) =>
+        set((state) => ({
+            player: { ...state.player, rotation },
         })),
 
     setPlayerSpeed: (speed) =>
@@ -153,8 +163,9 @@ export const useGameStore = create<GameStore>((set) => ({
         timeOfDay: 'day',
         visitedBuildings: [],
         secretsFound: 0,
-        totalSecrets: 5,
+        totalSecrets: 6,
         sessionStart: performance.now(),
+        parkedAt: null,
     },
 
     setLoading: (isLoading) =>
@@ -183,6 +194,11 @@ export const useGameStore = create<GameStore>((set) => ({
     foundSecret: () =>
         set((state) => ({
             game: { ...state.game, secretsFound: state.game.secretsFound + 1 },
+        })),
+
+    setParkedAt: (buildingId) =>
+        set((state) => ({
+            game: { ...state.game, parkedAt: buildingId },
         })),
 
     // ─────────────────────────────────────────────────────────────
@@ -271,6 +287,11 @@ export const useGameStore = create<GameStore>((set) => ({
     updateSettings: (newSettings) =>
         set((state) => ({
             settings: { ...state.settings, ...newSettings },
+        })),
+
+    toggleSound: () =>
+        set((state) => ({
+            settings: { ...state.settings, soundEnabled: !state.settings.soundEnabled },
         })),
 
     // ─────────────────────────────────────────────────────────────
