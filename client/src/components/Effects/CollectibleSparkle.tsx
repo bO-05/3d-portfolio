@@ -36,7 +36,6 @@ const SparkleBurst = memo(function SparkleBurst({
     // Pre-allocate arrays (zero GC during animation)
     const positions = useMemo(() => new Float32Array(NUM_PARTICLES * 3), []);
     const velocities = useRef(new Float32Array(NUM_PARTICLES * 3));
-    const opacities = useMemo(() => new Float32Array(NUM_PARTICLES).fill(1), []);
 
     // Initialize velocities (outward burst)
     useEffect(() => {
@@ -69,7 +68,6 @@ const SparkleBurst = memo(function SparkleBurst({
 
         const geometry = pointsRef.current.geometry;
         const posAttr = geometry.attributes.position as THREE.BufferAttribute;
-        const opacityAttr = geometry.attributes.opacity as THREE.BufferAttribute;
 
         // Update each particle
         for (let i = 0; i < NUM_PARTICLES; i++) {
@@ -80,13 +78,9 @@ const SparkleBurst = memo(function SparkleBurst({
             positions[idx] = (positions[idx] ?? 0) + vx * delta;
             positions[idx + 1] = (positions[idx + 1] ?? 0) + vy * delta - 6.25 * delta; // Gravity (6.25 units/sec)
             positions[idx + 2] = (positions[idx + 2] ?? 0) + vz * delta;
-
-            // Fade out
-            opacities[i] = 1 - progress;
         }
 
         posAttr.needsUpdate = true;
-        opacityAttr.needsUpdate = true;
     });
 
     const sparkleColor = useMemo(() => new THREE.Color(color), [color]);
@@ -98,12 +92,6 @@ const SparkleBurst = memo(function SparkleBurst({
                     attach="attributes-position"
                     array={positions}
                     itemSize={3}
-                    count={NUM_PARTICLES}
-                />
-                <bufferAttribute
-                    attach="attributes-opacity"
-                    array={opacities}
-                    itemSize={1}
                     count={NUM_PARTICLES}
                 />
             </bufferGeometry>
