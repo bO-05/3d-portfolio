@@ -77,20 +77,42 @@
         top: 12px;
         right: 12px;
     }
-    
+
     .progress-hud__button {
         padding: 8px 12px;
     }
-    
+
     .progress-hud__stats {
         gap: 12px;
     }
-    
+
     .progress-hud__icon {
         font-size: 14px;
     }
-    
+
     .progress-hud__value {
         font-size: 12px;
+    }
+}
+
+/* Pulse animation when counter changes */
+.progress-hud__value--pulse {
+    animation: progress-pulse 0.3s ease;
+}
+
+@keyframes progress-pulse {
+    0% {
+        transform: scale(1);
+        color: #ffd700;
+    }
+
+    50% {
+        transform: scale(1.2);
+        color: #ffea00;
+    }
+
+    100% {
+        transform: scale(1);
+        color: #ffd700;
     }
 }

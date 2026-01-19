@@ -3,20 +3,40 @@
  * @module components/UI/AchievementToast
  */
 
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState, useRef } from 'react';
 import { useAchievementStore } from '../../stores/achievementStore';
+import { playAchievementSound, resumeAudioContext } from '../../lib/synthSounds';
+import { useGameStore } from '../../stores/gameStore';
 import './AchievementToast.css';
 
 export const AchievementToast = memo(function AchievementToast() {
     const pendingToast = useAchievementStore((state) => state.pendingToast);
     const clearToast = useAchievementStore((state) => state.clearToast);
+    const soundEnabled = useGameStore((state) => state.settings.soundEnabled);
+    const sfxVolume = useGameStore((state) => state.settings.sfxVolume);
     const [visible, setVisible] = useState(false);
     const [currentToast, setCurrentToast] = useState(pendingToast);
+    const lastPlayedToastRef = useRef<string | null>(null);
+
+    // Use refs to read latest audio settings without re-triggering effect
+    const soundEnabledRef = useRef(soundEnabled);
+    const sfxVolumeRef = useRef(sfxVolume);
+    soundEnabledRef.current = soundEnabled;
+    sfxVolumeRef.current = sfxVolume;
 
     useEffect(() => {
         if (pendingToast) {
             setCurrentToast(pendingToast);
             setVisible(true);
+
+            // Play achievement fanfare (only once per toast)
+            const toastId = `${pendingToast.id}-${pendingToast.name}`;
+            if (soundEnabledRef.current && lastPlayedToastRef.current !== toastId) {
+                lastPlayedToastRef.current = toastId;
+                resumeAudioContext()
+                    .then(() => playAchievementSound(sfxVolumeRef.current))
+                    .catch((err) => console.warn('[AchievementToast] Audio context failed:', err));
+            }
 
             // Auto-dismiss after 4 seconds
             const timer = setTimeout(() => {

@@ -3,7 +3,7 @@
  * @module components/UI/ProgressHUD
  */
 
-import { memo } from 'react';
+import { memo, useRef, useState, useEffect } from 'react';
 import { useCollectibleStore } from '../../stores/collectibleStore';
 import { useGameStore } from '../../stores/gameStore';
 import './ProgressHUD.css';
@@ -17,6 +17,40 @@ export const ProgressHUD = memo(function ProgressHUD() {
     const collectedCount = useCollectibleStore((state) => state.collected.size);
     const visitedBuildings = useGameStore((state) => state.game.visitedBuildings);
     const toggleJournal = useGameStore((state) => state.toggleJournal);
+
+    // Animated counter state
+    const prevCollected = useRef(collectedCount);
+    const [displayCount, setDisplayCount] = useState(collectedCount);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const rafIdRef = useRef<number | null>(null);
+
+    // Animate counter when value changes
+    useEffect(() => {
+        if (collectedCount !== prevCollected.current) {
+            setIsAnimating(true);
+            let current = prevCollected.current;
+            const target = collectedCount;
+            const step = () => {
+                current += target > current ? 1 : -1;
+                setDisplayCount(current);
+                if (current !== target) {
+                    rafIdRef.current = requestAnimationFrame(step);
+                } else {
+                    setIsAnimating(false);
+                    rafIdRef.current = null;
+                }
+            };
+            rafIdRef.current = requestAnimationFrame(step);
+            prevCollected.current = collectedCount;
+        }
+
+        return () => {
+            if (rafIdRef.current !== null) {
+                cancelAnimationFrame(rafIdRef.current);
+                rafIdRef.current = null;
+            }
+        };
+    }, [collectedCount]);
 
     const buildingsVisited = visitedBuildings.length;
     const totalProgress = Math.round(
@@ -33,7 +67,9 @@ export const ProgressHUD = memo(function ProgressHUD() {
                     </span>
                     <span className="progress-hud__item">
                         <span className="progress-hud__icon">⭐</span>
-                        <span className="progress-hud__value">{collectedCount}/{TOTAL_COLLECTIBLES}</span>
+                        <span className={`progress-hud__value ${isAnimating ? 'progress-hud__value--pulse' : ''}`}>
+                            {displayCount}/{TOTAL_COLLECTIBLES}
+                        </span>
                     </span>
                 </div>
                 <div className="progress-hud__bar-container">

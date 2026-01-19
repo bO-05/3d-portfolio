@@ -21,6 +21,8 @@ import { FollowCamera } from './Camera/FollowCamera';
 import { PerformanceMonitor } from './Debug/PerformanceMonitor';
 import { CollectibleManager } from './Collectibles/CollectibleManager';
 import { InWorldHints } from './UI/InWorldHints';
+import { CollectibleSparkle } from './Effects/CollectibleSparkle';
+import { DustParticles } from './Effects/DustParticles';
 import { usePerformanceGate } from '../hooks/usePerformanceGate';
 import { useAudio } from '../hooks/useAudio';
 import { useAchievements } from '../hooks/useAchievements';
@@ -45,10 +47,17 @@ export const Experience = memo(function Experience() {
     usePerformanceGate();
 
     // Audio - engine sound with pitch based on speed
-    useAudio();
+    const { playCollect } = useAudio();
 
     // Achievement tracking
     useAchievements();
+
+    // Listen for collectible pickups and play sound
+    useEffect(() => {
+        const handlePickup = () => playCollect();
+        window.addEventListener('collectible:pickup', handlePickup);
+        return () => window.removeEventListener('collectible:pickup', handlePickup);
+    }, [playCollect]);
 
     // Track first vehicle movement
     useEffect(() => {
@@ -106,6 +115,12 @@ export const Experience = memo(function Experience() {
 
             {/* In-world contextual hints */}
             <InWorldHints />
+
+            {/* Collectible pickup sparkle effects */}
+            <CollectibleSparkle />
+
+            {/* Vehicle dust trail particles */}
+            <DustParticles />
         </Physics>
     );
 });

@@ -3,20 +3,40 @@
  * @module components/UI/LoadingScreen
  */
 
-import { memo } from 'react';
+import { memo, useState, useEffect, useRef } from 'react';
 import { useProgress } from '@react-three/drei';
 import { useGameStore } from '../../stores/gameStore';
 import { trackAssetsLoaded } from '../../lib/analytics';
-import { useEffect, useRef } from 'react';
 
 /**
  * Loading screen that displays asset loading progress
  * Automatically hides when loading completes
  */
+
+// Static tips - outside component to avoid recreation
+const TIPS = [
+    "💡 Press E to start the engine",
+    "🏛️ Click buildings to explore projects",
+    "⭐ Collect items hidden around Jakarta",
+    "🎮 Try the Konami code for a surprise!",
+    "🌙 Visit at night for a different vibe",
+    "🚀 Hold Shift to boost your speed",
+];
+
 export const LoadingScreen = memo(function LoadingScreen() {
     const { progress, loaded, total } = useProgress();
     const setLoading = useGameStore((state) => state.setLoading);
     const loadStartRef = useRef(performance.now());
+
+    const [tipIndex, setTipIndex] = useState(0);
+
+    // Cycle tips every 3 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTipIndex(i => (i + 1) % TIPS.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         // Handle case where there are no assets to load (total === 0)
@@ -57,8 +77,7 @@ export const LoadingScreen = memo(function LoadingScreen() {
                 </div>
 
                 <div style={styles.tips}>
-                    <p>💡 Use WASD or Arrow keys to drive</p>
-                    <p>🖱️ Click on buildings to explore</p>
+                    <p style={styles.tipText}>{TIPS[tipIndex]}</p>
                 </div>
             </div>
         </div>
@@ -119,5 +138,10 @@ const styles: Record<string, React.CSSProperties> = {
         fontSize: '0.875rem',
         color: '#666',
         lineHeight: 1.8,
+        minHeight: '2rem',
+    },
+    tipText: {
+        transition: 'opacity 0.3s ease',
+        margin: 0,
     },
 };

@@ -34,6 +34,13 @@ export const ChatOverlay = memo(function ChatOverlay() {
         clearMessages();
     }, [exitBuilding, clearMessages]);
 
+    // Handle click on backdrop (outside modal) to close
+    const handleBackdropClick = useCallback((e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) {
+            handleClose();
+        }
+    }, [handleClose]);
+
     const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
         if (input.trim() && !isLoading) {
@@ -52,7 +59,7 @@ export const ChatOverlay = memo(function ChatOverlay() {
     if (!showChat) return null;
 
     return (
-        <div className="chat-overlay">
+        <div className="chat-overlay" onClick={handleBackdropClick}>
             <div className="chat-container">
                 {/* Header */}
                 <div className="chat-header">

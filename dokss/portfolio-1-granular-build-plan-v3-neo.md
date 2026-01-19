@@ -432,6 +432,168 @@ TEST:
 
 ---
 
+## Task 5-Neo.9 — Real-time Minimap
+
+**Inspiration:** Bruno Simon's portfolio map + RPG game minimaps
+
+**Architecture Decision:** Use Drei `View` component with orthographic camera
+- Single WebGL context (no performance penalty)
+- GPU-accelerated 3D minimap
+- Shares scene resources efficiently
+- Auto-syncs with React state
+
+```text
+START: Polish & Juice complete
+DO:
+1. Create src/components/UI/Minimap.tsx:
+   - Fixed position overlay (bottom-left corner)
+   - Circular or rounded rectangle shape
+   - Semi-transparent background
+   - Border with glowing effect
+
+2. Implement Drei View for map rendering:
+   - Secondary orthographic camera (bird's-eye view)
+   - Height ~50 units above ground, looking down
+   - Frustum sized to show entire playable area
+   - Renders simplified ground/road texture
+
+3. Add map elements:
+   - Player marker (red/orange dot with direction arrow)
+   - Building icons (small colored squares)
+   - Collectible markers (uncollected only, small dots)
+   - Street/road outline
+
+4. Real-time position sync:
+   - Subscribe to gameStore player.position
+   - Update player marker position every frame
+   - Show vehicle rotation/heading direction
+   - Smooth interpolation for marker movement
+
+5. Interactive features (optional):
+   - Click building icon → camera pans to building
+   - Hover shows building name tooltip
+   - Toggle minimap size (M key)
+
+6. Performance considerations:
+   - Use simplified LOD meshes for minimap view
+   - Cull non-essential details (particles, shadows)
+   - Cap minimap render at 30fps if needed
+
+END: Users can navigate the world with spatial awareness
+TEST:
+- Minimap renders without FPS drop
+- Player marker moves in real-time with Bajaj
+- Marker rotation matches vehicle heading
+- Buildings visible as distinct icons
+- Uncollected items shown, collected hidden
+```
+
+### Technical Implementation Notes:
+
+**Drei View Approach:**
+```tsx
+// Outside Canvas, auto-tunneled into WebGL context
+<View className="fixed bottom-4 left-4 w-32 h-32 rounded-lg border-2">
+    <OrthographicCamera makeDefault position={[0, 50, 0]} zoom={5} />
+    <MinimapContent playerPos={playerPosition} />
+</View>
+```
+
+**Player Marker:**
+```tsx
+<mesh position={[playerPos.x, 0.1, playerPos.z]} rotation-y={playerRotation}>
+    <circleGeometry args={[0.5]} />
+    <meshBasicMaterial color="#ff6b35" />
+    {/* Direction arrow */}
+    <mesh position={[0, 0.1, -0.3]}>
+        <coneGeometry args={[0.2, 0.4, 3]} />
+    </mesh>
+</mesh>
+```
+
+---
+
+## Task 5-Neo.10 — Convex Backend Integration
+
+**Purpose:** Cross-device progress sync + Global leaderboard (single-player, no multiplayer)
+
+**Why Convex over localStorage:**
+- Cross-device sync (phone → desktop)
+- Global leaderboard persistence
+- 1M free function calls/month (plenty for portfolio)
+- Type-safe with React integration
+
+```text
+START: Minimap complete, localStorage working
+DO:
+PHASE 1 - Setup:
+1. Install Convex: npm install convex
+2. Initialize project: npx convex init
+3. Create .env with CONVEX_DEPLOYMENT
+4. Add ConvexProvider to App.tsx
+
+PHASE 2 - Schema Design:
+5. Create convex/schema.ts:
+   - players: { visitorId, collectibles[], achievements[], lastSeen }
+   - leaderboard: { visitorId, nickname, speedRunTime, completionPercent }
+
+PHASE 3 - Progress Sync:
+6. Create convex/progress.ts mutations:
+   - syncProgress(visitorId, collectibles, achievements)
+   - getProgress(visitorId) → returns saved state
+7. Modify collectibleStore.ts:
+   - On collect: call syncProgress mutation
+   - On load: query getProgress, merge with local
+8. Same for achievementStore.ts
+
+PHASE 4 - Leaderboard:
+9. Create convex/leaderboard.ts:
+   - submitScore(visitorId, nickname, time, percent)
+   - getTopScores(limit: 10) → sorted by time
+10. Create src/components/UI/Leaderboard.tsx:
+    - Shows top 10 speed run times
+    - Submit score on 100% completion
+    - Accessible from Journal modal
+
+PHASE 5 - Visitor Identity:
+11. Generate anonymous visitorId on first visit
+12. Store in localStorage (survives refresh)
+13. Optional: prompt for nickname on leaderboard submit
+
+END: Progress syncs across devices, global leaderboard live
+TEST:
+- Collect item on desktop, refresh on phone → item still collected
+- Complete speed run → appears on global leaderboard
+- Free tier limits not exceeded (monitor in Convex dashboard)
+```
+
+### Convex Schema:
+```typescript
+// convex/schema.ts
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
+
+export default defineSchema({
+  players: defineTable({
+    visitorId: v.string(),
+    collectibles: v.array(v.string()),
+    achievements: v.array(v.string()),
+    visitedBuildings: v.array(v.string()),
+    lastSeen: v.number(),
+  }).index("by_visitor", ["visitorId"]),
+
+  leaderboard: defineTable({
+    visitorId: v.string(),
+    nickname: v.string(),
+    speedRunTime: v.number(), // milliseconds
+    completionPercent: v.number(),
+    submittedAt: v.number(),
+  }).index("by_time", ["speedRunTime"]),
+});
+```
+
+---
+
 ## 🚦 Phase 5-Neo Gate Checklist
 
 Before proceeding to Phase 6 (Deployment):

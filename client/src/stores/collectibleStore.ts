@@ -88,6 +88,11 @@ export const useCollectibleStore = create<CollectibleState>((set, get) => ({
             // Trigger re-render with same Set reference but new object
             set({ collected: new Set(collected) });
 
+            // Emit event for audio/visual feedback (decoupled from store)
+            window.dispatchEvent(new CustomEvent('collectible:pickup', {
+                detail: { id, total: collected.size }
+            }));
+
             // Deferred save (non-blocking)
             deferredSave(collected, revealedBoxes);
 
