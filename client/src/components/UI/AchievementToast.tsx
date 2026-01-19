@@ -5,11 +5,15 @@
 
 import { memo, useEffect, useState } from 'react';
 import { useAchievementStore } from '../../stores/achievementStore';
+import { playAchievementSound, resumeAudioContext } from '../../lib/synthSounds';
+import { useGameStore } from '../../stores/gameStore';
 import './AchievementToast.css';
 
 export const AchievementToast = memo(function AchievementToast() {
     const pendingToast = useAchievementStore((state) => state.pendingToast);
     const clearToast = useAchievementStore((state) => state.clearToast);
+    const soundEnabled = useGameStore((state) => state.settings.soundEnabled);
+    const sfxVolume = useGameStore((state) => state.settings.sfxVolume);
     const [visible, setVisible] = useState(false);
     const [currentToast, setCurrentToast] = useState(pendingToast);
 
@@ -17,6 +21,12 @@ export const AchievementToast = memo(function AchievementToast() {
         if (pendingToast) {
             setCurrentToast(pendingToast);
             setVisible(true);
+
+            // Play achievement fanfare
+            if (soundEnabled) {
+                resumeAudioContext();
+                playAchievementSound(sfxVolume);
+            }
 
             // Auto-dismiss after 4 seconds
             const timer = setTimeout(() => {
@@ -28,7 +38,7 @@ export const AchievementToast = memo(function AchievementToast() {
 
             return () => clearTimeout(timer);
         }
-    }, [pendingToast, clearToast]);
+    }, [pendingToast, clearToast, soundEnabled, sfxVolume]);
 
     if (!currentToast) return null;
 

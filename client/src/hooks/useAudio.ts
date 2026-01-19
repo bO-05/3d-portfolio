@@ -8,6 +8,7 @@ import { useRef, useCallback, useEffect } from 'react';
 import { Howl } from 'howler';
 import { useGameStore } from '../stores/gameStore';
 import { useKeyboard } from './useKeyboard';
+import { playCollectSound, playAchievementSound, resumeAudioContext } from '../lib/synthSounds';
 
 // Preload sounds - FIXED PATH: /sounds/ (plural)
 const engineSound = new Howl({
@@ -35,6 +36,7 @@ export function useAudio() {
     const engineOn = useGameStore((state) => state.vehicle.engineOn);
     const isBoosting = useGameStore((state) => state.vehicle.isBoosting);
     const soundEnabled = useGameStore((state) => state.settings.soundEnabled);
+    const sfxVolume = useGameStore((state) => state.settings.sfxVolume);
 
     const keyboard = useKeyboard();
 
@@ -61,9 +63,24 @@ export function useAudio() {
         }
     }, [soundEnabled]);
 
-    // Handle engine on/off
+    // Play collectible pickup sound (Web Audio synthesis)
+    const playCollect = useCallback(() => {
+        if (soundEnabled) {
+            playCollectSound(sfxVolume);
+        }
+    }, [soundEnabled, sfxVolume]);
+
+    // Play achievement fanfare (Web Audio synthesis)
+    const playAchievement = useCallback(() => {
+        if (soundEnabled) {
+            playAchievementSound(sfxVolume);
+        }
+    }, [soundEnabled, sfxVolume]);
+
+    // Handle engine on/off + resume audio context on first engine start
     useEffect(() => {
         if (engineOn) {
+            resumeAudioContext(); // Ensure Web Audio is resumed
             playEngine();
         } else {
             stopEngine();
@@ -109,5 +126,5 @@ export function useAudio() {
         };
     }, []);
 
-    return { playEngine, stopEngine, playHonk };
+    return { playEngine, stopEngine, playHonk, playCollect, playAchievement };
 }

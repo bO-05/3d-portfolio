@@ -159,6 +159,14 @@ export const Collectible = memo(function Collectible({
         if (distance < COLLECT_RADIUS && !isCollectingRef.current) {
             isCollectingRef.current = true;
             collect(id);
+
+            // Dispatch sparkle event with position and color (for visual feedback)
+            window.dispatchEvent(new CustomEvent('collectible:sparkle', {
+                detail: {
+                    position: [position[0], position[1], position[2]] as [number, number, number],
+                    color: visual.emissive
+                }
+            }));
         }
 
         // Reset ref when player moves away (allows re-collection after reset)

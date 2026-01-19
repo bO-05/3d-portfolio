@@ -24,12 +24,29 @@ export const FollowCamera = memo(function FollowCamera() {
     const controlsRef = useRef<OrbitControlsImpl>(null);
     const playerPosition = useGameStore((state) => state.player.position);
     const playerSpeed = useGameStore((state) => state.player.speed);
+    const isBoosting = useGameStore((state) => state.vehicle.isBoosting);
     const { camera } = useThree();
 
     const targetPosition = useRef(new Vector3());
+    const shakeOffset = useRef(new Vector3());
 
-    useFrame(() => {
+    useFrame((state) => {
         if (!controlsRef.current) return;
+
+        const time = state.clock.elapsedTime;
+
+        // Smooth oscillating shake when boosting (not jarring random noise)
+        if (isBoosting) {
+            const intensity = 0.08;
+            shakeOffset.current.set(
+                Math.sin(time * 25) * intensity,
+                Math.cos(time * 30) * intensity * 0.5,
+                0
+            );
+        } else {
+            // Ease out shake when not boosting
+            shakeOffset.current.lerp(new Vector3(), 0.15);
+        }
 
         // Always update the orbit target to follow player
         const target = controlsRef.current.target;
@@ -41,8 +58,8 @@ export const FollowCamera = memo(function FollowCamera() {
         if (playerSpeed > 0.5) {
             // Calculate ideal position behind player
             targetPosition.current.set(
-                playerPosition.x,
-                playerPosition.y + CAMERA_HEIGHT,
+                playerPosition.x + shakeOffset.current.x,
+                playerPosition.y + CAMERA_HEIGHT + shakeOffset.current.y,
                 playerPosition.z + CAMERA_DISTANCE
             );
 
@@ -63,7 +80,7 @@ export const FollowCamera = memo(function FollowCamera() {
             minPolarAngle={0.3}
             enableDamping
             dampingFactor={0.05}
-            rotateSpeed={0.5}
+            rotateSpeed={-0.5}
         />
     );
 });

@@ -94,20 +94,29 @@ export const Building = memo(function Building({
 
     return (
         <>
-            {/* Invisible collision box */}
+            {/* Invisible collision box for physics */}
             <mesh ref={physicsRef} visible={false}>
                 <boxGeometry args={[2 * scale, 10 * scale, 2 * scale]} />
             </mesh>
 
-            {/* Visible model with hover/click interactivity */}
+            {/* Invisible interaction hitbox - fixed scale, receives pointer events */}
+            {/* This prevents hover thrashing when visual model scales */}
+            <mesh
+                visible={false}
+                position={[position[0], position[1] + 5 * scale, position[2]]}
+                onPointerOver={handlePointerOver}
+                onPointerOut={handlePointerOut}
+                onClick={handleClick}
+            >
+                <boxGeometry args={[4 * scale, 12 * scale, 4 * scale]} />
+            </mesh>
+
+            {/* Visible model - scales on hover, no pointer events */}
             <group
                 ref={groupRef}
                 position={[position[0], position[1], position[2]]}
                 rotation={rotation}
                 scale={hoverScale}
-                onPointerOver={handlePointerOver}
-                onPointerOut={handlePointerOut}
-                onClick={handleClick}
             >
                 <primitive object={clonedScene} />
             </group>
