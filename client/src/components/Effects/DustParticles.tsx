@@ -30,17 +30,22 @@ export const DustParticles = memo(function DustParticles() {
     const positions = useMemo(() => new Float32Array(MAX_PARTICLES * 3), []);
     const lifetimes = useRef(new Float32Array(MAX_PARTICLES).fill(0));
     const velocities = useRef(new Float32Array(MAX_PARTICLES * 3));
-    const sizes = useMemo(() => new Float32Array(MAX_PARTICLES).fill(0.1), []);
 
     const emitIndex = useRef(0);
     const lastEmitTime = useRef(0);
 
-    // Clamp emitIndex when particleCount changes (mobile/desktop switch)
+    // Clear stale particles when particleCount changes (mobile/desktop switch)
     useEffect(() => {
+        // Clamp emitIndex
         if (emitIndex.current >= particleCount) {
             emitIndex.current = 0;
         }
-    }, [particleCount]);
+        // Clear particles beyond new count to prevent stale pop-in
+        for (let i = particleCount; i < MAX_PARTICLES; i++) {
+            lifetimes.current[i] = 0;
+            positions[i * 3 + 1] = -100; // Hide below ground
+        }
+    }, [particleCount, positions]);
 
     useFrame((state, delta) => {
         if (!pointsRef.current) return;
@@ -65,7 +70,6 @@ export const DustParticles = memo(function DustParticles() {
             velocities.current[idx3 + 2] = (Math.random() - 0.5) * 0.5;
 
             lifetimes.current[idx] = PARTICLE_LIFETIME;
-            sizes[idx] = 0.1 + Math.random() * 0.1;
 
             emitIndex.current = (emitIndex.current + 1) % particleCount;
             lastEmitTime.current = now;
@@ -93,10 +97,6 @@ export const DustParticles = memo(function DustParticles() {
                 if (v0 !== undefined) velocities.current[idx3] = v0 * 0.98;
                 if (v1 !== undefined) velocities.current[idx3 + 1] = v1 * 0.95;
                 if (v2 !== undefined) velocities.current[idx3 + 2] = v2 * 0.98;
-
-                // Grow particle as it ages
-                const currentLifetime = lifetimes.current[i] ?? 0;
-                sizes[i] = 0.1 + (1 - currentLifetime / PARTICLE_LIFETIME) * 0.15;
             } else {
                 // Hide dead particles
                 positions[i * 3 + 1] = -100;
@@ -105,10 +105,7 @@ export const DustParticles = memo(function DustParticles() {
 
         const geometry = pointsRef.current.geometry;
         const posAttr = geometry.attributes.position;
-        const sizeAttr = geometry.attributes.size;
-
         if (posAttr) posAttr.needsUpdate = true;
-        if (sizeAttr) sizeAttr.needsUpdate = true;
     });
 
     return (
@@ -118,12 +115,6 @@ export const DustParticles = memo(function DustParticles() {
                     attach="attributes-position"
                     array={positions}
                     itemSize={3}
-                    count={particleCount}
-                />
-                <bufferAttribute
-                    attach="attributes-size"
-                    array={sizes}
-                    itemSize={1}
                     count={particleCount}
                 />
             </bufferGeometry>
@@ -140,3 +131,4 @@ export const DustParticles = memo(function DustParticles() {
 });
 
 export default DustParticles;
+
