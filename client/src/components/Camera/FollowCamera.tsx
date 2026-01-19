@@ -29,6 +29,7 @@ export const FollowCamera = memo(function FollowCamera() {
 
     const targetPosition = useRef(new Vector3());
     const shakeOffset = useRef(new Vector3());
+    const zeroVector = useRef(new Vector3());
 
     useFrame((state) => {
         if (!controlsRef.current) return;
@@ -45,7 +46,7 @@ export const FollowCamera = memo(function FollowCamera() {
             );
         } else {
             // Ease out shake when not boosting
-            shakeOffset.current.lerp(new Vector3(), 0.15);
+            shakeOffset.current.lerp(zeroVector.current, 0.15);
         }
 
         // Always update the orbit target to follow player

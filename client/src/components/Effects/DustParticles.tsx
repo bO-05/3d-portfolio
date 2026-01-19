@@ -35,10 +35,9 @@ export const DustParticles = memo(function DustParticles() {
     const emitIndex = useRef(0);
     const lastEmitTime = useRef(0);
 
-    useFrame((state) => {
+    useFrame((state, delta) => {
         if (!pointsRef.current) return;
 
-        const delta = state.clock.getDelta();
         const now = state.clock.elapsedTime;
 
         // Emit new particles based on speed

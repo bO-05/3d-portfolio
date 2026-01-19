@@ -12,6 +12,7 @@ const NUM_PARTICLES = 24;
 const PARTICLE_LIFETIME = 0.6; // seconds
 
 interface SparkleInstance {
+    id: string;
     position: [number, number, number];
     color: string;
     startTime: number;
@@ -55,7 +56,7 @@ const SparkleBurst = memo(function SparkleBurst({
         }
     }, [positions]);
 
-    useFrame(() => {
+    useFrame((_, delta) => {
         if (!pointsRef.current) return;
 
         const elapsed = (performance.now() - startTime.current) / 1000;
@@ -76,9 +77,9 @@ const SparkleBurst = memo(function SparkleBurst({
             const vx = velocities.current[idx] ?? 0;
             const vy = velocities.current[idx + 1] ?? 0;
             const vz = velocities.current[idx + 2] ?? 0;
-            positions[idx] = (positions[idx] ?? 0) + vx * 0.016;
-            positions[idx + 1] = (positions[idx + 1] ?? 0) + vy * 0.016 - 0.1; // Gravity
-            positions[idx + 2] = (positions[idx + 2] ?? 0) + vz * 0.016;
+            positions[idx] = (positions[idx] ?? 0) + vx * delta;
+            positions[idx + 1] = (positions[idx + 1] ?? 0) + vy * delta - 6.25 * delta; // Gravity (6.25 units/sec)
+            positions[idx + 2] = (positions[idx + 2] ?? 0) + vz * delta;
 
             // Fade out
             opacities[i] = 1 - progress;
@@ -134,6 +135,7 @@ export const CollectibleSparkle = memo(function CollectibleSparkle() {
             const { position, color } = event.detail;
 
             const newSparkle: SparkleInstance = {
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
                 position,
                 color,
                 startTime: performance.now()
@@ -145,18 +147,18 @@ export const CollectibleSparkle = memo(function CollectibleSparkle() {
         return () => window.removeEventListener('collectible:sparkle', handleSparkle);
     }, []);
 
-    const handleComplete = (index: number) => {
-        setSparkles(prev => prev.filter((_, i) => i !== index));
+    const handleComplete = (id: string) => {
+        setSparkles(prev => prev.filter(s => s.id !== id));
     };
 
     return (
         <>
-            {sparkles.map((sparkle, i) => (
+            {sparkles.map((sparkle) => (
                 <SparkleBurst
-                    key={sparkle.startTime}
+                    key={sparkle.id}
                     position={sparkle.position}
                     color={sparkle.color}
-                    onComplete={() => handleComplete(i)}
+                    onComplete={() => handleComplete(sparkle.id)}
                 />
             ))}
         </>

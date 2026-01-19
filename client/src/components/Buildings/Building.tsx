@@ -41,6 +41,7 @@ export const Building = memo(function Building({
     const groupRef = useRef<Group>(null);
     const clonedScene = scene.clone();
     const [hovered, setHovered] = useState(false);
+    const [yOffset, setYOffset] = useState(0);
 
     const enterBuilding = useGameStore((state) => state.enterBuilding);
     const markBuildingVisited = useGameStore((state) => state.markBuildingVisited);
@@ -55,6 +56,7 @@ export const Building = memo(function Building({
             box.getSize(size);
             const minY = box.min.y;
             const offsetY = -minY;
+            setYOffset(offsetY);
             groupRef.current.position.y = position[1] + offsetY;
             console.log(`[Building] ${buildingId}: minY=${minY.toFixed(2)}, offsetY=${offsetY.toFixed(2)}`);
         }
@@ -102,13 +104,13 @@ export const Building = memo(function Building({
             {/* Invisible interaction hitbox - fixed scale, receives pointer events */}
             {/* This prevents hover thrashing when visual model scales */}
             <mesh
-                visible={false}
-                position={[position[0], position[1] + 5 * scale, position[2]]}
+                position={[position[0], position[1] + yOffset + 5 * scale, position[2]]}
                 onPointerOver={handlePointerOver}
                 onPointerOut={handlePointerOut}
                 onClick={handleClick}
             >
                 <boxGeometry args={[4 * scale, 12 * scale, 4 * scale]} />
+                <meshBasicMaterial transparent opacity={0} />
             </mesh>
 
             {/* Visible model - scales on hover, no pointer events */}

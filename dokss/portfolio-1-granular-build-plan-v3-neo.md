@@ -442,7 +442,7 @@ TEST:
 - Shares scene resources efficiently
 - Auto-syncs with React state
 
-```
+```text
 START: Polish & Juice complete
 DO:
 1. Create src/components/UI/Minimap.tsx:
@@ -523,7 +523,7 @@ TEST:
 - 1M free function calls/month (plenty for portfolio)
 - Type-safe with React integration
 
-```
+```text
 START: Minimap complete, localStorage working
 DO:
 PHASE 1 - Setup:

@@ -12,20 +12,22 @@ import { trackAssetsLoaded } from '../../lib/analytics';
  * Loading screen that displays asset loading progress
  * Automatically hides when loading completes
  */
+
+// Static tips - outside component to avoid recreation
+const TIPS = [
+    "💡 Press E to start the engine",
+    "🏛️ Click buildings to explore projects",
+    "⭐ Collect items hidden around Jakarta",
+    "🎮 Try the Konami code for a surprise!",
+    "🌙 Visit at night for a different vibe",
+    "🚀 Hold Shift to boost your speed",
+];
+
 export const LoadingScreen = memo(function LoadingScreen() {
     const { progress, loaded, total } = useProgress();
     const setLoading = useGameStore((state) => state.setLoading);
     const loadStartRef = useRef(performance.now());
 
-    // Rotating tips
-    const TIPS = [
-        "💡 Press E to start the engine",
-        "🏛️ Click buildings to explore projects",
-        "⭐ Collect items hidden around Jakarta",
-        "🎮 Try the Konami code for a surprise!",
-        "🌙 Visit at night for a different vibe",
-        "🚀 Hold Shift to boost your speed",
-    ];
     const [tipIndex, setTipIndex] = useState(0);
 
     // Cycle tips every 3 seconds
@@ -34,7 +36,7 @@ export const LoadingScreen = memo(function LoadingScreen() {
             setTipIndex(i => (i + 1) % TIPS.length);
         }, 3000);
         return () => clearInterval(interval);
-    }, [TIPS.length]);
+    }, []);
 
     useEffect(() => {
         // Handle case where there are no assets to load (total === 0)

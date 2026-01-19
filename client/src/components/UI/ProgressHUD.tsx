@@ -25,6 +25,8 @@ export const ProgressHUD = memo(function ProgressHUD() {
 
     // Animate counter when value changes
     useEffect(() => {
+        let rafId: number | null = null;
+
         if (collectedCount !== prevCollected.current) {
             setIsAnimating(true);
             let current = prevCollected.current;
@@ -33,14 +35,21 @@ export const ProgressHUD = memo(function ProgressHUD() {
                 current += target > current ? 1 : -1;
                 setDisplayCount(current);
                 if (current !== target) {
-                    requestAnimationFrame(step);
+                    rafId = requestAnimationFrame(step);
                 } else {
                     setIsAnimating(false);
+                    rafId = null;
                 }
             };
-            requestAnimationFrame(step);
+            rafId = requestAnimationFrame(step);
             prevCollected.current = collectedCount;
         }
+
+        return () => {
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+            }
+        };
     }, [collectedCount]);
 
     const buildingsVisited = visitedBuildings.length;

@@ -32,6 +32,7 @@ export async function resumeAudioContext(): Promise<void> {
  * @param volume - Volume multiplier (0-1), defaults to 1
  */
 export function playCollectSound(volume: number = 1): void {
+    if (volume <= 0) return; // Guard against exponentialRamp to zero
     const ctx = getAudioContext();
     if (ctx.state !== 'running') return;
 
@@ -59,6 +60,7 @@ export function playCollectSound(volume: number = 1): void {
  * @param volume - Volume multiplier (0-1), defaults to 1
  */
 export function playAchievementSound(volume: number = 1): void {
+    if (volume <= 0) return; // Guard against exponentialRamp to zero
     const ctx = getAudioContext();
     if (ctx.state !== 'running') return;
 
