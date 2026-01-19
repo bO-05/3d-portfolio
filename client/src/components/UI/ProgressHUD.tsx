@@ -22,11 +22,10 @@ export const ProgressHUD = memo(function ProgressHUD() {
     const prevCollected = useRef(collectedCount);
     const [displayCount, setDisplayCount] = useState(collectedCount);
     const [isAnimating, setIsAnimating] = useState(false);
+    const rafIdRef = useRef<number | null>(null);
 
     // Animate counter when value changes
     useEffect(() => {
-        let rafId: number | null = null;
-
         if (collectedCount !== prevCollected.current) {
             setIsAnimating(true);
             let current = prevCollected.current;
@@ -35,19 +34,20 @@ export const ProgressHUD = memo(function ProgressHUD() {
                 current += target > current ? 1 : -1;
                 setDisplayCount(current);
                 if (current !== target) {
-                    rafId = requestAnimationFrame(step);
+                    rafIdRef.current = requestAnimationFrame(step);
                 } else {
                     setIsAnimating(false);
-                    rafId = null;
+                    rafIdRef.current = null;
                 }
             };
-            rafId = requestAnimationFrame(step);
+            rafIdRef.current = requestAnimationFrame(step);
             prevCollected.current = collectedCount;
         }
 
         return () => {
-            if (rafId !== null) {
-                cancelAnimationFrame(rafId);
+            if (rafIdRef.current !== null) {
+                cancelAnimationFrame(rafIdRef.current);
+                rafIdRef.current = null;
             }
         };
     }, [collectedCount]);
