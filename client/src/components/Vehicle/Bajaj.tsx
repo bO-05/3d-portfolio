@@ -279,96 +279,93 @@ export const Bajaj = memo(function Bajaj() {
           scale={isTransJakarta ? 5 : 3}
         />
 
-        {/* Headlight (only show for Bajaj) */}
         {/* Headlights for both vehicles */}
-        {(
-          <>
-            {/* Physical headlight meshes (different positions for TJ vs Bajaj) */}
-            {/* Bajaj Mesh */}
-            {!isTransJakarta && (
-              <mesh position={[0.01, -0.53, 2.8]}>
-                <sphereGeometry args={[0.15, 12, 12]} />
+        <>
+          {/* Physical headlight meshes (different positions for TJ vs Bajaj) */}
+          {/* Bajaj Mesh */}
+          {!isTransJakarta && (
+            <mesh position={[0.01, -0.53, 2.8]}>
+              <sphereGeometry args={[0.15, 12, 12]} />
+              <meshStandardMaterial
+                color={headlightsOn ? "#ffffcc" : "#696666"}
+                emissive={headlightsOn ? "#ffff00" : "#bebdbd"}
+                emissiveIntensity={headlightsOn ? 7 : 0}
+              />
+            </mesh>
+          )}
+
+          {/* TransJakarta Mesh - BRIGHT front headlight bar */}
+          {isTransJakarta && (
+            <>
+              {/* Left headlight */}
+              <mesh position={[-1.275, -1.1, 4.5]}>
+                <sphereGeometry args={[0.09, 12, 12]} />
                 <meshStandardMaterial
-                  color={headlightsOn ? "#ffffcc" : "#696666ff"}
-                  emissive={headlightsOn ? "#ffff00" : "#bebdbdff"}
-                  emissiveIntensity={headlightsOn ? 7 : 0}
+                  color={headlightsOn ? "#ffffcc" : "#696666"}
+                  emissive={headlightsOn ? "#ffff00" : "#bebdbd"}
+                  emissiveIntensity={headlightsOn ? 15 : 0}
                 />
               </mesh>
-            )}
-
-            {/* TransJakarta Mesh - BRIGHT front headlight bar */}
-            {isTransJakarta && (
-              <>
-                {/* Left headlight */}
-                <mesh position={[-1.275, -1.1, 4.5]}>
-                  <sphereGeometry args={[0.09, 12, 12]} />
-                  <meshStandardMaterial
-                    color={headlightsOn ? "#ffffcc" : "#696666ff"}
-                    emissive={headlightsOn ? "#ffff00" : "#bebdbdff"}
-                    emissiveIntensity={headlightsOn ? 15 : 0}
-                  />
-                </mesh>
-                {/* Right headlight */}
-                <mesh position={[1.275, -1.1, 4.5]}>
-                  <sphereGeometry args={[0.09, 12, 12]} />
-                  <meshStandardMaterial
-                    color={headlightsOn ? "#ffffcc" : "#696666ff"}
-                    emissive={headlightsOn ? "#ffff00" : "#bebdbdff"}
-                    emissiveIntensity={headlightsOn ? 15 : 0}
-                  />
-                </mesh>
-              </>
-            )}
-
-            {!isTransJakarta && (
-              <mesh position={[0.01, -0.53, 2.6]} rotation={[Math.PI / 2, 0, 0]}>
-                <cylinderGeometry args={[0.2, 0.15, 0.25, 12]} />
-                <meshStandardMaterial color="#c4c0c0ff" metalness={0.9} roughness={0.1} />
+              {/* Right headlight */}
+              <mesh position={[1.275, -1.1, 4.5]}>
+                <sphereGeometry args={[0.09, 12, 12]} />
+                <meshStandardMaterial
+                  color={headlightsOn ? "#ffffcc" : "#696666"}
+                  emissive={headlightsOn ? "#ffff00" : "#bebdbd"}
+                  emissiveIntensity={headlightsOn ? 15 : 0}
+                />
               </mesh>
-            )}
+            </>
+          )}
 
-            {headlightsOn && (
-              <>
-                <object3D
-                  ref={spotlightTargetRef}
-                  position={[0, -5, 15]}
-                />
+          {!isTransJakarta && (
+            <mesh position={[0.01, -0.53, 2.6]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.2, 0.15, 0.25, 12]} />
+              <meshStandardMaterial color="#c4c0c0" metalness={0.9} roughness={0.1} />
+            </mesh>
+          )}
 
-                <spotLight
-                  ref={(spot) => {
-                    if (spot && spotlightTargetRef.current) {
-                      spot.target = spotlightTargetRef.current;
-                    }
-                  }}
-                  position={isTransJakarta ? [0, 1.5, 5.5] : [0, -0.53, 2.8]}
-                  angle={isTransJakarta ? 0.6 : 0.5}
-                  penumbra={0.8}
-                  intensity={isTransJakarta ? 15 : 8}
-                  distance={isTransJakarta ? 30 : 20}
-                  color="#fffee0"
-                  castShadow
-                  shadow-mapSize-width={256}
-                  shadow-mapSize-height={256}
-                />
+          {headlightsOn && (
+            <>
+              <object3D
+                ref={spotlightTargetRef}
+                position={[0, -5, 15]}
+              />
 
-                <spotLight
-                  ref={(spot) => {
-                    if (spot && spotlightTargetRef.current) {
-                      spot.target = spotlightTargetRef.current;
-                    }
-                  }}
-                  position={isTransJakarta ? [0, 1.5, 5.5] : [0, -0.53, 2.8]}
-                  angle={isTransJakarta ? 0.9 : 0.8}
-                  penumbra={0.8}
-                  intensity={isTransJakarta ? 12 : 6}
-                  distance={isTransJakarta ? 35 : 25}
-                  color="#fffee0"
-                  castShadow={false}
-                />
-              </>
-            )}
-          </>
-        )}
+              <spotLight
+                ref={(spot) => {
+                  if (spot && spotlightTargetRef.current) {
+                    spot.target = spotlightTargetRef.current;
+                  }
+                }}
+                position={isTransJakarta ? [0, 1.5, 5.5] : [0, -0.53, 2.8]}
+                angle={isTransJakarta ? 0.6 : 0.5}
+                penumbra={0.8}
+                intensity={isTransJakarta ? 15 : 8}
+                distance={isTransJakarta ? 30 : 20}
+                color="#fffee0"
+                castShadow
+                shadow-mapSize-width={256}
+                shadow-mapSize-height={256}
+              />
+
+              <spotLight
+                ref={(spot) => {
+                  if (spot && spotlightTargetRef.current) {
+                    spot.target = spotlightTargetRef.current;
+                  }
+                }}
+                position={isTransJakarta ? [0, 1.5, 5.5] : [0, -0.53, 2.8]}
+                angle={isTransJakarta ? 0.9 : 0.8}
+                penumbra={0.8}
+                intensity={isTransJakarta ? 12 : 6}
+                distance={isTransJakarta ? 35 : 25}
+                color="#fffee0"
+                castShadow={false}
+              />
+            </>
+          )}
+        </>
       </group>
     </>
   );

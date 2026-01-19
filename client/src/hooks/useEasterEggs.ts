@@ -7,7 +7,7 @@
  * 3. Speed Run (Type "speedrun") - Timer appears
  * 4. Honk Wheelie (Honk 5x in 3s) - Vehicle tilts back
  * 5. Circle Music Studio 5x - Confetti burst
- * 6. Jakarta Sky (Day + all buildings) - Beautiful sky.webp
+ * 6. Jakarta Sky (Visit all buildings) - Beautiful `day-sky.webp` or `night-sky.webp` based on the time of day
  * 
  * @module hooks/useEasterEggs
  */

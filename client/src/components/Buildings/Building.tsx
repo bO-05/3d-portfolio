@@ -10,7 +10,7 @@ import { useGLTF } from '@react-three/drei';
 import { useBox } from '@react-three/cannon';
 import { ThreeEvent } from '@react-three/fiber';
 import { Box3, Vector3, Group } from 'three';
-import type { Mesh } from 'three';
+import type { Mesh, SpotLight } from 'three';
 import { useGameStore } from '../../stores/gameStore';
 import { trackBuildingEntered } from '../../lib/analytics';
 
@@ -40,6 +40,7 @@ export const Building = memo(function Building({
     const { scene } = useGLTF(modelPath);
     const groupRef = useRef<Group>(null);
     const spotlightTargetRef = useRef<Group>(null);
+    const spotLightRef = useRef<SpotLight>(null);
     const dialogueTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const clonedScene = scene.clone();
     const [hovered, setHovered] = useState(false);
@@ -76,6 +77,14 @@ export const Building = memo(function Building({
             }
         };
     }, []);
+
+    // Bind spotlight target after mount (target ref may be null at initial render)
+    useEffect(() => {
+        if (isNight && spotLightRef.current && spotlightTargetRef.current) {
+            spotLightRef.current.target = spotlightTargetRef.current;
+            spotlightTargetRef.current.updateMatrixWorld();
+        }
+    }, [isNight]);
 
     // Hover handlers
     const handlePointerOver = useCallback((e: ThreeEvent<PointerEvent>) => {
@@ -164,6 +173,7 @@ export const Building = memo(function Building({
                         position={[position[0], 0, position[2]]}
                     />
                     <spotLight
+                        ref={spotLightRef}
                         position={[
                             position[0] + Math.sin(rotation[1]) * 8,
                             10,

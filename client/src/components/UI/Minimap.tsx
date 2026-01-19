@@ -98,6 +98,7 @@ export const Minimap = memo(function Minimap() {
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+            if ((e.target as HTMLElement)?.isContentEditable) return; // Consistency with useEasterEggs.ts
             if (e.code === 'KeyM') setIsExpanded((prev) => !prev);
         };
         window.addEventListener('keydown', handleKeyDown);

@@ -196,7 +196,7 @@ export const useGameStore = create<GameStore>((set) => ({
             game: { ...state.game, secretsFound: state.game.secretsFound + 1 },
         })),
 
-    setParkedAt: (buildingId) =>
+    setParkedAt: (buildingId: string | null) =>
         set((state) => ({
             game: { ...state.game, parkedAt: buildingId },
         })),
