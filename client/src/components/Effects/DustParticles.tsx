@@ -4,7 +4,7 @@
  * @module components/Effects/DustParticles
  */
 
-import { memo, useRef, useMemo } from 'react';
+import { memo, useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '../../stores/gameStore';
@@ -34,6 +34,13 @@ export const DustParticles = memo(function DustParticles() {
 
     const emitIndex = useRef(0);
     const lastEmitTime = useRef(0);
+
+    // Clamp emitIndex when particleCount changes (mobile/desktop switch)
+    useEffect(() => {
+        if (emitIndex.current >= particleCount) {
+            emitIndex.current = 0;
+        }
+    }, [particleCount]);
 
     useFrame((state, delta) => {
         if (!pointsRef.current) return;

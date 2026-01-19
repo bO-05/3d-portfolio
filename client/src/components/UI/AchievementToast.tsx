@@ -18,6 +18,12 @@ export const AchievementToast = memo(function AchievementToast() {
     const [currentToast, setCurrentToast] = useState(pendingToast);
     const lastPlayedToastRef = useRef<string | null>(null);
 
+    // Use refs to read latest audio settings without re-triggering effect
+    const soundEnabledRef = useRef(soundEnabled);
+    const sfxVolumeRef = useRef(sfxVolume);
+    soundEnabledRef.current = soundEnabled;
+    sfxVolumeRef.current = sfxVolume;
+
     useEffect(() => {
         if (pendingToast) {
             setCurrentToast(pendingToast);
@@ -25,9 +31,11 @@ export const AchievementToast = memo(function AchievementToast() {
 
             // Play achievement fanfare (only once per toast)
             const toastId = `${pendingToast.id}-${pendingToast.name}`;
-            if (soundEnabled && lastPlayedToastRef.current !== toastId) {
+            if (soundEnabledRef.current && lastPlayedToastRef.current !== toastId) {
                 lastPlayedToastRef.current = toastId;
-                resumeAudioContext().then(() => playAchievementSound(sfxVolume));
+                resumeAudioContext()
+                    .then(() => playAchievementSound(sfxVolumeRef.current))
+                    .catch((err) => console.warn('[AchievementToast] Audio context failed:', err));
             }
 
             // Auto-dismiss after 4 seconds
@@ -40,7 +48,7 @@ export const AchievementToast = memo(function AchievementToast() {
 
             return () => clearTimeout(timer);
         }
-    }, [pendingToast, clearToast, soundEnabled, sfxVolume]);
+    }, [pendingToast, clearToast]);
 
     if (!currentToast) return null;
 
