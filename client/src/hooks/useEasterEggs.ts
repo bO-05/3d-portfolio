@@ -7,7 +7,7 @@
  * 3. Speed Run (Type "speedrun") - Timer appears
  * 4. Honk Wheelie (Honk 5x in 3s) - Vehicle tilts back
  * 5. Circle Music Studio 5x - Confetti burst
- * 6. Jakarta Sky (Day + all buildings) - Beautiful sky.webp
+ * 6. Jakarta Sky (Visit all buildings) - Beautiful `day-sky.webp` or `night-sky.webp` based on the time of day
  * 
  * @module hooks/useEasterEggs
  */
@@ -217,8 +217,10 @@ function activateConfetti() {
 }
 
 // Check Jakarta Sky condition (called externally)
-export function checkJakartaSky(timeOfDay: string, visitedCount: number) {
-    const shouldActivate = timeOfDay === 'day' && visitedCount >= 5;
+// FIXED: Unlocks at ANY time of day once 5 buildings visited
+export function checkJakartaSky(visitedCount: number) {
+    // Only require visiting all 5 buildings, works at any time of day
+    const shouldActivate = visitedCount >= 5;
 
     if (shouldActivate && !easterEggState.jakartaSkyToggleVisible) {
         easterEggState.jakartaSkyToggleVisible = true;
@@ -247,14 +249,13 @@ export function useEasterEggs() {
     const textTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Subscribe to game state for Jakarta Sky check
-    const timeOfDay = useGameStore((state) => state.game.timeOfDay);
     const visitedBuildings = useGameStore((state) => state.game.visitedBuildings);
     const playerPosition = useGameStore((state) => state.player.position);
 
-    // Check Jakarta Sky condition
+    // Check Jakarta Sky condition (no longer depends on timeOfDay)
     useEffect(() => {
-        checkJakartaSky(timeOfDay, visitedBuildings.length);
-    }, [timeOfDay, visitedBuildings.length]);
+        checkJakartaSky(visitedBuildings.length);
+    }, [visitedBuildings.length]);
 
     // Update circle tracking based on position
     useEffect(() => {

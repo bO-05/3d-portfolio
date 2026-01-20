@@ -1,12 +1,12 @@
 /**
  * Sky component with dynamic day/night changes
- * Supports Jakarta Sky easter egg with sky.webp texture
+ * Supports Jakarta Sky easter egg with day-sky.webp and night-sky.webp textures
  * @module components/Scene/Sky
  */
 
 import { memo, useMemo, useSyncExternalStore, useEffect, useRef } from 'react';
 import { Stars, useTexture } from '@react-three/drei';
-import { BackSide, Color, SRGBColorSpace, MeshBasicMaterial } from 'three';
+import { BackSide, Color, SRGBColorSpace, MeshBasicMaterial, Texture } from 'three';
 import { useGameStore } from '../../stores/gameStore';
 import { getEasterEggState, subscribeToEasterEggs } from '../../hooks/useEasterEggs';
 
@@ -29,36 +29,46 @@ function useSkyConfig() {
                 return {
                     color: '#ff7b54',
                     showStars: false,
+                    skyTexture: 'day', // Use day sky for evening (sunset vibes)
                 };
             case 'night':
                 return {
                     color: '#0c1445',
                     showStars: true,
+                    skyTexture: 'night', // Use night sky (aurora)
                 };
             case 'day':
             default:
                 return {
                     color: '#87ceeb',
                     showStars: false,
+                    skyTexture: 'day',
                 };
         }
     }, [timeOfDay]);
 }
 
 /**
- * Load sky texture with color space configuration
+ * Load sky textures with color space configuration
  * Uses useTexture which is Suspense-compatible - parent Suspense handles loading
- * If texture fails to load, drei's useTexture will throw and ErrorBoundary can catch
  */
-function useSkyTexture(path: string) {
-    const texture = useTexture(path);
-    texture.colorSpace = SRGBColorSpace;
-    return texture;
+function useSkyTextures() {
+    const textures = useTexture([
+        '/textures/day-sky.webp',
+        '/textures/night-sky.webp'
+    ]);
+    const dayTexture = textures[0];
+    const nightTexture = textures[1];
+    if (dayTexture) dayTexture.colorSpace = SRGBColorSpace;
+    if (nightTexture) nightTexture.colorSpace = SRGBColorSpace;
+    return { dayTexture, nightTexture };
 }
 
 /**
  * Large sphere with dynamic sky color + optional stars at night
- * Supports Jakarta Sky easter egg with beautiful texture
+ * Supports Jakarta Sky easter egg with:
+ * - day-sky.webp for day/evening
+ * - night-sky.webp (aurora) for night
  * NOTE: Toggle button is rendered in EasterEggEffects.tsx (DOM context)
  */
 export const Sky = memo(function Sky() {
@@ -66,17 +76,21 @@ export const Sky = memo(function Sky() {
     const easterEggState = useEasterEggState();
     const materialRef = useRef<MeshBasicMaterial>(null);
 
-    // Load sky texture (Suspense handles loading, ErrorBoundary handles errors)
-    const skyTexture = useSkyTexture('/textures/sky.webp');
+    // Load both sky textures (Suspense handles loading)
+    const { dayTexture, nightTexture } = useSkyTextures();
 
     // Show Jakarta Sky when easter egg is active
     const showJakartaSky = easterEggState.jakartaSkyActive;
 
-    // Update material when Jakarta Sky state changes
+    // Select texture based on time of day
+    const selectedTexture = config.skyTexture === 'night' ? nightTexture : dayTexture;
+    const activeTexture: Texture | null = showJakartaSky && selectedTexture ? selectedTexture : null;
+
+    // Update material when Jakarta Sky state or time changes
     useEffect(() => {
         if (materialRef.current) {
-            if (showJakartaSky && skyTexture) {
-                materialRef.current.map = skyTexture;
+            if (showJakartaSky && activeTexture) {
+                materialRef.current.map = activeTexture;
                 materialRef.current.color.set(0xffffff); // White to show texture colors properly
             } else {
                 materialRef.current.map = null;
@@ -84,7 +98,7 @@ export const Sky = memo(function Sky() {
             }
             materialRef.current.needsUpdate = true;
         }
-    }, [showJakartaSky, config.color, skyTexture]);
+    }, [showJakartaSky, config.color, activeTexture]);
 
     return (
         <>
@@ -94,7 +108,7 @@ export const Sky = memo(function Sky() {
                 <meshBasicMaterial
                     ref={materialRef}
                     side={BackSide}
-                    map={showJakartaSky && skyTexture ? skyTexture : null}
+                    map={activeTexture}
                     color={showJakartaSky ? 0xffffff : new Color(config.color)}
                 />
             </mesh>

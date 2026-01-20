@@ -5,7 +5,7 @@
  */
 
 import { useRef, useCallback, useEffect } from 'react';
-import { Howl } from 'howler';
+import { Howl, Howler } from 'howler';
 import { useGameStore } from '../stores/gameStore';
 import { useKeyboard } from './useKeyboard';
 import { playCollectSound, playAchievementSound, resumeAudioContext } from '../lib/synthSounds';
@@ -86,6 +86,12 @@ export function useAudio() {
             stopEngine();
         }
     }, [engineOn, playEngine, stopEngine]);
+
+    // GLOBAL MUTE: Mute/unmute ALL Howler sounds based on soundEnabled
+    useEffect(() => {
+        Howler.mute(!soundEnabled);
+        console.log(`[Audio] Global mute: ${!soundEnabled}`);
+    }, [soundEnabled]);
 
     // Update engine pitch based on state
     useEffect(() => {

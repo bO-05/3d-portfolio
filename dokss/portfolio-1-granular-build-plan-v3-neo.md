@@ -256,7 +256,7 @@ TEST:
 
 ---
 
-## Task 5-Neo.5 — Achievement System
+## Task 5-Neo.5 — Achievement System ✅ COMPLETE
 
 **Dopamine:** Reward exploration with unlockables
 
@@ -294,7 +294,7 @@ TEST:
 
 ---
 
-## Task 5-Neo.6 — Easter Eggs
+## Task 5-Neo.6 — Easter Eggs ✅ COMPLETE
 
 **Delight:** Hidden surprises for curious explorers
 
@@ -331,7 +331,7 @@ TEST:
 
 ---
 
-## Task 5-Neo.7 — Performance Optimization Pass
+## Task 5-Neo.7 — Performance Optimization Pass ✅ COMPLETE
 
 **Critical:** Must hit Lighthouse >85 mobile
 
@@ -389,7 +389,7 @@ TEST:
 
 ---
 
-## Task 5-Neo.8 — Polish & Juice
+## Task 5-Neo.8 — Polish & Juice ✅ COMPLETE
 
 **Feel:** Make every interaction satisfying
 
@@ -397,95 +397,105 @@ TEST:
 START: Performance optimized
 DO:
 1. Particle Effects:
-   - Dust when driving (small particles behind wheels)
-   - Sparkle on collectible pickup
-   - Confetti on achievement
+   - Dust when driving (small particles behind wheels) ✅
+   - Sparkle on collectible pickup ✅
+   - Confetti on achievement ⏸️ DEFERRED
 
 2. Camera Juice:
-   - Subtle shake on boost activation
-   - Smooth transition on building enter/exit
-   - Slight zoom on collectible pickup
+   - Subtle shake on boost activation ✅
+   - Smooth transition on building enter/exit ⏸️ DEFERRED
+   - Slight zoom on collectible pickup ⏸️ DEFERRED
 
 3. Sound Polish:
-   - Ambient Jakarta sounds (distant traffic, birds)
-   - Building hover sound (subtle)
-   - Achievement unlock fanfare
-   - Collectible pickup "ding"
+   - Ambient Jakarta sounds (distant traffic, birds) ⏸️ DEFERRED
+   - Building hover sound (subtle) ⏸️ DEFERRED
+   - Achievement unlock fanfare ✅
+   - Collectible pickup "ding" ✅
 
 4. Animation Polish:
-   - Building hover scale (already done)
-   - Collectible bounce/spin
-   - HUD number count-up animation
-   - Button hover effects
+   - Building hover scale (already done) ✅
+   - Collectible bounce/spin ✅
+   - HUD number count-up animation ✅
+   - Button hover effects ✅
 
 5. Loading Experience:
-   - Animated loading bar
-   - Jakarta skyline silhouette
-   - Loading tips/facts about Jakarta
+   - Animated loading bar ✅
+   - Jakarta skyline silhouette ⏸️ DEFERRED
+   - Loading tips/facts about Jakarta ✅
 
-END: Every interaction feels premium
+END: Every interaction feels premium ✅
 TEST:
-- Play through entire experience
-- Note any interaction that feels "flat"
-- Each interaction should have feedback
+- Play through entire experience ✅
+- Note any interaction that feels "flat" ✅
+- Each interaction should have feedback ✅
 ```
+
+### AI Code Review Improvements (PR #4):
+Code quality fixes applied via CodeRabbit, Cubic, Mesa, Entelligence reviews:
+- Frame-rate independent particle motion (`DustParticles`, `CollectibleSparkle`)
+- Proper RAF cleanup in `ProgressHUD` (prevents memory leaks)
+- Audio context resume/catch in `AchievementToast`
+- Volume=0 guard in `synthSounds.ts` (prevents Web Audio errors)
+- Removed dead code (unused opacity/sizes buffer attributes)
+- Building hitbox alignment fixes
 
 ---
 
-## Task 5-Neo.9 — Real-time Minimap
+## Task 5-Neo.9 — Real-time Minimap ✅ COMPLETE
 
-**Inspiration:** Bruno Simon's portfolio map + RPG game minimaps
+**Inspiration:** Bruno Simon's portfolio map + RPG/GTA game minimaps
 
-**Architecture Decision:** Use Drei `View` component with orthographic camera
-- Single WebGL context (no performance penalty)
-- GPU-accelerated 3D minimap
-- Shares scene resources efficiently
-- Auto-syncs with React state
+**Actual Implementation:** HTML Canvas 2D overlay (better performance than Drei View)
+- Zero WebGL overhead (no extra 3D rendering)
+- Full CSS glassmorphism styling (GTA-style circular border with glow)
+- 30fps frame-rate limited for performance
+- Mobile responsive sizing
+
+### Features Implemented:
+- 🛺 Player emoji at center (always facing up)
+- 🏠💻📚🎵🍜 Building emojis with colored backgrounds
+- 🔄 Reset zone marker
+- N/E/S/W compass that rotates with player heading
+- M key to expand/collapse minimap
+- Collectible dots (hidden when collected)
+- Visited building glow effect
 
 ```text
 START: Polish & Juice complete
 DO:
-1. Create src/components/UI/Minimap.tsx:
-   - Fixed position overlay (bottom-left corner)
-   - Circular or rounded rectangle shape
-   - Semi-transparent background
-   - Border with glowing effect
+1. Create src/components/UI/Minimap.tsx: ✅
+   - Fixed position overlay (bottom-left corner) ✅
+   - Circular shape with glowing orange border ✅
+   - Semi-transparent dark gradient background ✅
 
-2. Implement Drei View for map rendering:
-   - Secondary orthographic camera (bird's-eye view)
-   - Height ~50 units above ground, looking down
-   - Frustum sized to show entire playable area
-   - Renders simplified ground/road texture
+2. Implement Canvas 2D rendering: ✅ (Changed from Drei View for performance)
+   - HTML Canvas instead of secondary WebGL context ✅
+   - 30fps frame limiting via requestAnimationFrame ✅
+   - Circular clipping for clean edges ✅
 
-3. Add map elements:
-   - Player marker (red/orange dot with direction arrow)
-   - Building icons (small colored squares)
-   - Collectible markers (uncollected only, small dots)
-   - Street/road outline
+3. Add map elements: ✅
+   - Player marker (🛺 emoji at center) ✅
+   - Building icons (emojis with colored background circles) ✅
+   - Collectible markers (pulsing colored dots) ✅
+   - Reset zone marker (🔄) ✅
 
-4. Real-time position sync:
-   - Subscribe to gameStore player.position
-   - Update player marker position every frame
-   - Show vehicle rotation/heading direction
-   - Smooth interpolation for marker movement
+4. Real-time position sync: ✅
+   - Subscribe to gameStore player.position via refs ✅
+   - GTA-style rotating map (player always faces up) ✅
+   - N/E/S/W compass rotates with player heading ✅
 
-5. Interactive features (optional):
-   - Click building icon → camera pans to building
-   - Hover shows building name tooltip
-   - Toggle minimap size (M key)
+5. Interactive features: ✅
+   - M key to toggle expanded/collapsed size ✅
+   - Click-to-pan: DEFERRED
+   - Hover tooltips: DEFERRED
 
-6. Performance considerations:
-   - Use simplified LOD meshes for minimap view
-   - Cull non-essential details (particles, shadows)
-   - Cap minimap render at 30fps if needed
-
-END: Users can navigate the world with spatial awareness
+END: Users can navigate the world with spatial awareness ✅
 TEST:
-- Minimap renders without FPS drop
-- Player marker moves in real-time with Bajaj
-- Marker rotation matches vehicle heading
-- Buildings visible as distinct icons
-- Uncollected items shown, collected hidden
+- Minimap renders without FPS drop ✅
+- Player marker moves in real-time with Bajaj ✅
+- Compass rotates correctly with vehicle heading ✅
+- Buildings visible as emoji icons ✅
+- Uncollected items shown, collected hidden ✅
 ```
 
 ### Technical Implementation Notes:
@@ -509,6 +519,101 @@ TEST:
         <coneGeometry args={[0.2, 0.4, 3]} />
     </mesh>
 </mesh>
+```
+
+---
+
+## Task 5-Neo.9.1 — SFX Mute Button ✅ COMPLETE
+
+**Purpose:** Allow users to mute/unmute sound effects on both mobile and desktop
+
+**Implementation:**
+- Added `toggleSound` action to `gameStore.ts`
+- Created `SoundToggle.tsx` component (floating button in top-right)
+- Shows 🔊 when sound ON, 🔇 when muted
+- Glassmorphism styling matching other UI elements
+- Works on both mobile and desktop
+
+```text
+START: Minimap complete
+DO:
+1. Add toggleSound action to gameStore ✅
+2. Create SoundToggle.tsx component ✅
+3. Create SoundToggle.css with glassmorphism ✅
+4. Add to App.tsx UI layer ✅
+
+END: Users can mute/unmute sounds ✅
+TEST:
+- Button visible in top-right corner ✅
+- Shows correct emoji based on state ✅
+- Click toggles sound ✅
+- Engine sounds respect setting ✅
+```
+
+---
+
+## Task 5-Neo.9.2 — Interaction Polish & Lighting ✅ COMPLETE
+
+**Purpose:** Enhanced gameplay mechanics and visual polish
+
+### Features Implemented:
+
+#### 1. SFX Global Mute (Fixed)
+- Moved button to **bottom-right** corner (mobile + desktop)
+- Added `Howler.mute(!soundEnabled)` to globally mute ALL sounds
+- Engine, honk, collectibles, achievements all respect toggle
+
+#### 2. Building Lights (Night Mode)
+- SpotLights positioned in FRONT of each building (world coords)
+- Uses building rotation to calculate front direction
+- Intensity: 50, Distance: 35, Color: #ffcc66
+- Only active during night/evening
+
+#### 3. Parking Mechanics
+- Created `ParkingZone.tsx` component (pulsing "P" markers)
+- Added `parkingPos` to `BUILDINGS_CONFIG`
+- Added `parkedAt: string | null` to gameStore
+- Vehicle detects parking when stopped (speed < 0.5) within 3-unit radius
+- Building entry requires being parked at that building's zone
+- Cursor changes to `not-allowed` when hovering unparked building
+
+#### 4. TransJakarta Headlights
+- Dual spheres at [-1.275, -1.1, 4.5] / [+1.275, -1.1, 4.5]
+- Spotlight intensity 15 (vs Bajaj's 8) for larger vehicle
+- Tooltip gap reduced from 8 to 6.5
+
+#### 5. Street Lamps 3x Brighter
+- PointLight intensity: 15 → 45
+- Distance: 55 → 75
+- Diamond emissive: 55 → 100
+
+#### 6. Dynamic Sky Textures
+- `day-sky.webp` for day/evening + Jakarta Sky easter egg
+- `night-sky.webp` (aurora) for night + Jakarta Sky easter egg
+- Jakarta Sky now unlocks at ANY time of day (not just day)
+
+```text
+START: Task 5-Neo.9.1 complete
+DO:
+1. Fix SFX button position (bottom-right) ✅
+2. Add Howler.mute() for global sound control ✅
+3. Create ParkingZone component ✅
+4. Add parking detection to Bajaj.tsx ✅
+5. Restrict building entry to parked players ✅
+6. Add SpotLights to Building.tsx (night only) ✅
+7. Increase lamppost intensity 3x ✅
+8. Add TransJakarta headlights ✅
+9. Create Sky.tsx with day/night textures ✅
+10. Fix Jakarta Sky unlock condition ✅
+
+END: Polished gameplay with immersive lighting ✅
+TEST:
+- SFX button in bottom-right on mobile ✅
+- Mute stops ALL sounds including engine ✅
+- Parking zones visible near buildings ✅
+- Cannot enter building unless parked ✅
+- Buildings light up at night ✅
+- Aurora sky shows at night with easter egg ✅
 ```
 
 ---

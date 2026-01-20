@@ -10,7 +10,7 @@ import { useGLTF } from '@react-three/drei';
 import { useBox } from '@react-three/cannon';
 import { ThreeEvent } from '@react-three/fiber';
 import { Box3, Vector3, Group } from 'three';
-import type { Mesh } from 'three';
+import type { Mesh, SpotLight } from 'three';
 import { useGameStore } from '../../stores/gameStore';
 import { trackBuildingEntered } from '../../lib/analytics';
 
@@ -39,6 +39,9 @@ export const Building = memo(function Building({
 }: BuildingProps) {
     const { scene } = useGLTF(modelPath);
     const groupRef = useRef<Group>(null);
+    const spotlightTargetRef = useRef<Group>(null);
+    const spotLightRef = useRef<SpotLight>(null);
+    const dialogueTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const clonedScene = scene.clone();
     const [hovered, setHovered] = useState(false);
 
@@ -46,6 +49,12 @@ export const Building = memo(function Building({
     const markBuildingVisited = useGameStore((state) => state.markBuildingVisited);
     const sessionStart = useGameStore((state) => state.game.sessionStart);
     const visitedBuildings = useGameStore((state) => state.game.visitedBuildings);
+    const timeOfDay = useGameStore((state) => state.game.timeOfDay);
+    const parkedAt = useGameStore((state) => state.game.parkedAt);
+    const setDialogue = useGameStore((state) => state.setDialogue);
+    const clearDialogue = useGameStore((state) => state.clearDialogue);
+
+    const isNight = timeOfDay === 'night' || timeOfDay === 'evening';
 
     // Calculate bounding box and adjust Y position
     useEffect(() => {
@@ -60,12 +69,33 @@ export const Building = memo(function Building({
         }
     }, [modelPath, position, buildingId, scale]);
 
+    // Cleanup dialogue timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (dialogueTimeoutRef.current) {
+                clearTimeout(dialogueTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    // Bind spotlight target after mount (target ref may be null at initial render)
+    useEffect(() => {
+        if (isNight && spotLightRef.current && spotlightTargetRef.current) {
+            spotLightRef.current.target = spotlightTargetRef.current;
+            spotlightTargetRef.current.updateMatrixWorld();
+        }
+    }, [isNight]);
+
     // Hover handlers
     const handlePointerOver = useCallback((e: ThreeEvent<PointerEvent>) => {
         e.stopPropagation();
         setHovered(true);
-        document.body.style.cursor = 'pointer';
-    }, []);
+        if (parkedAt !== buildingId) {
+            document.body.style.cursor = 'not-allowed';
+        } else {
+            document.body.style.cursor = 'pointer';
+        }
+    }, [parkedAt, buildingId]);
 
     const handlePointerOut = useCallback(() => {
         setHovered(false);
@@ -75,11 +105,23 @@ export const Building = memo(function Building({
     // Click handler
     const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
         e.stopPropagation();
+
+        if (parkedAt !== buildingId) {
+            console.log(`[Building] Cannot enter ${buildingId} - not parked here`);
+            setDialogue("I need to park in the designated zone to enter.");
+            // Clear any existing timeout before setting new one
+            if (dialogueTimeoutRef.current) {
+                clearTimeout(dialogueTimeoutRef.current);
+            }
+            dialogueTimeoutRef.current = setTimeout(clearDialogue, 3000);
+            return;
+        }
+
         console.log(`[Building] Clicked: ${buildingId}`);
         enterBuilding(buildingId);
         markBuildingVisited(buildingId);
         trackBuildingEntered(buildingId, sessionStart, visitedBuildings);
-    }, [buildingId, enterBuilding, markBuildingVisited, sessionStart, visitedBuildings]);
+    }, [buildingId, enterBuilding, markBuildingVisited, sessionStart, visitedBuildings, parkedAt, setDialogue, clearDialogue]);
 
     // Static physics body for collision
     const [physicsRef] = useBox<Mesh>(() => ({
@@ -120,6 +162,33 @@ export const Building = memo(function Building({
             >
                 <primitive object={clonedScene} />
             </group>
+
+            {/* Night spotlight - positioned in FRONT of building (world coords) */}
+            {/* Uses building rotation to calculate front direction */}
+            {isNight && (
+                <>
+                    {/* Spotlight target group */}
+                    <group
+                        ref={spotlightTargetRef}
+                        position={[position[0], 0, position[2]]}
+                    />
+                    <spotLight
+                        ref={spotLightRef}
+                        position={[
+                            position[0] + Math.sin(rotation[1]) * 8,
+                            10,
+                            position[2] + Math.cos(rotation[1]) * 8
+                        ]}
+                        target={spotlightTargetRef.current || undefined}
+                        angle={0.6}
+                        penumbra={0.5}
+                        intensity={50}
+                        distance={35}
+                        color="#ffcc66"
+                        castShadow
+                    />
+                </>
+            )}
         </>
     );
 });
