@@ -255,8 +255,8 @@ function TrashBin({ position }: { position: [number, number, number] }) {
 // ═══════════════════════════════════════════════════════════════
 
 const SIGN_POSITIONS: { pos: [number, number, number]; rotation: number }[] = [
-    { pos: [-20, 0, -40], rotation: 0 },
-    { pos: [20, 0, 40], rotation: Math.PI },
+    { pos: [-20, 0, -40], rotation: 0 },  // kept for speedrun near house
+    // Removed: [20, 0, 40] beside music studio - unused
 ];
 
 function StreetSign({ position, rotation }: {

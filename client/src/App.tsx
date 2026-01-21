@@ -16,7 +16,8 @@ import { JournalModal } from './components/UI/JournalModal';
 import { OnboardingOverlay } from './components/UI/OnboardingOverlay';
 import { AchievementToast } from './components/UI/AchievementToast';
 import { EasterEggEffects } from './components/UI/EasterEggEffects';
-
+import { SpeedrunOverlay } from './components/UI/SpeedrunOverlay';
+import { SettingsButton } from './components/UI/SettingsButton';
 
 const ProjectModal = lazy(() => import('./components/UI/ProjectModal'));
 const ChatOverlay = lazy(() => import('./components/UI/ChatOverlay'));
@@ -107,6 +108,9 @@ export function App() {
             {/* Minimap - bottom left */}
             {!isLoading && <Minimap />}
 
+            {/* Settings button - top left */}
+            {!isLoading && <SettingsButton />}
+
             {/* Journal Modal */}
             <JournalModal />
 
@@ -118,6 +122,9 @@ export function App() {
 
             {/* Easter egg effects */}
             <EasterEggEffects />
+
+            {/* Speedrun mode overlay */}
+            {!isLoading && <SpeedrunOverlay />}
 
             {/* Project modal overlay */}
             {showModal && (

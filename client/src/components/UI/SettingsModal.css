@@ -1,0 +1,129 @@
+/**
+ * SettingsModal Styles
+ * Glassmorphism design matching other modals
+ */
+
+.settings-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.settings-modal {
+    background: rgba(20, 20, 40, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    min-width: 320px;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.settings-modal h2 {
+    margin: 0 0 20px 0;
+    color: #ffffff;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.settings-section {
+    margin-bottom: 24px;
+}
+
+.settings-section h3 {
+    margin: 0 0 8px 0;
+    color: #00aaff;
+    font-size: 1rem;
+}
+
+.settings-hint {
+    margin: 0 0 16px 0;
+    color: #888888;
+    font-size: 0.85rem;
+}
+
+.quality-options {
+    display: flex;
+    gap: 12px;
+}
+
+.quality-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quality-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.quality-btn.active {
+    background: rgba(0, 170, 255, 0.2);
+    border-color: #00aaff;
+}
+
+.quality-icon {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+}
+
+.quality-label {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.quality-desc {
+    color: #888888;
+    font-size: 0.7rem;
+    margin-top: 2px;
+}
+
+.settings-close-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #00aaff, #0066cc);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.settings-close-btn:hover {
+    transform: scale(1.02);
+}
+
+.settings-close-btn:active {
+    transform: scale(0.98);
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+    .settings-modal {
+        margin: 16px;
+        padding: 16px;
+    }
+
+    .quality-options {
+        flex-direction: column;
+    }
+}

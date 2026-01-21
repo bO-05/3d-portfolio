@@ -1,25 +1,30 @@
 /**
- * Collectible Component - Floating, spinning, glowing 3D badge
- * Uses distance-based detection instead of physics (no lag!)
+ * CollectibleVisual - Pure visual/animation component
  * 
- * REQUIREMENTS:
- * - Visible when NOT in store.collected Set
- * - Collectable when player within 2.5 units AND not collected
- * - Instantly hides on collection
- * - Reappears after store.reset()
+ * Quality-aware rendering:
+ * - Low: Simple sphere with meshBasicMaterial (no lighting calc)
+ * - Medium/High: Full detailed shapes with meshStandardMaterial
  * 
- * @module components/Collectibles/Collectible
+ * NO distance checking - handled by CollectibleManager
+ * @module components/Collectibles/CollectibleVisual
  */
 
 import { memo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import type { Group } from 'three';
 import { useCollectibleStore } from '../../stores/collectibleStore';
+import { useSpeedrunStore } from '../../stores/speedrunStore';
 import { useGameStore } from '../../stores/gameStore';
 import { COLLECTIBLE_VISUALS, type CollectibleType } from '../../data/collectibles';
 
+interface CollectibleVisualProps {
+    id: string;
+    type: CollectibleType;
+    position: [number, number, number];
+}
+
 /**
- * Simple collectible for LOW quality - bright sphere, no lighting calc
+ * Simple collectible for LOW quality - just a glowing sphere
  */
 const SimpleCollectible = memo(function SimpleCollectible({
     color,
@@ -34,13 +39,9 @@ const SimpleCollectible = memo(function SimpleCollectible({
     );
 });
 
-interface CollectibleProps {
-    id: string;
-    type: CollectibleType;
-    position: [number, number, number];
-}
-
-// 3D shapes for each collectible type
+/**
+ * 3D shapes for each collectible type (Medium/High quality)
+ */
 const CollectibleShape = memo(function CollectibleShape({
     type,
     color,
@@ -138,71 +139,50 @@ const CollectibleShape = memo(function CollectibleShape({
     }
 });
 
-export const Collectible = memo(function Collectible({
+/**
+ * Pure visual component - floats and spins
+ * Distance checking handled by CollectibleManager
+ */
+export const CollectibleVisual = memo(function CollectibleVisual({
     id,
     type,
     position,
-}: CollectibleProps) {
-    const collect = useCollectibleStore((state) => state.collect);
-    const collected = useCollectibleStore((state) => state.collected);
-    const playerPosition = useGameStore((state) => state.player.position);
-
+}: CollectibleVisualProps) {
+    const permanentCollected = useCollectibleStore((state) => state.collected);
+    const speedrunPhase = useSpeedrunStore((state) => state.phase);
+    const speedrunCollected = useSpeedrunStore((state) => state.speedrunCollected);
+    const graphicsQuality = useGameStore((state) => state.settings.graphicsQuality);
     const groupRef = useRef<Group>(null);
-    // Ref to prevent calling collect() multiple times in same collection event
-    // This ref gets "reset" naturally when component unmounts/remounts
-    const isCollectingRef = useRef(false);
 
     const visual = COLLECTIBLE_VISUALS[type];
-    const isCollected = collected.has(id);
-    const COLLECT_RADIUS = 2.5;
 
+    // During speedrun: check speedrunCollected
+    // During normal play: check permanentCollected
+    const isCollected = speedrunPhase === 'running'
+        ? speedrunCollected.has(id)
+        : permanentCollected.has(id);
+
+    // Animation only - no distance check
     useFrame((state) => {
-        // ONLY check isCollected here - NOT the ref!
-        // This allows animation to run for uncollected items
         if (!groupRef.current || isCollected) return;
 
-        // Animation
         const time = state.clock.elapsedTime;
         groupRef.current.position.y = position[1] + Math.sin(time * 2 + position[0]) * 0.3;
         groupRef.current.rotation.y += 0.015;
-
-        // Distance check
-        const dx = playerPosition.x - position[0];
-        const dz = playerPosition.z - position[2];
-        const distance = Math.sqrt(dx * dx + dz * dz);
-
-        // Only guard the collect() call with the ref
-        if (distance < COLLECT_RADIUS && !isCollectingRef.current) {
-            isCollectingRef.current = true;
-            collect(id);
-
-            // Dispatch sparkle event with position and color (for visual feedback)
-            window.dispatchEvent(new CustomEvent('collectible:sparkle', {
-                detail: {
-                    position: [position[0], position[1], position[2]] as [number, number, number],
-                    color: visual.emissive
-                }
-            }));
-        }
-
-        // Reset ref when player moves away (allows re-collection after reset)
-        if (distance >= COLLECT_RADIUS) {
-            isCollectingRef.current = false;
-        }
     });
 
-    // Visibility ONLY based on store state
     if (isCollected) return null;
 
-    const graphicsQuality = useGameStore.getState().settings.graphicsQuality;
     const isLowQuality = graphicsQuality === 'low';
     // 2 tiers: Low (simple sphere, no lights) vs High (full shapes + lights)
 
     return (
         <group ref={groupRef} position={position}>
             {isLowQuality ? (
+                // LOW: Simple bright sphere, meshBasicMaterial, no lights
                 <SimpleCollectible color={visual.color} />
             ) : (
+                // HIGH: Full detailed shapes with point lights
                 <>
                     <CollectibleShape type={type} color={visual.color} emissive={visual.emissive} />
                     <pointLight color={visual.emissive} intensity={3} distance={6} decay={2} />
@@ -212,4 +192,4 @@ export const Collectible = memo(function Collectible({
     );
 });
 
-export default Collectible;
+export default CollectibleVisual;

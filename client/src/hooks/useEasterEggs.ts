@@ -4,7 +4,7 @@
  * Easter Eggs:
  * 1. Konami Code (↑↑↓↓←→←→BA) - Swap Bajaj to TransJakarta
  * 2. Disco Mode (Type "disco") - Flashing lights
- * 3. Speed Run (Type "speedrun") - Timer appears
+ * 3. Honk Wheelie (Honk 5x in 3s) - Vehicle tilts back
  * 4. Honk Wheelie (Honk 5x in 3s) - Vehicle tilts back
  * 5. Circle Music Studio 5x - Confetti burst
  * 6. Jakarta Sky (Visit all buildings) - Beautiful `day-sky.webp` or `night-sky.webp` based on the time of day
@@ -288,20 +288,7 @@ export function useEasterEggs() {
         console.log(`🪩 DISCO MODE ${easterEggState.discoActive ? 'ON' : 'OFF'}!`);
     }, []);
 
-    const activateSpeedRun = useCallback(() => {
-        easterEggState.speedRunActive = !easterEggState.speedRunActive;
-        if (easterEggState.speedRunActive) {
-            easterEggState.speedRunStart = Date.now();
-            console.log('⏱️ SPEED RUN MODE STARTED!');
-        } else {
-            console.log('⏱️ SPEED RUN MODE STOPPED!');
-        }
-        notifyListeners();
-
-        if ((window as any).posthog) {
-            (window as any).posthog.capture('easter_egg_activated', { type: 'speedrun' });
-        }
-    }, []);
+    // Note: Speed run is now handled by SpeedrunZone/SpeedrunOverlay components
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -330,7 +317,7 @@ export function useEasterEggs() {
                 konamiIndex.current = 0;
             }
 
-            // Text command detection (disco, speedrun)
+            // Text command detection (disco only - speedrun now uses SpeedrunZone)
             if (e.key.length === 1 && e.key.match(/[a-z]/i)) {
                 textBuffer.current += e.key.toLowerCase();
 
@@ -343,10 +330,7 @@ export function useEasterEggs() {
                     activateDisco();
                     textBuffer.current = '';
                 }
-                if (textBuffer.current.endsWith('speedrun')) {
-                    activateSpeedRun();
-                    textBuffer.current = '';
-                }
+                // speedrun easter egg removed - now using SpeedrunZone trigger
             }
         };
 
@@ -358,7 +342,7 @@ export function useEasterEggs() {
                 textTimeout.current = null;
             }
         };
-    }, [activateKonami, activateDisco, activateSpeedRun]);
+    }, [activateKonami, activateDisco]);
 }
 
 export default useEasterEggs;
