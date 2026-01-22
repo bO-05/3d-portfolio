@@ -21,7 +21,11 @@ export const SettingsModal = memo(function SettingsModal({
     const handleQualityChange = useCallback((quality: 'low' | 'high') => {
         updateSettings({ graphicsQuality: quality });
         // Persist to localStorage
-        localStorage.setItem('graphicsQuality', quality);
+        try {
+            localStorage.setItem('graphicsQuality', quality);
+        } catch (e) {
+            console.warn('[SettingsModal] localStorage unavailable');
+        }
     }, [updateSettings]);
 
     if (!isOpen) return null;

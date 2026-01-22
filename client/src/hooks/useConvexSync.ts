@@ -40,9 +40,11 @@ export function useConvexSync(): void {
     /**
      * Merge server state with local state on initial load
      * Only runs once when server data arrives
+     * undefined = still loading, null = no record (new player)
      */
     useEffect(() => {
-        if (!serverProgress || hasMergedRef.current) return;
+        // Still loading - wait for server response
+        if (serverProgress === undefined || hasMergedRef.current) return;
 
         hasMergedRef.current = true;
 
@@ -51,18 +53,23 @@ export function useConvexSync(): void {
         const localAchievements = achievementStore.getState().unlocked;
         const localBuildings = gameStore.getState().game.visitedBuildings;
 
+        // Handle null (new player) - use empty arrays from server
+        const serverCollectibles = serverProgress?.collectibles ?? [];
+        const serverAchievements = serverProgress?.achievements ?? [];
+        const serverBuildings = serverProgress?.visitedBuildings ?? [];
+
         // Merge with server state (union of both)
         const mergedCollectibles = new Set([
             ...localCollectibles,
-            ...serverProgress.collectibles,
+            ...serverCollectibles,
         ]);
         const mergedAchievements = new Set([
             ...localAchievements,
-            ...serverProgress.achievements,
+            ...serverAchievements,
         ]);
         const mergedBuildings = [...new Set([
             ...localBuildings,
-            ...serverProgress.visitedBuildings,
+            ...serverBuildings,
         ])];
 
         // Update local stores if server had more data

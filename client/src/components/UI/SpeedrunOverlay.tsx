@@ -13,7 +13,7 @@ import { useVisitorId } from '../../hooks/useVisitorId';
 import { SPEEDRUN_RING_COUNT } from '../Scene/SpeedrunRings';
 import './SpeedrunOverlay.css';
 
-const TOTAL_COLLECTIBLES = SPEEDRUN_RING_COUNT; // 15 speedrun-only rings
+const TOTAL_COLLECTIBLES = SPEEDRUN_RING_COUNT; // 10 speedrun-only rings
 
 export const SpeedrunOverlay = memo(function SpeedrunOverlay() {
     const visitorId = useVisitorId();
@@ -47,6 +47,8 @@ export const SpeedrunOverlay = memo(function SpeedrunOverlay() {
     const [submitError, setSubmitError] = useState<string | null>(null);
 
     const inputRef = useRef<HTMLInputElement>(null);
+    const permanentCollectedRef = useRef(permanentCollected);
+    const hasSubmittedRef = useRef(false);
 
     // Note: ENTER key for entering initials is handled in SpeedrunZone.tsx
 
@@ -68,17 +70,23 @@ export const SpeedrunOverlay = memo(function SpeedrunOverlay() {
         return () => clearInterval(timer);
     }, [phase, tickCountdown]);
 
+    // Keep permanentCollectedRef updated
+    useEffect(() => {
+        permanentCollectedRef.current = permanentCollected;
+    }, [permanentCollected]);
+
     // Transition from countdown to running when countdown reaches 0
     useEffect(() => {
         if (phase === 'countdown' && countdown === 0) {
             // Save permanent collectibles then start run with fresh speedrun tracking
             // NOTE: We do NOT call resetCollectibles() - permanent progress is preserved
-            const permanentArray = Array.from(permanentCollected);
+            // Use ref to avoid stale closure in setTimeout
             setTimeout(() => {
+                const permanentArray = Array.from(permanentCollectedRef.current);
                 startRun(permanentArray);
             }, 500); // Brief "GO!" display
         }
-    }, [phase, countdown, permanentCollected, startRun]);
+    }, [phase, countdown, startRun]);
 
     // Live timer update
     useEffect(() => {
@@ -98,10 +106,11 @@ export const SpeedrunOverlay = memo(function SpeedrunOverlay() {
         }
     }, [phase, speedrunCollectedCount, completeRun]);
 
-    // Auto-submit score on completion
+    // Auto-submit score on completion (use ref to prevent re-execution)
     useEffect(() => {
-        if (phase !== 'completed' || !finalTime || submitting) return;
+        if (phase !== 'completed' || !finalTime || hasSubmittedRef.current) return;
 
+        hasSubmittedRef.current = true;
         const submit = async () => {
             setSubmitting(true);
             setSubmitError(null);
@@ -130,7 +139,14 @@ export const SpeedrunOverlay = memo(function SpeedrunOverlay() {
         };
 
         submit();
-    }, [phase, finalTime, visitorId, playerInitials, submitScore, markSubmitted, submitting]);
+    }, [phase, finalTime, visitorId, playerInitials, submitScore, markSubmitted]);
+
+    // Reset hasSubmittedRef when phase changes away from completed
+    useEffect(() => {
+        if (phase !== 'completed' && phase !== 'submitted') {
+            hasSubmittedRef.current = false;
+        }
+    }, [phase]);
 
     // Handle initials form submit
     const handleInitialsSubmit = useCallback((e: React.FormEvent) => {
@@ -152,7 +168,7 @@ export const SpeedrunOverlay = memo(function SpeedrunOverlay() {
                 <div className="speedrun-overlay speedrun-modal">
                     <div className="speedrun-modal-content">
                         <h2>⏱️ TIME TRIAL</h2>
-                        <p>Collect all 15 items as fast as you can!</p>
+                        <p>Collect all {TOTAL_COLLECTIBLES} rings as fast as you can!</p>
                         <form onSubmit={handleInitialsSubmit}>
                             <label>Enter your initials:</label>
                             <input

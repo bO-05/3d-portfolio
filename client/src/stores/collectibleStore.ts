@@ -110,6 +110,8 @@ export const useCollectibleStore = create<CollectibleState>((set, get) => ({
             revealedBoxes.add(id);
             set({ revealedBoxes: new Set(revealedBoxes) });
             deferredSave(collected, revealedBoxes);
+            // Emit sync event for Convex backend
+            window.dispatchEvent(new CustomEvent('collectible:sync'));
         }
     },
 

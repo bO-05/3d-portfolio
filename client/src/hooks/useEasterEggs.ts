@@ -5,9 +5,8 @@
  * 1. Konami Code (↑↑↓↓←→←→BA) - Swap Bajaj to TransJakarta
  * 2. Disco Mode (Type "disco") - Flashing lights
  * 3. Honk Wheelie (Honk 5x in 3s) - Vehicle tilts back
- * 4. Honk Wheelie (Honk 5x in 3s) - Vehicle tilts back
- * 5. Circle Music Studio 5x - Confetti burst
- * 6. Jakarta Sky (Visit all buildings) - Beautiful `day-sky.webp` or `night-sky.webp` based on the time of day
+ * 4. Circle Music Studio 5x - Confetti burst
+ * 5. Jakarta Sky (Visit all buildings) - Beautiful sky background
  * 
  * @module hooks/useEasterEggs
  */

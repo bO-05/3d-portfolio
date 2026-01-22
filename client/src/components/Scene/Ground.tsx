@@ -158,9 +158,9 @@ const ResetZone = memo(function ResetZone() {
                     ⟲
                 </Text>
 
-                {/* "RESET" label - raised higher, larger font */}
+                {/* "RESET" label - positioned BELOW icon to avoid overlap */}
                 <Text
-                    position={[0, 1.4, 0]}
+                    position={[0, 0.7, 0]}
                     fontSize={0.5}
                     color="#ffffff"
                     anchorX="center"

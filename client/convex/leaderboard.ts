@@ -49,11 +49,10 @@ export const getPlayerScore = query({
     args: { visitorId: v.string() },
     returns: v.union(leaderboardEntryValidator, v.null()),
     handler: async (ctx, args) => {
-        // Find all entries by this player
+        // Find player's best score using index
         const entries = await ctx.db
             .query("leaderboard")
-            .filter((q) => q.eq(q.field("visitorId"), args.visitorId))
-            .order("asc")
+            .withIndex("by_visitor", (q) => q.eq("visitorId", args.visitorId))
             .first();
 
         return entries ?? null;
@@ -102,10 +101,10 @@ export const submitScore = mutation({
             });
         }
 
-        // Check for existing score by this player
+        // Check for existing score by this player using index
         const existing = await ctx.db
             .query("leaderboard")
-            .filter((q) => q.eq(q.field("visitorId"), args.visitorId))
+            .withIndex("by_visitor", (q) => q.eq("visitorId", args.visitorId))
             .first();
 
         if (existing) {

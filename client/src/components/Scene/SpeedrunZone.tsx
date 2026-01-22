@@ -163,7 +163,7 @@ export const SpeedrunZone = memo(function SpeedrunZone() {
                         anchorX="center"
                         anchorY="middle"
                     >
-                        Collect all 15 items as fast as possible
+                        Collect all 10 rings as fast as possible
                     </Text>
 
                     {/* Action hint - larger font */}

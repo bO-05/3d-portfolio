@@ -13,7 +13,7 @@
  * @module components/Scene/SpeedrunRings
  */
 
-import { memo, useRef } from 'react';
+import { memo, useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useSpeedrunStore } from '../../stores/speedrunStore';
 import { useGameStore } from '../../stores/gameStore';
@@ -118,10 +118,12 @@ export const SpeedrunRings = memo(function SpeedrunRings() {
         }
     });
 
-    // Clear tracking on reset
-    if (phase === 'idle' && lastCollectedRef.current.size > 0) {
-        lastCollectedRef.current.clear();
-    }
+    // Clear tracking on reset - must be in effect, not render body
+    useEffect(() => {
+        if (phase === 'idle') {
+            lastCollectedRef.current.clear();
+        }
+    }, [phase]);
 
     // PRE-RENDER during countdown (invisible) to warm GPU
     // This prevents lag spike when "GO!" appears

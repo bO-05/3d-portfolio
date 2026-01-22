@@ -142,9 +142,18 @@ export const JournalModal = memo(function JournalModal() {
                             </section>
                         </>
                     ) : (
-                        <Suspense fallback={<div className="journal-modal__loading">Loading leaderboard...</div>}>
-                            <Leaderboard />
-                        </Suspense>
+                        import.meta.env.VITE_CONVEX_URL ? (
+                            <Suspense fallback={<div className="journal-modal__loading">Loading leaderboard...</div>}>
+                                <Leaderboard />
+                            </Suspense>
+                        ) : (
+                            <div className="journal-modal__loading">
+                                <p>🏆 Leaderboard</p>
+                                <p style={{ fontSize: '0.9rem', opacity: 0.7 }}>
+                                    Leaderboard requires online connection
+                                </p>
+                            </div>
+                        )
                     )}
                 </div>
 

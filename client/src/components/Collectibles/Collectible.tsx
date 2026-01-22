@@ -146,6 +146,7 @@ export const Collectible = memo(function Collectible({
     const collect = useCollectibleStore((state) => state.collect);
     const collected = useCollectibleStore((state) => state.collected);
     const playerPosition = useGameStore((state) => state.player.position);
+    const graphicsQuality = useGameStore((state) => state.settings.graphicsQuality);
 
     const groupRef = useRef<Group>(null);
     // Ref to prevent calling collect() multiple times in same collection event
@@ -194,7 +195,6 @@ export const Collectible = memo(function Collectible({
     // Visibility ONLY based on store state
     if (isCollected) return null;
 
-    const graphicsQuality = useGameStore.getState().settings.graphicsQuality;
     const isLowQuality = graphicsQuality === 'low';
     // 2 tiers: Low (simple sphere, no lights) vs High (full shapes + lights)
 

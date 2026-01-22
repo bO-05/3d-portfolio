@@ -15,9 +15,13 @@ export const SettingsButton = memo(function SettingsButton() {
 
     // Load quality from localStorage on mount
     useEffect(() => {
-        const savedQuality = localStorage.getItem('graphicsQuality') as 'low' | 'medium' | 'high' | null;
-        if (savedQuality && ['low', 'medium', 'high'].includes(savedQuality)) {
-            updateSettings({ graphicsQuality: savedQuality });
+        try {
+            const savedQuality = localStorage.getItem('graphicsQuality');
+            if (savedQuality === 'low' || savedQuality === 'high') {
+                updateSettings({ graphicsQuality: savedQuality });
+            }
+        } catch (e) {
+            console.warn('[SettingsButton] localStorage unavailable');
         }
     }, [updateSettings]);
 

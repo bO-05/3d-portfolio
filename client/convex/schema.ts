@@ -30,5 +30,7 @@ export default defineSchema({
         speedRunTime: v.number(), // milliseconds
         completionPercent: v.number(),
         submittedAt: v.number(),
-    }).index("by_time", ["speedRunTime"]),
+    })
+        .index("by_time", ["speedRunTime"])
+        .index("by_visitor", ["visitorId"]),
 });
