@@ -25,7 +25,7 @@ const CENTER = 0;
 
 /**
  * 10 ring positions - reduced for performance, strategic placement
- * Layout: 4 corners + 4 edges + 1 center + 1 near spawn
+ * Layout: 4 corners + 4 mid-edges + 2 inner diagonals
  */
 const SPEEDRUN_RING_POSITIONS: [number, number, number][] = [
     // 4 corners (straight-line routes)

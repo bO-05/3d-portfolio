@@ -38,6 +38,40 @@ export function useConvexSync(): void {
     const hasMergedRef = useRef(false);
 
     /**
+     * Debounced sync function - uploads current state to server
+     */
+    const performSync = useCallback(async () => {
+        const collectibles = Array.from(collectibleStore.getState().collected);
+        const achievements = Array.from(achievementStore.getState().unlocked);
+        const visitedBuildings = gameStore.getState().game.visitedBuildings;
+
+        try {
+            await syncProgress({
+                visitorId,
+                collectibles,
+                achievements,
+                visitedBuildings,
+            });
+            console.log('[ConvexSync] Synced to server');
+        } catch (error) {
+            console.warn('[ConvexSync] Sync failed (will retry):', error);
+            // Don't throw - graceful degradation to localStorage-only mode
+        }
+    }, [visitorId, syncProgress, collectibleStore, achievementStore, gameStore]);
+
+    /**
+     * Schedule a debounced sync
+     */
+    const scheduleSync = useCallback(() => {
+        if (syncTimeoutRef.current) {
+            clearTimeout(syncTimeoutRef.current);
+        }
+        syncTimeoutRef.current = setTimeout(() => {
+            performSync();
+        }, SYNC_DEBOUNCE_MS);
+    }, [performSync]);
+
+    /**
      * Merge server state with local state on initial load
      * Only runs once when server data arrives
      * undefined = still loading, null = no record (new player)
@@ -86,46 +120,24 @@ export function useConvexSync(): void {
             }));
         }
 
+        // If local has data that server doesn't, schedule upload
+        const localHasNewData =
+            localCollectibles.size > serverCollectibles.length ||
+            localAchievements.size > serverAchievements.length ||
+            localBuildings.length > serverBuildings.length;
+
+        if (localHasNewData) {
+            // Schedule sync to upload local-only progress to server
+            scheduleSync();
+        }
+
         console.log('[ConvexSync] Merged server progress:', {
             collectibles: mergedCollectibles.size,
             achievements: mergedAchievements.size,
             buildings: mergedBuildings.length,
+            uploadingLocal: localHasNewData,
         });
-    }, [serverProgress, collectibleStore, achievementStore, gameStore]);
-
-    /**
-     * Debounced sync function - uploads current state to server
-     */
-    const performSync = useCallback(async () => {
-        const collectibles = Array.from(collectibleStore.getState().collected);
-        const achievements = Array.from(achievementStore.getState().unlocked);
-        const visitedBuildings = gameStore.getState().game.visitedBuildings;
-
-        try {
-            await syncProgress({
-                visitorId,
-                collectibles,
-                achievements,
-                visitedBuildings,
-            });
-            console.log('[ConvexSync] Synced to server');
-        } catch (error) {
-            console.warn('[ConvexSync] Sync failed (will retry):', error);
-            // Don't throw - graceful degradation to localStorage-only mode
-        }
-    }, [visitorId, syncProgress, collectibleStore, achievementStore, gameStore]);
-
-    /**
-     * Schedule a debounced sync
-     */
-    const scheduleSync = useCallback(() => {
-        if (syncTimeoutRef.current) {
-            clearTimeout(syncTimeoutRef.current);
-        }
-        syncTimeoutRef.current = setTimeout(() => {
-            performSync();
-        }, SYNC_DEBOUNCE_MS);
-    }, [performSync]);
+    }, [serverProgress, collectibleStore, achievementStore, gameStore, scheduleSync]);
 
     /**
      * Listen for store events and trigger sync

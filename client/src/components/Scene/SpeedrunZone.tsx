@@ -1,6 +1,6 @@
 /**
  * SpeedrunZone - In-world 3D trigger area for starting timed challenges
- * Located near street sign at [-20, 0, -40]
+ * Located near street sign at [-20, 0.1, -35]
  * Player drives in → shows prompt → press ENTER → enters initials → timer starts
  * 
  * IMPORTANT: Speedrun uses SEPARATE tracking from permanent collectibles
@@ -75,7 +75,8 @@ export const SpeedrunZone = memo(function SpeedrunZone() {
         // Show prompt only when in zone and nearly stopped
         if (isInZone && isStopped && phase === 'ready') {
             setShowPrompt(true);
-        } else if (!isInZone || phase !== 'ready') {
+        } else if (!isInZone || phase !== 'ready' || !isStopped) {
+            // Hide when: outside zone, not ready, OR moving
             setShowPrompt(false);
         }
     });
