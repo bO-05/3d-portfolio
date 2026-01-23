@@ -4,13 +4,15 @@
  * @module components/UI/Leaderboard
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useVisitorId } from '../../hooks/useVisitorId';
 import { useCollectibleStore } from '../../stores/collectibleStore';
 import { useAchievementStore } from '../../stores/achievementStore';
 import { useGameStore } from '../../stores/gameStore';
+import { COLLECTIBLES } from '../../data/collectibles';
+import { ACHIEVEMENTS } from '../../data/achievements';
 import './Leaderboard.css';
 
 /**
@@ -36,6 +38,11 @@ function formatRelativeTime(timestamp: number): string {
     return `${Math.floor(diff / 86400000)}d ago`;
 }
 
+// Constants for total counts to avoid recalculation
+const TOTAL_COLLECTIBLES_COUNT = COLLECTIBLES.length;
+const TOTAL_ACHIEVEMENTS_COUNT = ACHIEVEMENTS.length;
+const TOTAL_BUILDINGS_COUNT = 5;
+
 export function Leaderboard() {
     const visitorId = useVisitorId();
     const [nickname, setNickname] = useState('');
@@ -47,17 +54,20 @@ export function Leaderboard() {
     const playerScore = useQuery(api.leaderboard.getPlayerScore, { visitorId });
     const submitScore = useMutation(api.leaderboard.submitScore);
 
-    // Progress data for eligibility check
-    const collectibleProgress = useCollectibleStore((s) => s.getProgress());
-    const achievementProgress = useAchievementStore((s) => s.getProgress());
-    const visitedBuildings = useGameStore((s) => s.game.visitedBuildings);
+    // Progress data - select PRIMITIVE values only (not objects!)
+    // Selecting the Set directly and checking .size is stable
+    const collectedCount = useCollectibleStore((s) => s.collected.size);
+    const unlockedCount = useAchievementStore((s) => s.unlocked.size);
+    const visitedCount = useGameStore((s) => s.game.visitedBuildings.length);
     const sessionStart = useGameStore((s) => s.game.sessionStart);
 
-    // Calculate total completion percentage
-    const totalItems = collectibleProgress.total + achievementProgress.total + 5; // 5 buildings
-    const completedItems = collectibleProgress.collected + achievementProgress.unlocked + visitedBuildings.length;
-    const completionPercent = Math.round((completedItems / totalItems) * 100);
-    const is100Percent = completionPercent >= 100;
+    // Calculate total completion percentage with useMemo
+    const { completionPercent, is100Percent } = useMemo(() => {
+        const totalItems = TOTAL_COLLECTIBLES_COUNT + TOTAL_ACHIEVEMENTS_COUNT + TOTAL_BUILDINGS_COUNT;
+        const completedItems = collectedCount + unlockedCount + visitedCount;
+        const percent = Math.round((completedItems / totalItems) * 100);
+        return { completionPercent: percent, is100Percent: percent >= 100 };
+    }, [collectedCount, unlockedCount, visitedCount]);
 
     // NOTE: We removed the Date.now() - sessionStart calculation here
     // because it was causing infinite re-renders every frame.

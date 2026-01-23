@@ -618,7 +618,7 @@ TEST:
 
 ---
 
-## Task 5-Neo.10 — Convex Backend Integration
+## Task 5-Neo.10 — Convex Backend Integration ✅ COMPLETE
 
 **Purpose:** Cross-device progress sync + Global leaderboard (single-player, no multiplayer)
 
@@ -628,48 +628,63 @@ TEST:
 - 1M free function calls/month (plenty for portfolio)
 - Type-safe with React integration
 
+### Implemented Features:
+- ✅ Convex schema with players + leaderboard tables
+- ✅ Progress sync mutations (syncProgress, getProgress)
+- ✅ Leaderboard mutations (submitScore, getTopScores, getPlayerScore)
+- ✅ ConvexSyncProvider for bidirectional state sync
+- ✅ useConvexSync hook with debounced uploads
+- ✅ useVisitorId hook (FingerprintJS + fallback)
+- ✅ Leaderboard.tsx UI in Journal modal
+- ✅ LeaderboardBillboard.tsx (in-world 3D display)
+- ✅ SpeedrunZone.tsx trigger area
+- ✅ SpeedrunRings.tsx (10 isolated rings)
+- ✅ SpeedrunOverlay.tsx (initials, countdown, timer, completion)
+- ✅ Graphics quality settings (Low/High toggle)
+- ✅ AI code review fixes (3 rounds, 17+ issues resolved)
+
 ```text
 START: Minimap complete, localStorage working
 DO:
 PHASE 1 - Setup:
-1. Install Convex: npm install convex
-2. Initialize project: npx convex init
-3. Create .env with CONVEX_DEPLOYMENT
-4. Add ConvexProvider to App.tsx
+1. Install Convex: npm install convex ✅
+2. Initialize project: npx convex init ✅
+3. Create .env with CONVEX_DEPLOYMENT ✅
+4. Add ConvexProvider to App.tsx ✅
 
 PHASE 2 - Schema Design:
-5. Create convex/schema.ts:
+5. Create convex/schema.ts: ✅
    - players: { visitorId, collectibles[], achievements[], lastSeen }
    - leaderboard: { visitorId, nickname, speedRunTime, completionPercent }
 
 PHASE 3 - Progress Sync:
-6. Create convex/progress.ts mutations:
+6. Create convex/progress.ts mutations: ✅
    - syncProgress(visitorId, collectibles, achievements)
    - getProgress(visitorId) → returns saved state
-7. Modify collectibleStore.ts:
+7. Modify collectibleStore.ts: ✅
    - On collect: call syncProgress mutation
    - On load: query getProgress, merge with local
-8. Same for achievementStore.ts
+8. Same for achievementStore.ts ✅
 
 PHASE 4 - Leaderboard:
-9. Create convex/leaderboard.ts:
+9. Create convex/leaderboard.ts: ✅
    - submitScore(visitorId, nickname, time, percent)
    - getTopScores(limit: 10) → sorted by time
-10. Create src/components/UI/Leaderboard.tsx:
+10. Create src/components/UI/Leaderboard.tsx: ✅
     - Shows top 10 speed run times
     - Submit score on 100% completion
     - Accessible from Journal modal
 
 PHASE 5 - Visitor Identity:
-11. Generate anonymous visitorId on first visit
-12. Store in localStorage (survives refresh)
-13. Optional: prompt for nickname on leaderboard submit
+11. Generate anonymous visitorId on first visit ✅
+12. Store in localStorage (survives refresh) ✅
+13. Optional: prompt for nickname on leaderboard submit ✅
 
-END: Progress syncs across devices, global leaderboard live
+END: Progress syncs across devices, global leaderboard live ✅
 TEST:
-- Collect item on desktop, refresh on phone → item still collected
-- Complete speed run → appears on global leaderboard
-- Free tier limits not exceeded (monitor in Convex dashboard)
+- Collect item on desktop, refresh on phone → item still collected ✅
+- Complete speed run → appears on global leaderboard ✅
+- Free tier limits not exceeded (monitor in Convex dashboard) ✅
 ```
 
 ### Convex Schema:
