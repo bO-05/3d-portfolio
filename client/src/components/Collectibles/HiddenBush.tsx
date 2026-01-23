@@ -8,6 +8,11 @@
  * - Distance check uses BUSH world position
  * - Reappears after store.reset()
  * 
+ * Quality-aware:
+ * - Low: Simple sphere with meshBasicMaterial, no lights
+ * - Medium: Full shapes, no lights
+ * - High: Full shapes with lights
+ * 
  * @module components/Collectibles/HiddenBush
  */
 
@@ -24,6 +29,21 @@ interface HiddenBushProps {
     collectibleType: CollectibleType;
 }
 
+/**
+ * Simple collectible for LOW quality
+ */
+function SimpleCollectible({ color }: { color: string }) {
+    return (
+        <mesh>
+            <sphereGeometry args={[0.4, 8, 6]} />
+            <meshBasicMaterial color={color} transparent opacity={0.9} />
+        </mesh>
+    );
+}
+
+/**
+ * Full collectible shape for Medium/High quality
+ */
 function BushCollectibleShape({
     type,
     color,
@@ -69,6 +89,7 @@ export const HiddenBush = memo(function HiddenBush({
     const collect = useCollectibleStore((state) => state.collect);
     const collected = useCollectibleStore((state) => state.collected);
     const playerPosition = useGameStore((state) => state.player.position);
+    const graphicsQuality = useGameStore((state) => state.settings.graphicsQuality);
 
     const collectibleRef = useRef<Group>(null);
     const isCollectingRef = useRef(false);
@@ -77,8 +98,10 @@ export const HiddenBush = memo(function HiddenBush({
     const visual = COLLECTIBLE_VISUALS[collectibleType];
     const COLLECT_RADIUS = 3;
 
+    const isLowQuality = graphicsQuality === 'low';
+    // 2 tiers: Low (simple sphere, no lights) vs High (full shapes + lights)
+
     useFrame((state) => {
-        // ONLY check isCollected - NOT the ref!
         if (!collectibleRef.current || isCollected) return;
 
         // Animation
@@ -86,18 +109,16 @@ export const HiddenBush = memo(function HiddenBush({
         collectibleRef.current.position.y = 1.2 + Math.sin(time * 2 + position[0]) * 0.2;
         collectibleRef.current.rotation.y += 0.015;
 
-        // Distance check - uses BUSH world position
+        // Distance check
         const dx = playerPosition.x - position[0];
         const dz = playerPosition.z - position[2];
         const distance = Math.sqrt(dx * dx + dz * dz);
 
-        // Only guard collect() call with ref
         if (distance < COLLECT_RADIUS && !isCollectingRef.current) {
             isCollectingRef.current = true;
             collect(collectibleId);
         }
 
-        // Reset ref when player moves away
         if (distance >= COLLECT_RADIUS) {
             isCollectingRef.current = false;
         }
@@ -105,35 +126,57 @@ export const HiddenBush = memo(function HiddenBush({
 
     return (
         <group position={position}>
-            {/* Bush visual - always visible */}
+            {/* Bush visual - use meshBasicMaterial on Low quality */}
             <group>
                 <mesh position={[0, 0.5, 0]}>
                     <sphereGeometry args={[0.8, 8, 6]} />
-                    <meshStandardMaterial color="#228B22" />
+                    {isLowQuality ? (
+                        <meshBasicMaterial color="#228B22" />
+                    ) : (
+                        <meshStandardMaterial color="#228B22" />
+                    )}
                 </mesh>
                 <mesh position={[0.4, 0.7, 0.3]}>
                     <sphereGeometry args={[0.5, 8, 6]} />
-                    <meshStandardMaterial color="#2E8B57" />
+                    {isLowQuality ? (
+                        <meshBasicMaterial color="#2E8B57" />
+                    ) : (
+                        <meshStandardMaterial color="#2E8B57" />
+                    )}
                 </mesh>
                 <mesh position={[-0.4, 0.6, -0.2]}>
                     <sphereGeometry args={[0.5, 8, 6]} />
-                    <meshStandardMaterial color="#32CD32" />
+                    {isLowQuality ? (
+                        <meshBasicMaterial color="#32CD32" />
+                    ) : (
+                        <meshStandardMaterial color="#32CD32" />
+                    )}
                 </mesh>
                 <mesh position={[0, 0.9, -0.3]}>
                     <sphereGeometry args={[0.4, 8, 6]} />
-                    <meshStandardMaterial color="#228B22" />
+                    {isLowQuality ? (
+                        <meshBasicMaterial color="#228B22" />
+                    ) : (
+                        <meshStandardMaterial color="#228B22" />
+                    )}
                 </mesh>
             </group>
 
-            {/* Collectible - visibility ONLY based on store */}
+            {/* Collectible - quality-aware rendering */}
             {!isCollected && (
                 <group ref={collectibleRef} position={[0, 1.2, 0]}>
-                    <BushCollectibleShape
-                        type={collectibleType}
-                        color={visual.color}
-                        emissive={visual.emissive}
-                    />
-                    <pointLight color={visual.emissive} intensity={3} distance={6} decay={2} />
+                    {isLowQuality ? (
+                        <SimpleCollectible color={visual.color} />
+                    ) : (
+                        <>
+                            <BushCollectibleShape
+                                type={collectibleType}
+                                color={visual.color}
+                                emissive={visual.emissive}
+                            />
+                            <pointLight color={visual.emissive} intensity={3} distance={6} decay={2} />
+                        </>
+                    )}
                 </group>
             )}
         </group>

@@ -4,7 +4,7 @@
  * @module components/UI/EasterEggEffects
  */
 
-import { memo, useState, useEffect, useSyncExternalStore, useMemo } from 'react';
+import { memo, useSyncExternalStore, useMemo } from 'react';
 import { subscribeToEasterEggs, getEasterEggState, useEasterEggs, toggleJakartaSky } from '../../hooks/useEasterEggs';
 import './EasterEggEffects.css';
 
@@ -130,33 +130,11 @@ const JakartaSkyToggle = memo(function JakartaSkyToggle({ isActive }: { isActive
 
 export const EasterEggEffects = memo(function EasterEggEffects() {
     const state = useEasterEggState();
-    const [elapsedTime, setElapsedTime] = useState('00:00.000');
 
     // Register keyboard event listeners for easter eggs
     useEasterEggs();
 
-    // Speed run timer
-    useEffect(() => {
-        let interval: ReturnType<typeof setInterval> | null = null;
-
-        if (state.speedRunActive && state.speedRunStart) {
-            interval = setInterval(() => {
-                const elapsed = Date.now() - (state.speedRunStart || 0);
-                const minutes = Math.floor(elapsed / 60000);
-                const seconds = Math.floor((elapsed % 60000) / 1000);
-                const ms = elapsed % 1000;
-                setElapsedTime(
-                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`
-                );
-            }, 16);
-        }
-
-        return () => {
-            if (interval) {
-                clearInterval(interval);
-            }
-        };
-    }, [state.speedRunActive, state.speedRunStart]);
+    // Note: Speed run timer is now handled by SpeedrunOverlay component
 
     return (
         <>
@@ -174,13 +152,7 @@ export const EasterEggEffects = memo(function EasterEggEffects() {
                 <div className="easter-egg-disco" />
             )}
 
-            {/* Speed Run Timer */}
-            {state.speedRunActive && (
-                <div className="easter-egg-speedrun">
-                    <div className="speedrun-label">⏱️ SPEED RUN</div>
-                    <div className="speedrun-timer">{elapsedTime}</div>
-                </div>
-            )}
+            {/* Speed run is now handled by SpeedrunOverlay component */}
 
             {/* Wheelie Indicator */}
             {state.wheelieActive && (

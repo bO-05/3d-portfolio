@@ -1,6 +1,6 @@
 /**
  * Main entry point for Jakarta Street Portfolio
- * Initializes analytics and renders the app
+ * Initializes analytics, Convex backend, and renders the app
  * 
  * Performance optimization: Analytics are deferred until after
  * the page is interactive to improve FCP and TTI.
@@ -8,9 +8,17 @@
 
 import { StrictMode, Component, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { ConvexProvider, ConvexReactClient } from 'convex/react';
 import { App } from './App';
 import { useGameStore } from './stores/gameStore';
 import './index.css';
+
+/**
+ * Initialize Convex client
+ * Falls back gracefully if VITE_CONVEX_URL is not set (dev without Convex)
+ */
+const convexUrl = import.meta.env.VITE_CONVEX_URL as string | undefined;
+const convex = convexUrl ? new ConvexReactClient(convexUrl) : null;
 
 /**
  * Lightweight Error Boundary that doesn't depend on Sentry for initial render.
@@ -149,8 +157,8 @@ if (!rootElement) {
     throw new Error('Root element not found');
 }
 
-// Render the app with lightweight error boundary
-createRoot(rootElement).render(
+// Render the app with ConvexProvider and sync (graceful fallback if Convex not configured)
+const appContent = (
     <StrictMode>
         <LightweightErrorBoundary>
             <App />
@@ -158,3 +166,29 @@ createRoot(rootElement).render(
     </StrictMode>
 );
 
+// Dynamic import of ConvexSyncProvider to avoid loading when Convex isn't configured
+const renderApp = async () => {
+    if (convex) {
+        try {
+            const { default: ConvexSyncProvider } = await import('./components/ConvexSyncProvider');
+            createRoot(rootElement).render(
+                <ConvexProvider client={convex}>
+                    <ConvexSyncProvider>
+                        {appContent}
+                    </ConvexSyncProvider>
+                </ConvexProvider>
+            );
+        } catch (error) {
+            console.warn('[main] ConvexSyncProvider not available, using basic mode:', error);
+            createRoot(rootElement).render(
+                <ConvexProvider client={convex}>
+                    {appContent}
+                </ConvexProvider>
+            );
+        }
+    } else {
+        createRoot(rootElement).render(appContent);
+    }
+};
+
+renderApp();

@@ -158,10 +158,10 @@ const ResetZone = memo(function ResetZone() {
                     ⟲
                 </Text>
 
-                {/* "RESET" label */}
+                {/* "RESET" label - positioned BELOW icon to avoid overlap */}
                 <Text
-                    position={[0, 0.8, 0]}
-                    fontSize={0.3}
+                    position={[0, 0.7, 0]}
+                    fontSize={0.5}
                     color="#ffffff"
                     anchorX="center"
                     anchorY="middle"
@@ -170,12 +170,17 @@ const ResetZone = memo(function ResetZone() {
                 </Text>
             </group>
 
-            {/* Confirmation prompt - 3D text above zone */}
+            {/* Confirmation prompt - 3D text HIGH above zone for TransJakarta visibility */}
             {showConfirm && (
-                <group position={[ZONE_POSITION[0], 3, ZONE_POSITION[2]]}>
+                <group position={[ZONE_POSITION[0], 6.5, ZONE_POSITION[2]]}>
+                    {/* Background panel */}
+                    <mesh position={[0, 0, -0.05]}>
+                        <planeGeometry args={[6, 2]} />
+                        <meshBasicMaterial color="#000000" transparent opacity={0.9} />
+                    </mesh>
                     <Text
-                        position={[0, 0.5, 0]}
-                        fontSize={0.4}
+                        position={[0, 0.4, 0]}
+                        fontSize={0.5}
                         color="#ffffff"
                         anchorX="center"
                         anchorY="middle"
@@ -183,8 +188,8 @@ const ResetZone = memo(function ResetZone() {
                         Reset all collectibles?
                     </Text>
                     <Text
-                        position={[0, 0, 0]}
-                        fontSize={0.35}
+                        position={[0, -0.3, 0]}
+                        fontSize={0.4}
                         color="#ffff00"
                         anchorX="center"
                         anchorY="middle"
@@ -194,12 +199,16 @@ const ResetZone = memo(function ResetZone() {
                 </group>
             )}
 
-            {/* Success message */}
+            {/* Success message - also high */}
             {message && (
-                <group position={[ZONE_POSITION[0], 3, ZONE_POSITION[2]]}>
+                <group position={[ZONE_POSITION[0], 6.5, ZONE_POSITION[2]]}>
+                    <mesh position={[0, 0, -0.05]}>
+                        <planeGeometry args={[5, 1.5]} />
+                        <meshBasicMaterial color="#000000" transparent opacity={0.9} />
+                    </mesh>
                     <Text
                         position={[0, 0, 0]}
-                        fontSize={0.5}
+                        fontSize={0.6}
                         color="#00ff00"
                         anchorX="center"
                         anchorY="middle"

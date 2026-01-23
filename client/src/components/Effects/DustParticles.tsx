@@ -1,6 +1,12 @@
 /**
  * DustParticles - Vehicle dust trail effect behind wheels
  * Uses Points + BufferGeometry with pre-allocated arrays (zero GC)
+ * 
+ * Quality-aware:
+ * - Low: Disabled completely
+ * - Medium: Reduced particle count
+ * - High: Full particles
+ * 
  * @module components/Effects/DustParticles
  */
 
@@ -22,9 +28,15 @@ export const DustParticles = memo(function DustParticles() {
     const playerSpeed = useGameStore((state) => state.player.speed);
     const isBoosting = useGameStore((state) => state.vehicle.isBoosting);
     const showMobileControls = useGameStore((state) => state.ui.showMobileControls);
+    const graphicsQuality = useGameStore((state) => state.settings.graphicsQuality);
 
-    // Reduce particles on mobile
-    const particleCount = showMobileControls ? 12 : MAX_PARTICLES;
+    // IMPORTANT: All hooks must be called before any conditional return
+    // Calculate particle count based on quality (used even if disabled)
+    const particleCount = useMemo(() => {
+        if (graphicsQuality === 'low') return 0;
+        if (graphicsQuality === 'medium' || showMobileControls) return 10;
+        return MAX_PARTICLES;
+    }, [graphicsQuality, showMobileControls]);
 
     // Pre-allocate arrays (zero GC during animation)
     const positions = useMemo(() => new Float32Array(MAX_PARTICLES * 3), []);
@@ -48,14 +60,15 @@ export const DustParticles = memo(function DustParticles() {
     }, [particleCount, positions]);
 
     useFrame((state, delta) => {
-        if (!pointsRef.current) return;
+        // Skip all work if disabled (Low quality)
+        if (graphicsQuality === 'low' || !pointsRef.current) return;
 
         const now = state.clock.elapsedTime;
 
         // Emit new particles based on speed
         const emitRate = playerSpeed > 2 ? (isBoosting ? 0.03 : 0.08) : 0;
 
-        if (playerSpeed > 2 && now - lastEmitTime.current > emitRate) {
+        if (playerSpeed > 2 && now - lastEmitTime.current > emitRate && particleCount > 0) {
             const idx = emitIndex.current;
             const idx3 = idx * 3;
 
@@ -108,6 +121,11 @@ export const DustParticles = memo(function DustParticles() {
         if (posAttr) posAttr.needsUpdate = true;
     });
 
+    // Return null for Low quality AFTER all hooks are called
+    if (graphicsQuality === 'low') {
+        return null;
+    }
+
     return (
         <points ref={pointsRef}>
             <bufferGeometry>
@@ -131,4 +149,3 @@ export const DustParticles = memo(function DustParticles() {
 });
 
 export default DustParticles;
-

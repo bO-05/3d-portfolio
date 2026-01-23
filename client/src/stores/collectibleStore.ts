@@ -93,6 +93,9 @@ export const useCollectibleStore = create<CollectibleState>((set, get) => ({
                 detail: { id, total: collected.size }
             }));
 
+            // Emit sync event for Convex backend (non-blocking)
+            window.dispatchEvent(new CustomEvent('collectible:sync'));
+
             // Deferred save (non-blocking)
             deferredSave(collected, revealedBoxes);
 
@@ -107,6 +110,8 @@ export const useCollectibleStore = create<CollectibleState>((set, get) => ({
             revealedBoxes.add(id);
             set({ revealedBoxes: new Set(revealedBoxes) });
             deferredSave(collected, revealedBoxes);
+            // Emit sync event for Convex backend
+            window.dispatchEvent(new CustomEvent('collectible:sync'));
         }
     },
 
@@ -149,6 +154,9 @@ export const useCollectibleStore = create<CollectibleState>((set, get) => ({
             collected: [],
             revealedBoxes: []
         }));
+
+        // Emit sync event to clear server data immediately (not debounced)
+        window.dispatchEvent(new CustomEvent('collectible:sync'));
     },
 }));
 

@@ -26,6 +26,9 @@ import { DustParticles } from './Effects/DustParticles';
 import { usePerformanceGate } from '../hooks/usePerformanceGate';
 import { useAudio } from '../hooks/useAudio';
 import { useAchievements } from '../hooks/useAchievements';
+import { SpeedrunZone } from './Scene/SpeedrunZone';
+import { SpeedrunRings } from './Scene/SpeedrunRings';
+import { LeaderboardBillboard } from './Scene/LeaderboardBillboard';
 
 /**
  * Main 3D Experience that contains all scene elements
@@ -97,6 +100,15 @@ export const Experience = memo(function Experience() {
 
             {/* Collectibles */}
             <CollectibleManager />
+
+            {/* Speedrun trigger zone */}
+            <SpeedrunZone />
+
+            {/* Speedrun-only rings - only visible during speedrun */}
+            <SpeedrunRings />
+
+            {/* In-world leaderboard billboard */}
+            <LeaderboardBillboard />
 
             {/* Sky dome */}
             <Suspense fallback={null}>

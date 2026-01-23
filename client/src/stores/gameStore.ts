@@ -184,12 +184,21 @@ export const useGameStore = create<GameStore>((set) => ({
         })),
 
     markBuildingVisited: (buildingId) =>
-        set((state) => ({
-            game: {
-                ...state.game,
-                visitedBuildings: [...new Set([...state.game.visitedBuildings, buildingId])],
-            },
-        })),
+        set((state) => {
+            const newVisitedBuildings = [...new Set([...state.game.visitedBuildings, buildingId])];
+
+            // Emit sync event for Convex backend (non-blocking)
+            if (newVisitedBuildings.length > state.game.visitedBuildings.length) {
+                window.dispatchEvent(new CustomEvent('building:visited'));
+            }
+
+            return {
+                game: {
+                    ...state.game,
+                    visitedBuildings: newVisitedBuildings,
+                },
+            };
+        }),
 
     foundSecret: () =>
         set((state) => ({

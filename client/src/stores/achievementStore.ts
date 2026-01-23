@@ -73,6 +73,9 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
 
             deferredSave(newUnlocked);
 
+            // Emit sync event for Convex backend (non-blocking)
+            window.dispatchEvent(new CustomEvent('achievement:sync'));
+
             // Track in PostHog
             if ((window as any).posthog) {
                 (window as any).posthog.capture('achievement_unlocked', { id });
