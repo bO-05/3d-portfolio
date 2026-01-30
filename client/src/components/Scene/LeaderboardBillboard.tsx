@@ -18,8 +18,8 @@ import { useQuery } from 'convex/react';
 import type { Mesh } from 'three';
 import { api } from '../../../convex/_generated/api';
 
-// Position aligned with library [-25,0,25] and music studio [25,0,25]
-const SIGNPOST_POSITION: [number, number, number] = [0, 0, 25];
+// Position moved to LEFT side near trees, facing toward center
+const SIGNPOST_POSITION: [number, number, number] = [-15, 0, 28];
 
 // Board dimensions
 const BOARD_WIDTH = 5;

@@ -290,3 +290,129 @@
         width: 100%;
     }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   STREAMING ENHANCEMENTS
+   ───────────────────────────────────────────────────────────── */
+
+/* Online/Offline Status Badge */
+.chat-status {
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+}
+
+.chat-status.online {
+    color: #34d399;
+}
+
+.chat-status.offline {
+    color: #f87171;
+}
+
+/* Streaming Cursor */
+.chat-cursor {
+    display: inline-block;
+    animation: blink 0.5s step-end infinite;
+    color: #a5b4fc;
+    margin-left: 2px;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+/* Cancel Button */
+.chat-cancel {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.chat-cancel:hover {
+    transform: translateY(-2px);
+}
+
+/* Offline Warning */
+.chat-offline-warning {
+    background: rgba(251, 191, 36, 0.2);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    color: #fcd34d;
+    text-align: center;
+}
+
+.chat-offline-warning p {
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+/* Error Retry Button */
+.chat-error button {
+    background: transparent;
+    border: 1px solid #fca5a5;
+    color: #fca5a5;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.2s;
+}
+
+.chat-error button:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MARKDOWN STYLES FOR CHAT
+   ───────────────────────────────────────────────────────────── */
+
+/* Bold text */
+.chat-message-content strong {
+    font-weight: 600;
+    color: inherit;
+}
+
+/* Italic text */
+.chat-message-content em {
+    font-style: italic;
+}
+
+/* Inline code */
+.chat-inline-code {
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    font-size: 0.85em;
+    color: #c7d2fe;
+}
+
+/* Links */
+.chat-link {
+    color: #818cf8;
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(129, 140, 248, 0.5);
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.chat-link:hover {
+    color: #a5b4fc;
+    border-bottom-color: #a5b4fc;
+}

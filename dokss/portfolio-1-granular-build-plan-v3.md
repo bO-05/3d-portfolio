@@ -218,7 +218,9 @@ ASSETS - Hunyuan 3d-v3 via FAL.ai (Buildings):
   5. `house.glb`: "low poly house, traditional Indonesian javanese architecture, small, game asset style"
   6. `bajaj.glb`: "low poly bajaj auto rickshaw, Indonesian style, orange and black, game asset"
   7. `TJ.glb`: "low poly transjakarta bus, Indonesian style, orange and black, game asset" -> this is for easter egg where user press konami buttons and vehicle turns into Transjakarta bus
-- Download all 7 as .glb when generated (~5 minutes each)
+  8. `arcade.glb`: "low poly arcade building, game asset, simple geometry"
+  9. `workshop.glb`: "low poly workshop building, game asset, simple geometry"
+- Download all 9 as .glb when generated (~5 minutes each)
 - Save in public/models/buildings/ for buildings and public/models/vehicles/ for vehicle
 
 SESSION 3 - Imagen 4 via Fal.ai (Textures):

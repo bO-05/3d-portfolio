@@ -80,3 +80,6 @@ coverage/
 *.local
 .eslintcache
 .stylelintcache
+
+.agent/*
+.agents/*

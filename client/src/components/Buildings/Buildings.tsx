@@ -13,8 +13,9 @@ import { useGameStore } from '../../stores/gameStore';
 useGLTF.preload('/models/buildings/house.glb');
 useGLTF.preload('/models/buildings/internet-cafe.glb');
 useGLTF.preload('/models/buildings/library.glb');
-useGLTF.preload('/models/buildings/music-studio.glb');
+useGLTF.preload('/models/buildings/arcade.glb');
 useGLTF.preload('/models/buildings/warung.glb');
+useGLTF.preload('/models/buildings/workshop.glb');
 
 // Building configurations
 // Y position is set to 0 - the Building component will auto-adjust using bounding box
@@ -44,20 +45,28 @@ export const BUILDINGS_CONFIG = [
         parkingPos: [-18, 0.1, 18] as [number, number, number],
     },
     {
-        id: 'music-studio',
-        modelPath: '/models/buildings/music-studio.glb',
+        id: 'arcade',
+        modelPath: '/models/buildings/arcade.glb',
         position: [25, 0, 25] as [number, number, number],
         rotation: [0, -Math.PI * 0.75, 0] as [number, number, number],
-        scale: 3,
-        parkingPos: [18, 0.1, 18] as [number, number, number],
+        scale: 5,
+        parkingPos: [20, 0.1, 20] as [number, number, number],
     },
     {
         id: 'warung',
         modelPath: '/models/buildings/warung.glb',
         position: [0, 0, -35] as [number, number, number],
-        rotation: [0, Math.PI, 0] as [number, number, number],
+        rotation: [0, 0, 0] as [number, number, number],
         scale: 3,
         parkingPos: [0, 0.1, -25] as [number, number, number], // In front of Warung
+    },
+    {
+        id: 'workshop',
+        modelPath: '/models/buildings/workshop.glb',
+        position: [0, 0, 40] as [number, number, number],
+        rotation: [0, 0, 0] as [number, number, number],
+        scale: 10, // Increased from 3 to make building larger
+        parkingPos: [0, 0.1, 30] as [number, number, number], // Offset to right, away from billboard
     },
 ];
 
