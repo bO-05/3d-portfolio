@@ -50,10 +50,10 @@ const app = express();
 // MIDDLEWARE
 // ─────────────────────────────────────────────────────────────
 
-// Security headers for embedding
+// Security headers for embedding in DEV.to iframe
 app.use((req: Request, res: Response, next: NextFunction) => {
-    res.setHeader('X-Frame-Options', 'ALLOWALL');
-    res.setHeader('Content-Security-Policy', "frame-ancestors 'self' https://dev.to");
+    // CSP frame-ancestors is the modern standard (X-Frame-Options removed - ALLOWALL is invalid)
+    res.setHeader('Content-Security-Policy', "frame-ancestors 'self' https://dev.to https://*.dev.to");
     next();
 });
 

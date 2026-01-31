@@ -106,8 +106,20 @@ export const projects: Project[] = [
     },
 
     // ═══════════════════════════════════════════════════════════════
-    // WORKSHOP - Experiments & Prototypes (5 projects)
+    // WORKSHOP - Experiments & Prototypes (6 projects)
     // ═══════════════════════════════════════════════════════════════
+    {
+        id: 'canggu-fun',
+        title: 'Canggu.fun',
+        description: 'Digital nomad community platform',
+        longDescription: 'A full-featured digital nomad community platform for Canggu, Bali. Your Complete Nomad Ecosystem - from finding the perfect workspace to building lasting connections in Canggu, we\'ve got you covered.',
+        tech: ['React 19', 'TypeScript', 'Vite', 'Tailwind CSS 4', 'shadcn/ui', 'Zustand', 'TanStack Query', 'Supabase'],
+        links: {
+            demo: 'https://canggu.fun',
+        },
+        buildingId: 'workshop',
+        featured: true,
+    },
     {
         id: 'team-morph',
         title: 'TeamMorph',

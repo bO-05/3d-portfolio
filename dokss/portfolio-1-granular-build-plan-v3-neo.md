@@ -1377,6 +1377,7 @@ TEST:
 > **Phase 7.1 Status:** ✅ COMPLETE - All R3F anti-patterns fixed, performance verified
 > **Phase 7.2 Status:** ✅ COMPLETE - WebGL robustness, progressive enhancement, error boundaries
 > **Phase 7.3 Status:** ✅ COMPLETE - Memory leak audit complete, no leaks found
+> **Phase 8 Status:** 🔄 IN PROGRESS - Cloud Run deployment (no local Docker required)
 
 ### Task 7.3 Audit Results:
 - ✅ **useGLTF/useTexture**: drei hooks cache globally, no disposal needed
@@ -1387,18 +1388,41 @@ TEST:
 - ✅ **Collectible store**: Uses Sets, no GPU resources stored
 - ✅ **Perf monitor**: Now hidden in production (only shows with ?debug=true)
 
-1. **Task 8.1** — Cloud Run Deployment - Monorepo Dockerfile
-   - Create multi-stage Docker build (client + server)
-   - Update server to serve static Vite build
-   - Test locally: `docker build -t portfolio .`
-   - Est. time: 1-2 hours
+### Phase 8 — Cloud Run Deployment (UPDATED APPROACH)
 
-2. **Task 8.2-8.3** — Cloud Build & Cold Start Optimization
-   - Set up cloudbuild.yaml with Container Registry integration
-   - Create secrets in Secret Manager (GEMINI_API_KEY)
-   - Configure Cloud Run service (min-instances=1, cpu-boost)
-   - Verify <2s cold start latency
-   - Est. time: 2-3 hours
+**Key Change:** No local Docker required! Using `gcloud run deploy --source .` builds remotely.
 
-**Total Estimated**: 8-12 hours for full Phase 7.2-8 completion
+1. **Task 8.1** — Deployment Configuration ✅ IN PROGRESS
+   - Create Dockerfile (multi-stage: client + server build)
+   - Create .gcloudignore (exclude node_modules, .git)
+   - Fix X-Frame-Options header (ALLOWALL is invalid)
+   - Est. time: 30 minutes
+
+2. **Task 8.2** — GCP Setup (User Action)
+   - `gcloud auth login`
+   - `gcloud services enable cloudbuild run secretmanager`
+   - Create secret: `gemini-api-key`
+   - Est. time: 15 minutes
+
+3. **Task 8.3** — Deploy Command
+   ```bash
+   gcloud run deploy jakarta-portfolio \
+     --source . \
+     --region us-central1 \
+     --allow-unauthenticated \
+     --memory 1Gi --cpu 1 \
+     --min-instances 1 --cpu-boost \
+     --set-secrets=GEMINI_API_KEY=gemini-api-key:latest \
+     --labels dev-tutorial=devnewyear2026
+   ```
+
+4. **Task 8.4** — Verification
+   - Access Cloud Run URL
+   - Test 3D scene loads
+   - Test Warung chat
+   - Embed in DEV.to draft
+
+**Architecture Note:** Cloud Run has NO GPU. All 3D rendering happens on USER's browser.
+
+**Cost Estimate:** ~$5-10/month (min-instances=1) + ~$1/month egress for 100 views/day.
 

@@ -1,0 +1,42 @@
+# Dependencies (fresh install in container)
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Build outputs (rebuild in container)
+dist/
+build/
+client/dist/
+server/dist/
+
+# Git & IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Agent folders (AI assistant configs)
+.agent/
+.agents/
+
+# Documentation (not needed in container)
+doks/
+dokss/
+*.md
+
+# Environment files (secrets via GCP Secret Manager)
+.env
+.env.*
+
+# Logs & caches
+*.log
+.cache/
+.vite/
+.turbo/
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+__tests__/
+coverage/

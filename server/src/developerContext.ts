@@ -101,6 +101,7 @@ export const PROJECT_SUMMARIES: Record<string, BuildingSummary> = {
         name: 'Workshop',
         description: 'Experiments & Prototypes',
         projects: [
+            { name: 'Canggu.fun', desc: 'Digital nomad community for Bali' },
             { name: 'TeamMorph', desc: 'AI talent development' },
             { name: 'ThreadHive', desc: 'Knowledge graphs (prototype)' },
             { name: 'ZapCardify', desc: 'Business cards (prototype)' },
