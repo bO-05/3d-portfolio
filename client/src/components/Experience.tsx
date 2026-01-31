@@ -8,6 +8,7 @@ import { memo, useRef, useEffect, Suspense } from 'react';
 import { Physics } from '@react-three/cannon';
 import { useProgress } from '@react-three/drei';
 import { useGameStore } from '../stores/gameStore';
+import { useGraphicsStore } from '../stores/graphicsStore';
 import { trackVehicleMoved } from '../lib/analytics';
 
 // Scene components
@@ -43,6 +44,7 @@ export const Experience = memo(function Experience() {
     const { progress } = useProgress();
     const hasTrackedMovement = useRef(false);
     const playerSpeed = useGameStore((state) => state.player.speed);
+    const effectsEnabled = useGraphicsStore((state) => state.effectsEnabled);
 
 
 
@@ -128,11 +130,11 @@ export const Experience = memo(function Experience() {
             {/* In-world contextual hints */}
             <InWorldHints />
 
-            {/* Collectible pickup sparkle effects */}
-            <CollectibleSparkle />
+            {/* Collectible pickup sparkle effects - only on high-end devices */}
+            {effectsEnabled && <CollectibleSparkle />}
 
-            {/* Vehicle dust trail particles */}
-            <DustParticles />
+            {/* Vehicle dust trail particles - only on high-end devices */}
+            {effectsEnabled && <DustParticles />}
         </Physics>
     );
 });

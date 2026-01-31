@@ -4,26 +4,12 @@
  * @module components/UI/SettingsButton
  */
 
-import { memo, useState, useEffect } from 'react';
-import { useGameStore } from '../../stores/gameStore';
+import { memo, useState } from 'react';
 import { SettingsModal } from './SettingsModal';
 import './SettingsButton.css';
 
 export const SettingsButton = memo(function SettingsButton() {
     const [isOpen, setIsOpen] = useState(false);
-    const updateSettings = useGameStore((state) => state.updateSettings);
-
-    // Load quality from localStorage on mount
-    useEffect(() => {
-        try {
-            const savedQuality = localStorage.getItem('graphicsQuality');
-            if (savedQuality === 'low' || savedQuality === 'high') {
-                updateSettings({ graphicsQuality: savedQuality });
-            }
-        } catch (e) {
-            console.warn('[SettingsButton] localStorage unavailable');
-        }
-    }, [updateSettings]);
 
     return (
         <>
@@ -35,10 +21,7 @@ export const SettingsButton = memo(function SettingsButton() {
                 ⚙️
             </button>
 
-            <SettingsModal
-                isOpen={isOpen}
-                onClose={() => setIsOpen(false)}
-            />
+            <SettingsModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
         </>
     );
 });

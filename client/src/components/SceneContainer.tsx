@@ -1,30 +1,44 @@
-import { Suspense } from 'react';
+import { Suspense, memo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Perf } from 'r3f-perf';
-// Mobile detection helper
 import { Experience } from './Experience';
-const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768;
+import { useGraphicsStore } from '../stores/graphicsStore';
+import WebGLErrorBoundary from './UI/WebGLErrorBoundary';
+import { ContextRecoveryHandler } from './Scene/ContextRecoveryHandler';
 
 /**
  * Container for the 3D Scene
  * Lazy loaded to prevent Three.js execution from blocking initial page load
+ * Uses graphics store for adaptive quality based on device capabilities
  */
-export default function SceneContainer() {
+function SceneContainer() {
+    const { dpr, shadowsEnabled, antialias } = useGraphicsStore();
+
+    // Key forces Canvas remount when critical WebGL settings change
+    // (these props are only read during Canvas initialization)
+    const canvasKey = `${shadowsEnabled}-${antialias}-${dpr}`;
+
     return (
-        <Canvas
-            shadows={!isMobileDevice}
-            camera={{ position: [0, 15, 12], fov: 50 }}
-            gl={{
-                antialias: !isMobileDevice,
-                powerPreference: 'high-performance',
-                failIfMajorPerformanceCaveat: false,
-            }}
-            dpr={isMobileDevice ? [1, 1.5] : [1, 2]}
-        >
-            <Perf position="top-left" />
-            <Suspense fallback={null}>
-                <Experience />
-            </Suspense>
-        </Canvas>
+        <WebGLErrorBoundary>
+            <Canvas
+                key={canvasKey}
+                shadows={shadowsEnabled}
+                camera={{ position: [0, 15, 12], fov: 50 }}
+                gl={{
+                    antialias,
+                    powerPreference: 'high-performance',
+                    failIfMajorPerformanceCaveat: false,
+                }}
+                dpr={dpr}
+            >
+                <ContextRecoveryHandler />
+                <Perf position="top-left" />
+                <Suspense fallback={null}>
+                    <Experience />
+                </Suspense>
+            </Canvas>
+        </WebGLErrorBoundary>
     );
 }
+
+export default memo(SceneContainer);
