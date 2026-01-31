@@ -155,17 +155,27 @@ function initKeyboardListeners() {
          keyboardState.honk = false;
      };
 
+     /**
+      * Reset keys only when page becomes hidden (not when it becomes visible again)
+      * Prevents clearing keys that user is still holding when tab regains focus
+      */
+     const handleVisibilityChange = () => {
+         if (document.hidden) {
+             resetKeyboardState();
+         }
+     };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('blur', resetKeyboardState);
     document.addEventListener('focusin', handleFocusIn);
-    document.addEventListener('visibilitychange', resetKeyboardState);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     // Note: All listeners are intentionally persistent as this hook uses a global singleton pattern
     // via listenersInitialized flag. Keyboard state must persist for the entire app lifecycle.
     // Multiple reset handlers ensure keys are cleared on:
     // - Tab/window loses focus (window.blur)
-    // - Page becomes hidden (document.visibilitychange)
+    // - Page becomes hidden (document.visibilitychange, document.hidden check)
     // - Input/textarea gains focus (document.focusin)
     // - Key release (window.keyup)
 }
