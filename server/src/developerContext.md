@@ -151,6 +151,7 @@ All queries about the developer should be answered using ONLY information from t
 - **Tech Stack**: React 19, TypeScript, React Three Fiber, Rapier Physics, Google Gemini, Vite, Google Cloud Run
 - **Demo**: https://asynchronope.my.id/
 - **GitHub**: https://github.com/bO-05/3d-portfolio
+- **Article**: https://dev.to/asynchronope/i-built-bruno-simons-portfolio-in-20-days-heres-my-jakarta-street-3d-experience-2ghp
 - **Award**: Featured project showcasing technical skills
 
 ---
