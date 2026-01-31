@@ -37,6 +37,12 @@ const SPEED_UPDATE_INTERVAL = 200;
 const WHEELIE_MAX_TILT = 0.35; // ~20 degrees in radians
 const WHEELIE_DURATION = 1500; // ms
 
+// Geometry constants - prevent recreation
+const PHYSICS_BOX_ARGS = [2, 2, 3];
+const HEADLIGHT_SPHERE_ARGS = [0.15, 12, 12];
+const TJ_HEADLIGHT_SPHERE_ARGS = [0.09, 12, 12];
+const HEADLIGHT_CYLINDER_ARGS = [0.2, 0.15, 0.25, 12];
+
 /**
  * Hook to subscribe to easter egg state changes
  */
@@ -264,7 +270,7 @@ export const Bajaj = memo(function Bajaj() {
     <>
       {/* Invisible physics box */}
       <mesh ref={physicsRef} visible={false}>
-        <boxGeometry args={[2, 2, 3]} />
+        <boxGeometry args={PHYSICS_BOX_ARGS as any} />
       </mesh>
 
       {/* Visible 3D model */}
@@ -285,7 +291,7 @@ export const Bajaj = memo(function Bajaj() {
           {/* Bajaj Mesh */}
           {!isTransJakarta && (
             <mesh position={[0.01, -0.53, 2.8]}>
-              <sphereGeometry args={[0.15, 12, 12]} />
+              <sphereGeometry args={HEADLIGHT_SPHERE_ARGS as any} />
               <meshStandardMaterial
                 color={headlightsOn ? "#ffffcc" : "#696666"}
                 emissive={headlightsOn ? "#ffff00" : "#bebdbd"}
@@ -298,8 +304,8 @@ export const Bajaj = memo(function Bajaj() {
           {isTransJakarta && (
             <>
               {/* Left headlight */}
-              <mesh position={[-1.275, -1.1, 4.5]}>
-                <sphereGeometry args={[0.09, 12, 12]} />
+               <mesh position={[-1.275, -1.1, 4.5]}>
+                 <sphereGeometry args={TJ_HEADLIGHT_SPHERE_ARGS as any} />
                 <meshStandardMaterial
                   color={headlightsOn ? "#ffffcc" : "#696666"}
                   emissive={headlightsOn ? "#ffff00" : "#bebdbd"}
@@ -308,7 +314,7 @@ export const Bajaj = memo(function Bajaj() {
               </mesh>
               {/* Right headlight */}
               <mesh position={[1.275, -1.1, 4.5]}>
-                <sphereGeometry args={[0.09, 12, 12]} />
+                <sphereGeometry args={TJ_HEADLIGHT_SPHERE_ARGS as any} />
                 <meshStandardMaterial
                   color={headlightsOn ? "#ffffcc" : "#696666"}
                   emissive={headlightsOn ? "#ffff00" : "#bebdbd"}
@@ -320,7 +326,7 @@ export const Bajaj = memo(function Bajaj() {
 
           {!isTransJakarta && (
             <mesh position={[0.01, -0.53, 2.6]} rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.2, 0.15, 0.25, 12]} />
+              <cylinderGeometry args={HEADLIGHT_CYLINDER_ARGS as any} />
               <meshStandardMaterial color="#c4c0c0" metalness={0.9} roughness={0.1} />
             </mesh>
           )}

@@ -5,7 +5,7 @@
  * @module components/UI/InWorldHints
  */
 
-import { memo, useState, useEffect, useSyncExternalStore, useRef } from 'react';
+import { memo, useState, useEffect, useSyncExternalStore, useRef, useMemo } from 'react';
 import { Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useGameStore } from '../../stores/gameStore';
@@ -37,11 +37,10 @@ export const InWorldHints = memo(function InWorldHints() {
 
     const [currentHint, setCurrentHint] = useState<string | null>(null);
     const [opacity, setOpacity] = useState(0);
-    const [yOffset, setYOffset] = useState(0);
     const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Define hints with conditions
-    const hints: Hint[] = [
+    // Define hints with conditions - memoized to avoid recreating array
+    const hints: Hint[] = useMemo(() => [
         {
             id: 'start-engine',
             text: 'Press E to start engine',
@@ -66,7 +65,7 @@ export const InWorldHints = memo(function InWorldHints() {
             condition: () => visitedBuildings.length === 0 && playerSpeed > 3,
             priority: 4,
         },
-    ];
+    ], [engineOn, playerSpeed, visitedBuildings.length]);
 
     // Check which hint to show
     useEffect(() => {
@@ -96,10 +95,12 @@ export const InWorldHints = memo(function InWorldHints() {
         };
     }, [engineOn, playerSpeed, visitedBuildings.length]);
 
-    // Floating animation
+    // Floating animation - use ref instead of state to avoid setState in useFrame
+    const yOffsetRef = useRef(0);
     useFrame((state) => {
-        setYOffset(Math.sin(state.clock.elapsedTime * 2) * 0.1);
+        yOffsetRef.current = Math.sin(state.clock.elapsedTime * 2) * 0.1;
     });
+    const computedYOffset = yOffsetRef.current;
 
     if (!currentHint) return null;
 
@@ -108,7 +109,7 @@ export const InWorldHints = memo(function InWorldHints() {
     const hintHeight = isTransJakarta ? 6.5 : 4;
 
     return (
-        <group position={[playerPosition.x, playerPosition.y + hintHeight + yOffset, playerPosition.z]}>
+        <group position={[playerPosition.x, playerPosition.y + hintHeight + computedYOffset, playerPosition.z]}>
             {/* Background pill */}
             <mesh position={[0, 0, -0.1]}>
                 <planeGeometry args={[4, 0.6]} />

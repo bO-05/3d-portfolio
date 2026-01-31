@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { Perf } from 'r3f-perf';
 // Mobile detection helper
 import { Experience } from './Experience';
 const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -20,6 +21,7 @@ export default function SceneContainer() {
             }}
             dpr={isMobileDevice ? [1, 1.5] : [1, 2]}
         >
+            <Perf position="top-left" />
             <Suspense fallback={null}>
                 <Experience />
             </Suspense>

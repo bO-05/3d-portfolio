@@ -28,80 +28,109 @@ const keyboardState: KeyboardState = {
 
 let listenersInitialized = false;
 
+/**
+ * Check if any text input is currently focused
+ * Prevents game hotkeys from firing while typing
+ */
+function isInputFocused(): boolean {
+     const activeElement = document.activeElement;
+     if (!activeElement) return false;
+     
+     // Block hotkeys if typing in input, textarea, or contentEditable
+     return (
+         activeElement instanceof HTMLInputElement ||
+         activeElement instanceof HTMLTextAreaElement ||
+         (activeElement instanceof HTMLElement && activeElement.isContentEditable)
+     );
+}
+
 function initKeyboardListeners() {
-    if (listenersInitialized) return;
-    listenersInitialized = true;
+     if (listenersInitialized) return;
+     listenersInitialized = true;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-        // Movement keys
-        switch (e.code) {
-            case 'KeyW':
-            case 'ArrowUp':
-                keyboardState.forward = true;
-                break;
-            case 'KeyS':
-            case 'ArrowDown':
-                keyboardState.backward = true;
-                break;
-            case 'KeyA':
-            case 'ArrowLeft':
-                keyboardState.left = true;
-                break;
-            case 'KeyD':
-            case 'ArrowRight':
-                keyboardState.right = true;
-                break;
-            case 'ShiftLeft':
-            case 'ShiftRight':
-                keyboardState.boost = true;
-                break;
-            case 'Space':
-                keyboardState.honk = true;
-                break;
-        }
+     const handleKeyDown = (e: KeyboardEvent) => {
+         // Don't process game hotkeys if typing in input
+         const inputFocused = isInputFocused();
 
-        // Toggle keys (fire once on keydown)
-        if (e.code === 'KeyE' && !e.repeat) {
-            useGameStore.getState().toggleEngine();
-        }
-        if (e.code === 'KeyC' && !e.repeat) {
-            useGameStore.getState().toggleHeadlights();
-        }
-        if (e.code === 'KeyJ' && !e.repeat) {
-            useGameStore.getState().toggleJournal();
-        }
-        if (e.code === 'Escape' && !e.repeat) {
-            useGameStore.getState().closeJournal();
-        }
-    };
+         // Movement keys - blocked if input focused
+         if (!inputFocused) {
+             switch (e.code) {
+                 case 'KeyW':
+                 case 'ArrowUp':
+                     keyboardState.forward = true;
+                     break;
+                 case 'KeyS':
+                 case 'ArrowDown':
+                     keyboardState.backward = true;
+                     break;
+                 case 'KeyA':
+                 case 'ArrowLeft':
+                     keyboardState.left = true;
+                     break;
+                 case 'KeyD':
+                 case 'ArrowRight':
+                     keyboardState.right = true;
+                     break;
+                 case 'ShiftLeft':
+                 case 'ShiftRight':
+                     keyboardState.boost = true;
+                     break;
+                 case 'Space':
+                     e.preventDefault(); // Prevent space scrolling page
+                     keyboardState.honk = true;
+                     break;
+             }
+         }
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-        switch (e.code) {
-            case 'KeyW':
-            case 'ArrowUp':
-                keyboardState.forward = false;
-                break;
-            case 'KeyS':
-            case 'ArrowDown':
-                keyboardState.backward = false;
-                break;
-            case 'KeyA':
-            case 'ArrowLeft':
-                keyboardState.left = false;
-                break;
-            case 'KeyD':
-            case 'ArrowRight':
-                keyboardState.right = false;
-                break;
-            case 'ShiftLeft':
-            case 'ShiftRight':
-                keyboardState.boost = false;
-                break;
-            case 'Space':
-                keyboardState.honk = false;
-                break;
-        }
-    };
+         // Toggle keys (fire once on keydown) - also blocked if input focused
+         if (!inputFocused) {
+             if (e.code === 'KeyE' && !e.repeat) {
+                 useGameStore.getState().toggleEngine();
+             }
+             if (e.code === 'KeyC' && !e.repeat) {
+                 useGameStore.getState().toggleHeadlights();
+             }
+             if (e.code === 'KeyJ' && !e.repeat) {
+                 useGameStore.getState().toggleJournal();
+             }
+             if (e.code === 'Escape' && !e.repeat) {
+                 useGameStore.getState().closeJournal();
+             }
+         }
+     };
+
+     const handleKeyUp = (e: KeyboardEvent) => {
+         // Don't process if input focused
+         const inputFocused = isInputFocused();
+         
+         if (!inputFocused) {
+             switch (e.code) {
+                 case 'KeyW':
+                 case 'ArrowUp':
+                     keyboardState.forward = false;
+                     break;
+                 case 'KeyS':
+                 case 'ArrowDown':
+                     keyboardState.backward = false;
+                     break;
+                 case 'KeyA':
+                 case 'ArrowLeft':
+                     keyboardState.left = false;
+                     break;
+                 case 'KeyD':
+                 case 'ArrowRight':
+                     keyboardState.right = false;
+                     break;
+                 case 'ShiftLeft':
+                 case 'ShiftRight':
+                     keyboardState.boost = false;
+                     break;
+                 case 'Space':
+                     keyboardState.honk = false;
+                     break;
+             }
+         }
+     };
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
