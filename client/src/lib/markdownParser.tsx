@@ -126,11 +126,26 @@ function parseLine(line: string): React.ReactNode {
                     </code>
                 );
                 break;
-            case 'link':
+            case 'link': {
+                // XSS Prevention: Validate URL scheme before rendering
+                let safeUrl = '#';
+                try {
+                    const url = new URL(match.url);
+                    // Only allow safe protocols
+                    if (['http:', 'https:', 'mailto:'].includes(url.protocol)) {
+                        safeUrl = match.url;
+                    }
+                } catch {
+                    // Invalid URL format - check if it's a relative path or mailto
+                    if (match.url.startsWith('mailto:') || match.url.startsWith('/') || !match.url.includes(':')) {
+                        safeUrl = match.url;
+                    }
+                }
+                
                 elements.push(
                     <a
                         key={key++}
-                        href={match.url}
+                        href={safeUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="chat-link"
@@ -139,6 +154,7 @@ function parseLine(line: string): React.ReactNode {
                     </a>
                 );
                 break;
+            }
         }
 
         currentIndex = match.end;

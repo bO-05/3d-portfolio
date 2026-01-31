@@ -75,14 +75,21 @@ async function fetchWithRetry(
                 continue;
             }
 
+            // Client errors (4xx, except 429) will never succeed - throw immediately without retry
+            if (response.status >= 400 && response.status < 500) {
+                const errorData = await response.json().catch(() => ({ error: 'Request failed' }));
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
             // Other errors - throw immediately
             const errorData = await response.json().catch(() => ({ error: 'Request failed' }));
             throw new Error(errorData.error || `HTTP ${response.status}`);
         } catch (error) {
             lastError = error instanceof Error ? error : new Error('Unknown error');
 
-            // Don't retry on abort
+            // Don't retry on abort or 4xx client errors
             if (lastError.name === 'AbortError') throw lastError;
+            if (lastError.message.includes('HTTP 4')) throw lastError;
 
             const delay = Math.pow(2, attempt) * 1000;
             await sleep(delay);

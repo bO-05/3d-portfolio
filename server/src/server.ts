@@ -238,17 +238,32 @@ if (NODE_ENV === 'production') {
 // GRACEFUL SHUTDOWN
 // ─────────────────────────────────────────────────────────────
 
-let server: ReturnType<typeof app.listen>;
+let server: ReturnType<typeof app.listen> | undefined;
+let forceExitTimeout: NodeJS.Timeout | null = null;
+let shutdownInProgress = false;
 
 const shutdown = () => {
+    // Prevent multiple shutdown calls
+    if (shutdownInProgress) return;
+    shutdownInProgress = true;
+
     console.log('Received shutdown signal, closing gracefully...');
-    server?.close(() => {
+
+    // If server hasn't started yet, just exit
+    if (!server) {
+        console.log('Server not yet started, exiting immediately');
+        process.exit(0);
+    }
+
+    // Close the server gracefully
+    server.close(() => {
         console.log('Server closed');
+        if (forceExitTimeout) clearTimeout(forceExitTimeout);
         process.exit(0);
     });
 
-    // Force exit after 10s
-    setTimeout(() => {
+    // Force exit after 10s if graceful close doesn't complete
+    forceExitTimeout = setTimeout(() => {
         console.error('Forcing shutdown after timeout');
         process.exit(1);
     }, 10000);

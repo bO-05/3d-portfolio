@@ -99,35 +99,53 @@ All queries about the developer should be answered using ONLY information from t
 
 ### Experiments & Prototypes (Workshop)
 
-#### 1. Lore Campsite (Spiritdex)
-- **Description**: "Pokemon for real-life spirits" - collect AI-generated local legends
-- **Tech Stack**: React 19, TypeScript, Vite 6, Google Gemini, Neon PostgreSQL, Cloudflare R2
-- **Demo**: https://lorecamp.site/
-
-#### 2. ThreadHive
+#### 1. ThreadHive
 - **Description**: Transform discussions into interactive knowledge graphs
 - **Tech Stack**: React 18, Vite, Shadcn/ui, TanStack Query, React Router
 - **Demo**: https://threadhive.chronolove.app/
 
-#### 3. ZapCardify
+#### 2. ZapCardify
 - **Description**: Digital business card maker with QR codes
 - **Tech Stack**: Next.js 14, TypeScript, Firebase, Framer Motion, QRCode.react
 - **Demo**: https://zapcardify.chronolove.app/
 
-#### 4. LocationScout
+#### 3. LocationScout
 - **Description**: AI-powered business location analysis
 - **Tech Stack**: React, TypeScript, Supabase, WebSocket, Vite
 - **Demo**: https://locationscout.chronolove.app/
 
-#### 5. Mitra Alkasa
+#### 4. Mitra Alkasa
 - **Description**: E-commerce for Indonesian aluminum store
 - **Tech Stack**: React, TypeScript, Vite, Supabase, Zustand, React Query, Resend
 - **Demo**: https://mitra-alkasa.netlify.app/
 
-#### 6. TeamMorph
+#### 5. TeamMorph
 - **Description**: AI platform for talent development
 - **Tech Stack**: Base44, AI, Low-code
 - **Demo**: https://team-morph.base44.app/
+
+---
+
+### Games & Interactive (Arcade)
+
+#### 1. Lore Campsite (Spiritdex)
+- **Description**: "Pokemon for real-life spirits" - location-based game to collect AI-generated local legends
+- **Tech Stack**: React 19, TypeScript, Vite 6, Google Gemini, Neon PostgreSQL, Cloudflare R2, Vercel Edge
+- **Demo**: https://lorecamp.site/
+- **Article**: https://dev.to/asynchronope/spiritdex-an-explorers-journal-43l6
+
+#### 2. Ali Roboshoot
+- **Description**: Fast-paced arcade shooter on serverless architecture
+- **Tech Stack**: Phaser 3, Vite, Alibaba Cloud Function Compute, serverless-http
+- **Demo**: https://aliroboshoot.chronolove.app/
+- **Article**: https://dev.to/asynchronope/ali-roboshoot-a-phaser-3-arcade-shooter-powered-by-alibaba-cloud-30c
+
+#### 3. Jakarta Street Portfolio
+- **Description**: This very website! A 3D playable portfolio where you drive a bajaj around virtual Jakarta to discover projects
+- **Tech Stack**: React 19, TypeScript, React Three Fiber, Rapier Physics, Google Gemini, Vite, Google Cloud Run
+- **Demo**: https://asynchronope.my.id/
+- **GitHub**: https://github.com/bO-05/3d-portfolio
+- **Award**: Featured project showcasing technical skills
 
 ---
 
@@ -196,16 +214,6 @@ All queries about the developer should be answered using ONLY information from t
 
 ---
 
-### Games & Interactive (Arcade)
-
-#### 1. Ali Roboshoot
-- **Description**: Fast-paced arcade shooter on serverless architecture
-- **Tech Stack**: Phaser 3, Vite, Alibaba Cloud Function Compute, serverless-http
-- **Demo**: https://aliroboshoot.chronolove.app/
-- **Article**: https://dev.to/asynchronope/ali-roboshoot-a-phaser-3-arcade-shooter-powered-by-alibaba-cloud-30c
-
----
-
 ## ❓ Frequently Asked Questions
 
 ### General
@@ -263,10 +271,10 @@ A: Drive the bajaj (Indonesian three-wheeler) around the street. Park at differe
 | Building | Contents |
 |----------|----------|
 | **Internet Cafe** | Production AI apps & Hackathon winners (6 projects) |
-| **Workshop** | Experiments & Prototypes (6 projects) |
+| **Workshop** | Experiments & Prototypes (5 projects) |
 | **Library** | Tools, Templates & Documentation (8 projects) |
 | **House** | Personal & Life Projects (3 projects) |
-| **Arcade** | Games & Interactive (1 project) |
+| **Arcade** | Games & Interactive (3 projects) |
 | **Warung** | This AI chat - ask me anything! |
 
 ---

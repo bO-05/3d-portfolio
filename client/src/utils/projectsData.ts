@@ -191,7 +191,7 @@ export const projects: Project[] = [
         links: {
             github: 'https://github.com/bO-05/quakewatch',
             demo: 'https://quakewatch.vercel.app/',
-            devPost: 'https://devpost.com/software/quakewatch-real-time-global-earthquake-monitoring-platform ',
+            devPost: 'https://devpost.com/software/quakewatch-real-time-global-earthquake-monitoring-platform',
         },
         buildingId: 'library',
         award: '🥈 Finalist - Hack for Humanity 2025',
@@ -257,7 +257,7 @@ export const projects: Project[] = [
     {
         id: 'v0-void-corp',
         title: 'Void Corp Landing Page',
-        description: 'Corporation landing page emplate',
+        description: 'Corporation landing page template',
         longDescription: 'Corporation landing page template. Dark, mysterious aesthetic perfect for tech startups or creative agencies.',
         tech: ['v0 AI', 'React', 'Vercel'],
         links: {
@@ -306,7 +306,7 @@ export const projects: Project[] = [
     },
 
     // ═══════════════════════════════════════════════════════════════
-    // ARCADE - Games & Interactive (1 project)
+    // ARCADE - Games & Interactive (3 projects)
     // ═══════════════════════════════════════════════════════════════
     {
         id: 'lore-campsite',

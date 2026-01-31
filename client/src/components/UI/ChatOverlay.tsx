@@ -146,7 +146,11 @@ export const ChatOverlay = memo(function ChatOverlay() {
                     {error && (
                         <div className="chat-error">
                             <p>⚠️ {error}</p>
-                            <button onClick={() => sendMessage(messages[messages.length - 2]?.content || '')}>
+                            <button onClick={() => {
+                                // Find the last user message by role, not position
+                                const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')?.content || '';
+                                sendMessage(lastUserMessage);
+                            }}>
                                 Retry
                             </button>
                         </div>

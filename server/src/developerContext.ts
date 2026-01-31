@@ -30,7 +30,7 @@ export const DEVELOPER_PROFILE = {
     },
 
     specializations: [
-        'AI-Powered Applications with enterprise security',
+        'AI-Powered Applications',
         'Web3D and Interactive Game Development',
         'Full-Stack Application Architecture',
         'Rapid MVP Development (Hackathons)',
