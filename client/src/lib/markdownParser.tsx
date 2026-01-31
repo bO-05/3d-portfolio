@@ -129,16 +129,17 @@ function parseLine(line: string): React.ReactNode {
             case 'link': {
                 // XSS Prevention: Validate URL scheme before rendering
                 let safeUrl = '#';
+                const matchUrl = match.url ?? '';
                 try {
-                    const url = new URL(match.url);
+                    const url = new URL(matchUrl);
                     // Only allow safe protocols
                     if (['http:', 'https:', 'mailto:'].includes(url.protocol)) {
-                        safeUrl = match.url;
+                        safeUrl = matchUrl;
                     }
                 } catch {
                     // Invalid URL format - check if it's a relative path or mailto
-                    if (match.url.startsWith('mailto:') || match.url.startsWith('/') || !match.url.includes(':')) {
-                        safeUrl = match.url;
+                    if (matchUrl.startsWith('mailto:') || matchUrl.startsWith('/') || !matchUrl.includes(':')) {
+                        safeUrl = matchUrl;
                     }
                 }
                 

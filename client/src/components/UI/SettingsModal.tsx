@@ -1,12 +1,42 @@
 /**
  * SettingsModal - Graphics quality settings panel
- * Two tiers only: Low (potato) and High (full effects)
+ * Three tiers: Low (potato), Medium (balanced), High (full effects)
+ * Uses graphicsStore for WebGL-aware adaptive quality
  * @module components/UI/SettingsModal
  */
 
 import { memo, useCallback } from 'react';
-import { useGameStore } from '../../stores/gameStore';
+import { useGraphicsStore } from '../../stores/graphicsStore';
+import type { QualityTier } from '../../utils/deviceDetection';
 import './SettingsModal.css';
+
+interface QualityOption {
+    tier: QualityTier;
+    icon: string;
+    label: string;
+    desc: string;
+}
+
+const QUALITY_OPTIONS: QualityOption[] = [
+    {
+        tier: 'low',
+        icon: '🥔',
+        label: 'Low',
+        desc: 'Potato mode - no shadows, effects disabled',
+    },
+    {
+        tier: 'medium',
+        icon: '⚖️',
+        label: 'Medium',
+        desc: 'Balanced - shadows on, effects off',
+    },
+    {
+        tier: 'high',
+        icon: '✨',
+        label: 'High',
+        desc: 'Full effects with particles',
+    },
+];
 
 export const SettingsModal = memo(function SettingsModal({
     isOpen,
@@ -15,18 +45,22 @@ export const SettingsModal = memo(function SettingsModal({
     isOpen: boolean;
     onClose: () => void;
 }) {
-    const settings = useGameStore((state) => state.settings);
-    const updateSettings = useGameStore((state) => state.updateSettings);
+    const { qualityTier, autoDetected, shadowsEnabled, effectsEnabled } = useGraphicsStore();
+    const setQualityTier = useGraphicsStore((state) => state.setQualityTier);
+    const autoDetectQuality = useGraphicsStore((state) => state.autoDetectQuality);
+    const toggleShadows = useGraphicsStore((state) => state.toggleShadows);
+    const toggleEffects = useGraphicsStore((state) => state.toggleEffects);
 
-    const handleQualityChange = useCallback((quality: 'low' | 'high') => {
-        updateSettings({ graphicsQuality: quality });
-        // Persist to localStorage
-        try {
-            localStorage.setItem('graphicsQuality', quality);
-        } catch (e) {
-            console.warn('[SettingsModal] localStorage unavailable');
-        }
-    }, [updateSettings]);
+    const handleQualityChange = useCallback(
+        (tier: QualityTier) => {
+            setQualityTier(tier);
+        },
+        [setQualityTier]
+    );
+
+    const handleAutoDetect = useCallback(() => {
+        autoDetectQuality();
+    }, [autoDetectQuality]);
 
     if (!isOpen) return null;
 
@@ -38,27 +72,51 @@ export const SettingsModal = memo(function SettingsModal({
                 <div className="settings-section">
                     <h3>Graphics Quality</h3>
                     <p className="settings-hint">
-                        Low for older devices, High for full effects
+                        {autoDetected
+                            ? 'Auto-detected based on your device'
+                            : 'Custom settings - click Auto to reset'}
                     </p>
 
                     <div className="quality-options">
-                        <button
-                            className={`quality-btn ${settings.graphicsQuality === 'low' ? 'active' : ''}`}
-                            onClick={() => handleQualityChange('low')}
-                        >
-                            <span className="quality-icon">🥔</span>
-                            <span className="quality-label">Low</span>
-                            <span className="quality-desc">Potato mode - no lights, simple shapes</span>
-                        </button>
+                        {QUALITY_OPTIONS.map((option) => (
+                            <button
+                                key={option.tier}
+                                className={`quality-btn ${qualityTier === option.tier ? 'active' : ''}`}
+                                onClick={() => handleQualityChange(option.tier)}
+                            >
+                                <span className="quality-icon">{option.icon}</span>
+                                <span className="quality-label">{option.label}</span>
+                                <span className="quality-desc">{option.desc}</span>
+                            </button>
+                        ))}
+                    </div>
 
-                        <button
-                            className={`quality-btn ${settings.graphicsQuality === 'high' ? 'active' : ''}`}
-                            onClick={() => handleQualityChange('high')}
-                        >
-                            <span className="quality-icon">✨</span>
-                            <span className="quality-label">High</span>
-                            <span className="quality-desc">Full effects with lighting</span>
-                        </button>
+                    <button className="auto-detect-btn" onClick={handleAutoDetect}>
+                        🔄 Auto-detect
+                    </button>
+                </div>
+
+                <div className="settings-section">
+                    <h3>Advanced</h3>
+                    <div className="toggle-options">
+                        <label className="toggle-option">
+                            <span>Shadows</span>
+                            <input
+                                type="checkbox"
+                                checked={shadowsEnabled}
+                                onChange={toggleShadows}
+                            />
+                            <span className="toggle-slider" />
+                        </label>
+                        <label className="toggle-option">
+                            <span>Particle Effects</span>
+                            <input
+                                type="checkbox"
+                                checked={effectsEnabled}
+                                onChange={toggleEffects}
+                            />
+                            <span className="toggle-slider" />
+                        </label>
                     </div>
                 </div>
 
