@@ -142,12 +142,32 @@ function initKeyboardListeners() {
          keyboardState.honk = false;
      };
 
+     /**
+      * Reset all movement flags when window loses focus or becomes invisible
+      * Prevents stuck keys when user switches tabs or minimizes window
+      */
+     const resetKeyboardState = () => {
+         keyboardState.forward = false;
+         keyboardState.backward = false;
+         keyboardState.left = false;
+         keyboardState.right = false;
+         keyboardState.boost = false;
+         keyboardState.honk = false;
+     };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', resetKeyboardState);
     document.addEventListener('focusin', handleFocusIn);
+    document.addEventListener('visibilitychange', resetKeyboardState);
     
-    // Note: Listeners are intentionally not cleaned up as this hook uses a global singleton pattern
-    // via listenersInitialized flag, and keyboard state persists for the entire app lifecycle.
+    // Note: All listeners are intentionally persistent as this hook uses a global singleton pattern
+    // via listenersInitialized flag. Keyboard state must persist for the entire app lifecycle.
+    // Multiple reset handlers ensure keys are cleared on:
+    // - Tab/window loses focus (window.blur)
+    // - Page becomes hidden (document.visibilitychange)
+    // - Input/textarea gains focus (document.focusin)
+    // - Key release (window.keyup)
 }
 
 /**

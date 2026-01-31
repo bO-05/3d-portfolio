@@ -10,12 +10,13 @@ import { useBox } from '@react-three/cannon';
 import * as THREE from 'three';
 import type { Mesh, Group } from 'three';
 import { useCollectibleStore } from '../../stores/collectibleStore';
+import { usePhysicsSync } from '../../hooks/usePhysicsSync';
 
 // Type aliases for geometry args with proper tuple typing
 type BoxGeometryArgs = ConstructorParameters<typeof THREE.BoxGeometry>;
 type CylinderGeometryArgs = ConstructorParameters<typeof THREE.CylinderGeometry>;
-type SphereGeometryArgs = ConstructorParameters<typeof THREE.SphereGeometry>;
 type ConeGeometryArgs = ConstructorParameters<typeof THREE.ConeGeometry>;
+type OctahedronGeometryArgs = ConstructorParameters<typeof THREE.OctahedronGeometry>;
 
 // ═══════════════════════════════════════════════════════════════
 // GEOMETRY CONSTANTS - prevent recreation on every render
@@ -24,7 +25,7 @@ type ConeGeometryArgs = ConstructorParameters<typeof THREE.ConeGeometry>;
 // Lamppost
 const LAMPPOST_PHYSICS_ARGS = [0.4, 6, 0.4] satisfies BoxGeometryArgs;
 const LAMPPOST_POLE_ARGS = [0.1, 0.15, 6, 8] satisfies CylinderGeometryArgs;
-const LAMPPOST_LIGHT_ARGS = [0.4] satisfies SphereGeometryArgs;
+const LAMPPOST_LIGHT_ARGS = [0.4] satisfies OctahedronGeometryArgs;
 
 // Tree
 const TREE_PHYSICS_ARGS = [1, 4, 1] satisfies BoxGeometryArgs;
@@ -187,23 +188,8 @@ function Bench({ position }: { position: [number, number, number] }) {
         }
     }, [resetSignal, api, position]);
 
-    // Sync visual mesh to physics body position/rotation
-    useEffect(() => {
-        const unsubPosition = api.position.subscribe((p) => {
-            if (visualRef.current) {
-                visualRef.current.position.set(p[0], p[1], p[2]);
-            }
-        });
-        const unsubRotation = api.rotation.subscribe((r) => {
-            if (visualRef.current) {
-                visualRef.current.rotation.set(r[0], r[1], r[2]);
-            }
-        });
-        return () => {
-            unsubPosition();
-            unsubRotation();
-        };
-    }, [api]);
+    // Sync visual mesh to physics body
+    usePhysicsSync(api, visualRef);
 
     return (
         <group ref={visualRef}>
@@ -262,22 +248,8 @@ function TrashBin({ position }: { position: [number, number, number] }) {
         }
     }, [resetSignal, api, position]);
 
-    useEffect(() => {
-        const unsubPosition = api.position.subscribe((p) => {
-            if (visualRef.current) {
-                visualRef.current.position.set(p[0], p[1], p[2]);
-            }
-        });
-        const unsubRotation = api.rotation.subscribe((r) => {
-            if (visualRef.current) {
-                visualRef.current.rotation.set(r[0], r[1], r[2]);
-            }
-        });
-        return () => {
-            unsubPosition();
-            unsubRotation();
-        };
-    }, [api]);
+    // Sync visual mesh to physics body
+    usePhysicsSync(api, visualRef);
 
     return (
         <group ref={visualRef}>
@@ -293,7 +265,7 @@ function TrashBin({ position }: { position: [number, number, number] }) {
             </mesh>
         </group>
     );
-}
+    }
 
 // StreetSign component removed - no longer rendered in scene
 // (Kept geometry constants above for reference if needed in future)
@@ -325,22 +297,8 @@ function FoodCart({ position }: { position: [number, number, number] }) {
         }
     }, [resetSignal, api, position]);
 
-    useEffect(() => {
-        const unsubPosition = api.position.subscribe((p) => {
-            if (visualRef.current) {
-                visualRef.current.position.set(p[0], p[1], p[2]);
-            }
-        });
-        const unsubRotation = api.rotation.subscribe((r) => {
-            if (visualRef.current) {
-                visualRef.current.rotation.set(r[0], r[1], r[2]);
-            }
-        });
-        return () => {
-            unsubPosition();
-            unsubRotation();
-        };
-    }, [api]);
+    // Sync visual mesh to physics body
+    usePhysicsSync(api, visualRef);
 
     return (
         <group ref={visualRef}>
@@ -373,7 +331,7 @@ function FoodCart({ position }: { position: [number, number, number] }) {
             ))}
         </group>
     );
-}
+    }
 
 // ═══════════════════════════════════════════════════════════════
 // MAIN STREET PROPS COMPONENT

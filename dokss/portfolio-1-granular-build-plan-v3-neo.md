@@ -1353,25 +1353,34 @@ TEST:
 
 ## 📋 IMMEDIATE NEXT STEPS (Priority Order)
 
-1. **Task 7.1** — Install r3f-perf and run performance audit
-   - Get baseline metrics (FPS, draw calls, memory)
-   - Identify bottlenecks
-   - Est. time: 2-3 hours
+> **Phase 7.1 Status:** ✅ COMPLETE - All R3F anti-patterns fixed, performance verified
 
-2. **Task 7.1** — Fix Zustand selector anti-patterns
-   - Audit store usage across components
-   - Replace full store subscriptions with selector-based hooks
-   - Est. time: 2 hours
-
-3. **Task 7.2** — Run Lighthouse audit
-   - Identify performance bottlenecks
-   - Optimize bundle size, images, lazy loading
+1. **Task 7.2** — WebGL Robustness & Progressive Enhancement
+   - Add WebGL context loss recovery (verify useContextRecovery.ts)
+   - Detect low-end devices via `navigator.deviceMemory`
+   - Implement adaptive quality tiers (reduce DPR/shadows on weak devices)
+   - Add error boundaries for graceful fallback UI
    - Est. time: 3-4 hours
 
-4. **Task 8** — Cloud Run deployment
-   - Set up Docker, Cloud Build pipeline
-   - Deploy to production
+2. **Task 7.3** — Memory Leak Prevention & Long-Session Testing
+   - Audit texture disposal in collectibleStore
+   - Verify geometry cleanup on component unmount
+   - Monitor memory over 10+ minute sessions
+   - Test with Chrome DevTools Memory Profiler
    - Est. time: 2-3 hours
 
-**Total Estimated**: 9-13 hours for full Phase 7-8 completion
+3. **Task 8.1** — Cloud Run Deployment - Monorepo Dockerfile
+   - Create multi-stage Docker build (client + server)
+   - Update server to serve static Vite build
+   - Test locally: `docker build -t portfolio .`
+   - Est. time: 1-2 hours
+
+4. **Task 8.2-8.3** — Cloud Build & Cold Start Optimization
+   - Set up cloudbuild.yaml with Container Registry integration
+   - Create secrets in Secret Manager (GEMINI_API_KEY)
+   - Configure Cloud Run service (min-instances=1, cpu-boost)
+   - Verify <2s cold start latency
+   - Est. time: 2-3 hours
+
+**Total Estimated**: 8-12 hours for full Phase 7.2-8 completion
 
