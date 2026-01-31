@@ -37,7 +37,7 @@ const ProjectCard = memo(function ProjectCard({ project }: { project: Project })
                 )}
                 {project.links.devPost && (
                     <a href={project.links.devPost} target="_blank" rel="noopener noreferrer" className="project-link">
-                        Dev.to Article
+                        Post Article
                     </a>
                 )}
             </div>

@@ -124,10 +124,17 @@ export const Building = memo(function Building({
     }, [buildingId, enterBuilding, markBuildingVisited, sessionStart, visitedBuildings, parkedAt, setDialogue, clearDialogue]);
 
     // Static physics body for collision
+    // Use fixed base dimensions to avoid oversized collision with large scale buildings
+    const physicsSize: [number, number, number] = [
+        Math.min(3 * scale, 8),  // Width capped at 8
+        Math.min(10 * scale, 20), // Height capped at 20
+        Math.min(3 * scale, 8),  // Depth capped at 8
+    ];
+
     const [physicsRef] = useBox<Mesh>(() => ({
         type: 'Static',
-        args: [2 * scale, 10 * scale, 2 * scale],
-        position: [position[0], 5 * scale, position[2]],
+        args: physicsSize,
+        position: [position[0], physicsSize[1] / 2, position[2]],
         rotation,
     }));
 
@@ -138,7 +145,7 @@ export const Building = memo(function Building({
         <>
             {/* Invisible collision box for physics */}
             <mesh ref={physicsRef} visible={false}>
-                <boxGeometry args={[2 * scale, 10 * scale, 2 * scale]} />
+                <boxGeometry args={physicsSize} />
             </mesh>
 
             {/* Invisible interaction hitbox - fixed scale, receives pointer events */}

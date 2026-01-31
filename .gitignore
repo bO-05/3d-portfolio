@@ -1,8 +1,3 @@
-# Existing
-doks/
-
-# Keep .agent folder for AI-assisted development
-!.agent/
 
 # ═══════════════════════════════════════════════════════════════
 # Environment Variables
@@ -80,3 +75,10 @@ coverage/
 *.local
 .eslintcache
 .stylelintcache
+
+# Existing
+doks/
+
+# .agent folder for AI-assisted development
+.agent/*
+.agents/*

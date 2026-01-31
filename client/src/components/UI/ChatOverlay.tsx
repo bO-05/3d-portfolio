@@ -1,12 +1,19 @@
 /**
- * Chat Overlay Component - AI chat interface
+ * Chat Overlay Component - Streaming AI chat interface
  * Opens when visiting Warung building
  * @module components/UI/ChatOverlay
+ * 
+ * Features:
+ * - Real-time streaming responses (SSE)
+ * - Response caching for FAQ queries
+ * - Offline detection with status badge
+ * - Cancel in-progress streams
  */
 
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { useGameStore } from '../../stores/gameStore';
-import { useGemini } from '../../hooks/useGemini';
+import { useGeminiStream } from '../../hooks/useGeminiStream';
+import { parseMarkdown } from '../../lib/markdownParser';
 import './ChatOverlay.css';
 
 /**
@@ -20,8 +27,17 @@ export const ChatOverlay = memo(function ChatOverlay() {
     const insideBuilding = useGameStore((state) => state.player.insideBuilding);
     const exitBuilding = useGameStore((state) => state.exitBuilding);
 
-    const { messages, isLoading, error, sendMessage, clearMessages } = useGemini({
+    const {
+        messages,
+        isStreaming,
+        isOnline,
+        error,
+        sendMessage,
+        cancelStream,
+        clearMessages
+    } = useGeminiStream({
         buildingId: insideBuilding || undefined,
+        enableCache: true,
     });
 
     // Scroll to bottom when new messages arrive
@@ -30,9 +46,10 @@ export const ChatOverlay = memo(function ChatOverlay() {
     }, [messages]);
 
     const handleClose = useCallback(() => {
+        cancelStream();
         exitBuilding();
         clearMessages();
-    }, [exitBuilding, clearMessages]);
+    }, [exitBuilding, clearMessages, cancelStream]);
 
     // Handle click on backdrop (outside modal) to close
     const handleBackdropClick = useCallback((e: React.MouseEvent) => {
@@ -43,18 +60,27 @@ export const ChatOverlay = memo(function ChatOverlay() {
 
     const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
-        if (input.trim() && !isLoading) {
+        if (input.trim() && !isStreaming) {
             sendMessage(input.trim());
             setInput('');
         }
-    }, [input, isLoading, sendMessage]);
+    }, [input, isStreaming, sendMessage]);
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSubmit(e as unknown as React.FormEvent);
         }
-    }, [handleSubmit]);
+        // Escape to close
+        if (e.key === 'Escape') {
+            handleClose();
+        }
+    }, [handleSubmit, handleClose]);
+
+    // Handle cancel button
+    const handleCancel = useCallback(() => {
+        cancelStream();
+    }, [cancelStream]);
 
     if (!showChat) return null;
 
@@ -66,6 +92,10 @@ export const ChatOverlay = memo(function ChatOverlay() {
                     <div className="chat-header-title">
                         <span className="chat-icon">🍜</span>
                         <h2>Warung Chat</h2>
+                        {/* Online/Offline Badge */}
+                        <span className={`chat-status ${isOnline ? 'online' : 'offline'}`}>
+                            {isOnline ? '●' : '○'}
+                        </span>
                     </div>
                     <button className="chat-close" onClick={handleClose}>×</button>
                 </div>
@@ -93,24 +123,36 @@ export const ChatOverlay = memo(function ChatOverlay() {
                     {messages.map((msg, idx) => (
                         <div key={idx} className={`chat-message chat-message-${msg.role}`}>
                             <div className="chat-message-content">
-                                {msg.content}
+                                {/* Render markdown for assistant, plain text for user */}
+                                {msg.role === 'assistant'
+                                    ? parseMarkdown(msg.content)
+                                    : msg.content
+                                }
+                                {/* Show cursor while streaming for assistant messages */}
+                                {msg.role === 'assistant' && isStreaming && idx === messages.length - 1 && (
+                                    <span className="chat-cursor">▌</span>
+                                )}
                             </div>
                         </div>
                     ))}
 
-                    {isLoading && (
-                        <div className="chat-message chat-message-assistant">
-                            <div className="chat-typing">
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                            </div>
+                    {/* Offline warning */}
+                    {!isOnline && (
+                        <div className="chat-offline-warning">
+                            <p>📡 You're offline. Cached responses may be available.</p>
                         </div>
                     )}
 
                     {error && (
                         <div className="chat-error">
                             <p>⚠️ {error}</p>
+                            <button onClick={() => {
+                                // Find the last user message by role, not position
+                                const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')?.content || '';
+                                sendMessage(lastUserMessage);
+                            }}>
+                                Retry
+                            </button>
                         </div>
                     )}
 
@@ -122,20 +164,30 @@ export const ChatOverlay = memo(function ChatOverlay() {
                     <input
                         type="text"
                         className="chat-input"
-                        placeholder="Type your message..."
+                        placeholder={isOnline ? "Type your message..." : "Offline - limited responses"}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        disabled={isLoading}
+                        disabled={isStreaming}
                         autoFocus
                     />
-                    <button
-                        type="submit"
-                        className="chat-send"
-                        disabled={isLoading || !input.trim()}
-                    >
-                        Send
-                    </button>
+                    {isStreaming ? (
+                        <button
+                            type="button"
+                            className="chat-cancel"
+                            onClick={handleCancel}
+                        >
+                            Stop
+                        </button>
+                    ) : (
+                        <button
+                            type="submit"
+                            className="chat-send"
+                            disabled={!input.trim()}
+                        >
+                            Send
+                        </button>
+                    )}
                 </form>
             </div>
         </div>

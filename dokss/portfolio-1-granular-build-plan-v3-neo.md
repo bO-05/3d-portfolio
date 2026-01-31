@@ -722,7 +722,7 @@ Before proceeding to Phase 6 (Deployment):
 - [ ] Bundle size <3MB gzipped
 - [ ] Mobile FPS >30 consistent
 - [ ] Draw calls <100
-- [ ] All 5 buildings interactive
+- [x] All 6 buildings interactive (house, internet-cafe, library, arcade, warung, workshop)
 - [ ] 15+ collectibles placed
 - [ ] 5+ achievements implemented
 - [ ] 3+ Easter eggs hidden
@@ -733,6 +733,147 @@ Before proceeding to Phase 6 (Deployment):
 - [ ] Sentry has no unhandled errors
 - [ ] Tested on real mobile device
 - [ ] Session duration >2 minutes in testing
+
+---
+
+## Task 5-Neo.11 — Warung Chat Optimization Roadmap ⏸️ DEFERRED
+
+**Purpose:** Make warung AI chat faster, more robust, and capable of answering portfolio questions accurately.
+
+> [!IMPORTANT]
+> **Warung is the ONLY chat interface** - it displays NO projects. Instead, it's an AI-powered Q&A about the developer and ALL projects in the portfolio.
+
+### Current Architecture
+
+```
+User Input → ChatOverlay.tsx → useGemini.ts → POST /api/gemini/chat → Gemini 2.0 Flash → Response
+```
+
+**Current Limitations:**
+| Issue | Impact | Severity |
+|-------|--------|----------|
+| No response caching | Duplicate queries hit API every time | Medium |
+| No streaming | User waits for full response (1-3s) | Medium |
+| Context sent every request | ~2KB bandwidth per message | Low |
+| No conversation history | Each message is isolated context | Medium |
+| Rate limit 10/min | Could block eager users | Low |
+
+---
+
+### Tier 1: Quick Wins (Low Effort, High Impact)
+
+**Goal:** Make chat feel instant for common queries
+
+```text
+START: Current chat working
+DO:
+1. Response Caching (localStorage):
+   - Hash prompt + context → cache key
+   - Store responses for FAQ queries (project list, skills, tech stack)
+   - TTL: 24 hours
+   - Skip cache for conversational follow-ups
+
+2. Debounced Input:
+   - 300ms debounce on send button
+   - Prevent double-submit on slow networks
+   - Disable button during loading (already done ✅)
+
+3. Optimistic UI:
+   - Show user message immediately (already done ✅)
+   - Add skeleton loader instead of bouncing dots
+   - Faster perceived response time
+
+END: FAQ queries return instantly from cache
+TEST:
+- Ask "What projects?" twice → second is instant
+- Cache clears after 24 hours
+- No duplicate submissions possible
+```
+
+**Implementation Files:**
+- `client/src/hooks/useGemini.ts` - Add cache layer
+- `client/src/lib/chatCache.ts` - Cache utilities
+
+---
+
+### Tier 2: Performance (Medium Effort)
+
+**Goal:** Real-time streaming responses like ChatGPT
+
+```text
+START: Tier 1 complete
+DO:
+1. Streaming Responses:
+   - Switch to Gemini streaming API (generateContentStream)
+   - Display tokens as they arrive
+   - Abort controller for cancel
+
+2. Context Compression:
+   - Send project IDs only, not full descriptions
+   - Server resolves full data from static JSON
+   - ~2KB → ~200B per request
+
+3. Conversation History:
+   - Send last 5 messages for context continuity
+   - Prune old messages to stay under token limit
+   - Server-side conversation ID tracking
+
+END: Chat feels like ChatGPT - instant starts, streaming text
+TEST:
+- Response begins appearing within 500ms
+- Context uses <500B bandwidth
+- Follow-up questions understand previous context
+```
+
+**Implementation Files:**
+- `server/src/server.ts` - Add `/api/gemini/stream` SSE endpoint
+- `client/src/hooks/useGeminiStream.ts` - New streaming hook
+- `convex/chatHistory.ts` - Optional conversation persistence
+
+---
+
+### Tier 3: Robustness (Higher Effort)
+
+**Goal:** Never fail, always have an answer
+
+```text
+START: Tier 2 complete
+DO:
+1. Retry Logic:
+   - Exponential backoff: 1s, 2s, 4s
+   - Max 3 retries
+   - Show "Retrying..." status
+
+2. Offline Fallback:
+   - Detect navigator.onLine
+   - Serve cached FAQ responses when offline
+   - Show "Offline mode" badge
+
+3. Pre-warm Cache:
+   - On page load (after 5s idle), prefetch top 5 FAQ responses:
+     - "What projects has this developer built?"
+     - "Tell me about the developer's skills"
+     - "What tech stack does the developer use?"
+     - "What hackathons has the developer won?"
+     - "How can I contact the developer?"
+   - Use requestIdleCallback for zero impact on load time
+
+4. Error Recovery:
+   - Gemini API down → show static FAQ fallback
+   - Rate limited → show countdown timer
+   - Network error → retry with backoff
+
+END: Chat never fails, always has something useful to say
+TEST:
+- Turn off network → cached responses still work
+- Gemini API 500 → graceful fallback shown
+- Spam 20 messages → rate limit shown, not crashes
+```
+
+**Implementation Files:**
+- `client/src/hooks/useGemini.ts` - Add retry logic
+- `client/src/lib/offlineCache.ts` - Offline fallback
+- `client/src/components/UI/ChatOverlay.tsx` - Status indicators
 
 ---
 
@@ -783,4 +924,378 @@ src/
 
 ---
 
-**Next Step:** Begin with Task 5-Neo.1 (Street Environment Props) to create the world foundation.
+# Phase 6 — Warung Chat Implementation ✅ COMPLETE
+
+> [!IMPORTANT]
+> **Skills Installed**: `google-gemini-api` (streaming + SDK migration guide)
+> 
+> **Completed**: 2026-01-31 - All tasks done, builds passing
+
+## Task 6.1 — SDK Migration (@google/generative-ai → @google/genai) ✅ DONE
+
+**Current Issue**: Using deprecated `@google/generative-ai` SDK (sunset Nov 2025)
+**Solution**: Migrate to `@google/genai` (correct current SDK)
+
+**Files Modified**:
+- `server/package.json` - Replaced `@google/generative-ai` with `@google/genai@latest`
+- `server/src/server.ts` - Updated imports, lazy initialization, graceful shutdown
+
+---
+
+## Task 6.2 — Streaming Responses (SSE) ✅ DONE
+
+**Goal**: Chat feels instant - tokens appear as they're generated
+
+**Files Created**:
+- `server/src/server.ts` - New `/api/gemini/stream` SSE endpoint
+- `client/src/hooks/useGeminiStream.ts` - Streaming hook with AbortController
+
+**Features**:
+- Real-time token streaming via SSE
+- Cancel in-progress streams
+- Visual typing cursor during streaming
+
+---
+
+## Task 6.3 — Response Caching ✅ DONE
+
+**Goal**: FAQ queries return instantly from cache
+
+**Files Created**:
+- `client/src/lib/chatCache.ts` - LocalStorage cache with 24hr TTL, 50 entry limit
+
+**Features**:
+- Cached responses return instantly with simulated typing
+- Smart hash of prompts for cache keys
+- Automatic cache pruning
+
+---
+
+## Task 6.4 — Retry Logic & Error Handling ✅ DONE
+
+**Features Implemented**:
+- Exponential backoff retry (1s, 2s, 4s)
+- Offline detection with `navigator.onLine`
+- Offline status badge in ChatOverlay
+- Error retry button
+
+---
+
+## Task 6.5 — Building Hot Fixes ✅ DONE (Added)
+
+**Issues Fixed**:
+| Issue | Solution |
+|-------|----------|
+| Workshop invisible wall | Capped physics collision at 8x20x8 max |
+| Parking zones too small | Increased ring geometry from 2-2.3 to 3.5-4 radius |
+| Leaderboard billboard overlap | Moved from [0,0,25] to [-15,0,28] |
+| Workshop scale too small | Scale increased (user adjusted to 10x) |
+| Arcade scale | Increased to 5x |
+| Warung rotation | Fixed rotation (user adjusted) |
+
+**Files Modified**:
+- `client/src/components/Buildings/Building.tsx` - Physics box capped
+- `client/src/components/Buildings/Buildings.tsx` - Positions/scales
+- `client/src/components/Scene/ParkingZone.tsx` - Larger rings
+- `client/src/components/Scene/LeaderboardBillboard.tsx` - New position
+
+---
+
+## Task 6.6 — Developer Context Document ✅ DONE (Added)
+
+**Goal**: AI chat knows comprehensive info about developer
+
+**Files Created**:
+- `server/src/developerContext.ts` - TypeScript knowledge base with:
+  - Developer profile (name: Adam, alias: Asynchronope)
+  - All 26 projects organized by building
+  - 4 awards/achievements
+  - Complete tech stack
+  - FAQ responses
+  - System prompt builder
+- `server/src/developerContext.md` - Markdown version for reference
+
+**Features**:
+- English-only responses (global portfolio)
+- Contact info (GitHub, DEV.to, Twitter/X)
+- Building guide for navigation
+
+---
+
+## Task 6.7 — Project Data Updates ✅ DONE (Added)
+
+**Files Modified**:
+- `client/src/utils/projectsData.ts`:
+  - Added `prototype?: boolean` field to interface
+  - Marked ThreadHive, ZapCardify, LocationScout as prototypes
+  - Added **Jakarta Street Portfolio** as featured arcade project
+  - Reordered projects per user preferences
+
+---
+
+## Task 6.8 — Markdown Rendering in Chat ✅ DONE (Added)
+
+**Goal**: Chat renders **bold**, *italic*, `code`, and [links](url)
+
+**Files Created**:
+- `client/src/lib/markdownParser.tsx` - Lightweight parser without dependencies
+
+**Files Modified**:
+- `client/src/components/UI/ChatOverlay.tsx` - Uses parseMarkdown for assistant messages
+- `client/src/components/UI/ChatOverlay.css` - Styles for code and links
+
+---
+
+# Phase 7 — 3D Game Optimization & Robustness ⏳ NEXT
+
+> [!IMPORTANT]
+> **Skills Installed**: `r3f-best-practices` (70+ rules for React Three Fiber)
+
+## Task 7.1 — Performance Audit
+
+**Critical R3F Rules to Verify**:
+
+| Rule | Description | Current Status |
+|------|-------------|----------------|
+| `perf-never-set-state-in-useframe` | Never call setState in useFrame | ⚠️ AUDIT |
+| `perf-zustand-selectors` | Use selectors, not entire store | ⚠️ AUDIT |
+| `perf-transient-subscriptions` | Use getState() in useFrame | ⚠️ AUDIT |
+| `perf-avoid-inline-objects` | No objects/arrays in JSX | ⚠️ AUDIT |
+| `frame-delta-time` | Use delta for animations | ✅ Done |
+| `drei-use-gltf` | Preload assets | ✅ Done |
+
+```text
+START: R3F skill installed
+DO:
+1. Audit all useFrame hooks for setState calls:
+   - Bajaj.tsx
+   - DustParticles.tsx
+   - Collectible.tsx
+   - ParkingZone.tsx
+   
+2. Audit Zustand usage:
+   - Check for const state = useGameStore() (BAD)
+   - Replace with const value = useGameStore(s => s.value) (GOOD)
+   
+3. Install r3f-perf for monitoring:
+   - npm install r3f-perf
+   - Add <Perf position="top-left" /> to Canvas
+   - Monitor FPS, draw calls, triangles
+
+4. Create performance budget:
+   - Target: >30 FPS on mobile
+   - Max draw calls: <100
+   - Max triangles: <500k
+
+END: Performance baseline established
+TEST:
+- r3f-perf shows green metrics
+- No unnecessary re-renders in React DevTools
+```
+
+---
+
+## Task 7.2 — WebGL Robustness
+
+```text
+START: Performance audit complete
+DO:
+1. Add WebGL context loss recovery (already in dracoLoader.ts):
+   - Verify useContextRecovery.ts is working
+   - Test by forcing context loss
+   
+2. Add progressive enhancement:
+   - Detect low-end devices
+   - Disable shadows, reduce DPR
+   - Cap effects based on FPS
+
+3. Add memory leak prevention:
+   - Verify dispose={null} on shared resources
+   - Check geometry/material disposal
+   - Monitor memory in DevTools
+
+4. Add error boundaries:
+   - Catch WebGL errors gracefully
+   - Show fallback UI if 3D fails
+
+END: App never crashes, degrades gracefully
+TEST:
+- Force WebGL context loss → recovers
+- Low-end device → reduced quality
+- Memory stable over 10+ minutes
+```
+
+---
+
+# Phase 8 — Google Cloud Run Deployment ⏳ FINAL
+
+> [!IMPORTANT]
+> **Skills Installed**: `gcp-cloud-run` (containerization + cold start optimization)
+
+## Task 8.1 — Monorepo Dockerfile
+
+**Architecture**: Single Cloud Run service serving both client (Vite build) and server (Express)
+
+```text
+START: All features complete, tested locally
+DO:
+1. Create Dockerfile at project root:
+
+   # Multi-stage build
+   FROM node:20-slim AS client-build
+   WORKDIR /app/client
+   COPY client/package*.json ./
+   RUN npm ci
+   COPY client ./
+   RUN npm run build
+
+   FROM node:20-slim AS server-build
+   WORKDIR /app/server
+   COPY server/package*.json ./
+   RUN npm ci --only=production
+
+   FROM node:20-slim
+   WORKDIR /app
+   
+   # Copy server
+   COPY --from=server-build /app/server/node_modules ./server/node_modules
+   COPY server/src ./server/src
+   COPY server/package.json ./server/
+   
+   # Copy client build
+   COPY --from=client-build /app/client/dist ./client/dist
+   
+   # Cloud Run uses PORT env
+   ENV PORT=8080
+   ENV NODE_ENV=production
+   EXPOSE 8080
+   
+   USER node
+   WORKDIR /app/server
+   CMD ["node", "src/server.js"]
+
+2. Update server to serve static files:
+   
+   // Serve Vite build
+   app.use(express.static(path.join(__dirname, '../../client/dist')));
+   
+   // SPA fallback
+   app.get('*', (req, res) => {
+     res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+   });
+
+END: Single container serves full app
+TEST:
+- docker build -t portfolio .
+- docker run -p 8080:8080 -e GEMINI_API_KEY=xxx portfolio
+- Access http://localhost:8080
+```
+
+---
+
+## Task 8.2 — Cloud Build Configuration
+
+```text
+START: Dockerfile working locally
+DO:
+1. Create cloudbuild.yaml:
+   
+   steps:
+     # Build container
+     - name: 'gcr.io/cloud-builders/docker'
+       args: ['build', '-t', 'gcr.io/$PROJECT_ID/jakarta-portfolio:$COMMIT_SHA', '.']
+     
+     # Push to Container Registry
+     - name: 'gcr.io/cloud-builders/docker'
+       args: ['push', 'gcr.io/$PROJECT_ID/jakarta-portfolio:$COMMIT_SHA']
+     
+     # Deploy to Cloud Run
+     - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+       entrypoint: gcloud
+       args:
+         - 'run'
+         - 'deploy'
+         - 'jakarta-portfolio'
+         - '--image=gcr.io/$PROJECT_ID/jakarta-portfolio:$COMMIT_SHA'
+         - '--region=asia-southeast1'  # Jakarta region
+         - '--platform=managed'
+         - '--allow-unauthenticated'
+         - '--memory=1Gi'
+         - '--cpu=1'
+         - '--min-instances=1'  # Prevent cold starts
+         - '--max-instances=10'
+         - '--cpu-boost'  # Faster cold starts
+         - '--set-env-vars=NODE_ENV=production'
+         - '--set-secrets=GEMINI_API_KEY=gemini-api-key:latest'
+
+   images:
+     - 'gcr.io/$PROJECT_ID/jakarta-portfolio:$COMMIT_SHA'
+
+2. Create secret in Secret Manager:
+   - gcloud secrets create gemini-api-key
+   - echo -n "your-api-key" | gcloud secrets versions add gemini-api-key --data-file=-
+
+3. Enable required APIs:
+   - gcloud services enable cloudbuild.googleapis.com
+   - gcloud services enable run.googleapis.com
+   - gcloud services enable secretmanager.googleapis.com
+   - gcloud services enable artifactregistry.googleapis.com
+
+END: CI/CD pipeline ready
+TEST:
+- Push to main → triggers Cloud Build
+- Cloud Run service accessible via URL
+```
+
+---
+
+## Task 8.3 — Cold Start Optimization
+
+**Target**: <2s cold start latency
+
+```text
+START: Deployed to Cloud Run
+DO:
+1. Enable CPU boost (already in cloudbuild.yaml)
+
+2. Set min-instances=1 for zero cold starts on main traffic
+
+3. Lazy load heavy dependencies:
+   - Gemini SDK init on first request ✅ DONE
+   - Analytics defer with requestIdleCallback
+
+4. Optimize container:
+   - Use distroless base image
+   - Minimize node_modules
+   - Remove dev dependencies
+
+5. Configure health check:
+   - Cloud Run auto-checks /
+   - Add explicit /health endpoint ✅ DONE
+
+END: Instant response times
+TEST:
+- First request after deploy: <2s
+- Subsequent requests: <200ms
+- Monitor in Cloud Run console
+```
+
+---
+
+## 🚀 Deployment Checklist
+
+| Step | Command | Status |
+|------|---------|--------|
+| 1. Authenticate | `gcloud auth login` | [ ] |
+| 2. Set project | `gcloud config set project YOUR_PROJECT_ID` | [ ] |
+| 3. Enable APIs | `gcloud services enable run.googleapis.com cloudbuild.googleapis.com` | [ ] |
+| 4. Create secret | `gcloud secrets create gemini-api-key --data-file=.env` | [ ] |
+| 5. Build locally | `docker build -t portfolio .` | [ ] |
+| 6. Test locally | `docker run -p 8080:8080 portfolio` | [ ] |
+| 7. Deploy | `gcloud builds submit --config cloudbuild.yaml` | [ ] |
+| 8. Get URL | `gcloud run services describe jakarta-portfolio --format='value(status.url)'` | [ ] |
+
+---
+
+**Next Step:** Begin Phase 7 (Performance Audit) to optimize 3D rendering.
+

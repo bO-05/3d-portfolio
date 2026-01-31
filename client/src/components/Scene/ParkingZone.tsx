@@ -30,9 +30,9 @@ export const ParkingZone = memo(function ParkingZone({ position, isActive }: Par
 
     return (
         <group position={position}>
-            {/* Visual Ring */}
+            {/* Visual Ring - larger for easier parking */}
             <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
-                <ringGeometry args={[2, 2.3, 32]} />
+                <ringGeometry args={[3.5, 4, 32]} />
                 <meshBasicMaterial
                     color={isActive ? "#4CAF50" : "#ffffff"}
                     transparent
