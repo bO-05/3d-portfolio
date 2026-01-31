@@ -8,6 +8,7 @@
 import { memo, useState, useEffect, useSyncExternalStore, useRef, useMemo } from 'react';
 import { Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
 import { useGameStore } from '../../stores/gameStore';
 import { getEasterEggState, subscribeToEasterEggs } from '../../hooks/useEasterEggs';
 
@@ -95,21 +96,30 @@ export const InWorldHints = memo(function InWorldHints() {
         };
     }, [engineOn, playerSpeed, visitedBuildings.length]);
 
-    // Floating animation - use ref instead of state to avoid setState in useFrame
-    const yOffsetRef = useRef(0);
+    // Floating animation - use ref to group element to bypass React render cycle
+    // Update position directly in useFrame for smooth animation
+    const groupRef = useRef<THREE.Group>(null);
+    const baseHeightRef = useRef(isTransJakarta ? 6.5 : 4);
+    
+    // Update base height when vehicle type changes
+    baseHeightRef.current = isTransJakarta ? 6.5 : 4;
+    
     useFrame((state) => {
-        yOffsetRef.current = Math.sin(state.clock.elapsedTime * 2) * 0.1;
+        if (!groupRef.current) return;
+        
+        // Calculate floating offset using sine wave
+        const yOffset = Math.sin(state.clock.elapsedTime * 2) * 0.1;
+        
+        // Update group position directly
+        groupRef.current.position.x = playerPosition.x;
+        groupRef.current.position.y = playerPosition.y + baseHeightRef.current + yOffset;
+        groupRef.current.position.z = playerPosition.z;
     });
-    const computedYOffset = yOffsetRef.current;
 
     if (!currentHint) return null;
 
-    // TransJakarta bus is taller (scale 5 vs 3), so raise hints higher
-    // Bajaj: +4 above player, TransJakarta: +6.5 above player
-    const hintHeight = isTransJakarta ? 6.5 : 4;
-
     return (
-        <group position={[playerPosition.x, playerPosition.y + hintHeight + computedYOffset, playerPosition.z]}>
+        <group ref={groupRef}>
             {/* Background pill */}
             <mesh position={[0, 0, -0.1]}>
                 <planeGeometry args={[4, 0.6]} />

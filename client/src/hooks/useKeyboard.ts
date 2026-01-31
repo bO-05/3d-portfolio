@@ -100,40 +100,58 @@ function initKeyboardListeners() {
      };
 
      const handleKeyUp = (e: KeyboardEvent) => {
-         // Don't process if input focused
-         const inputFocused = isInputFocused();
-         
-         if (!inputFocused) {
-             switch (e.code) {
-                 case 'KeyW':
-                 case 'ArrowUp':
-                     keyboardState.forward = false;
-                     break;
-                 case 'KeyS':
-                 case 'ArrowDown':
-                     keyboardState.backward = false;
-                     break;
-                 case 'KeyA':
-                 case 'ArrowLeft':
-                     keyboardState.left = false;
-                     break;
-                 case 'KeyD':
-                 case 'ArrowRight':
-                     keyboardState.right = false;
-                     break;
-                 case 'ShiftLeft':
-                 case 'ShiftRight':
-                     keyboardState.boost = false;
-                     break;
-                 case 'Space':
-                     keyboardState.honk = false;
-                     break;
-             }
+         // ALWAYS process key releases regardless of input focus
+         // This prevents stuck keys when focus changes between keydown/keyup
+         switch (e.code) {
+             case 'KeyW':
+             case 'ArrowUp':
+                 keyboardState.forward = false;
+                 break;
+             case 'KeyS':
+             case 'ArrowDown':
+                 keyboardState.backward = false;
+                 break;
+             case 'KeyA':
+             case 'ArrowLeft':
+                 keyboardState.left = false;
+                 break;
+             case 'KeyD':
+             case 'ArrowRight':
+                 keyboardState.right = false;
+                 break;
+             case 'ShiftLeft':
+             case 'ShiftRight':
+                 keyboardState.boost = false;
+                 break;
+             case 'Space':
+                 keyboardState.honk = false;
+                 break;
          }
+     };
+
+     /**
+      * Reset all movement flags when input gains focus
+      * This prevents stuck keys if user presses key before focusing input
+      */
+     const handleFocusIn = () => {
+         keyboardState.forward = false;
+         keyboardState.backward = false;
+         keyboardState.left = false;
+         keyboardState.right = false;
+         keyboardState.boost = false;
+         keyboardState.honk = false;
      };
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    document.addEventListener('focusin', handleFocusIn);
+    
+    // Cleanup on unmount (though this hook runs once globally)
+    return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+        document.removeEventListener('focusin', handleFocusIn);
+    };
 }
 
 /**

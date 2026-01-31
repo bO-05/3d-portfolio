@@ -1063,7 +1063,7 @@ src/
 **All Critical R3F Anti-Patterns Fixed:**
 
 | Rule | Status | Fix |
-|------|--------|-----|
+| --- | --- | --- |
 | `perf-never-set-state-in-useframe` | ✅ FIXED | InWorldHints: useState → useRef, TestCube: throttled updates |
 | `perf-zustand-selectors` | ✅ VERIFIED | All components use selectors, no full store subscriptions |
 | `perf-transient-subscriptions` | ✅ VERIFIED | Physics refs don't trigger re-renders |

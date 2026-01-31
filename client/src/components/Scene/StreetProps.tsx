@@ -27,7 +27,7 @@ const TREE_FOLIAGE_ARGS = [1.5, 4, 8];
 
 // Bench
 const BENCH_PHYSICS_ARGS = [2.2, 1.4, 0.8];
-const BENCH_SEAT_ARGS = [2.2, 0.3, 0.8];
+const BENCH_SEAT_ARGS = [2, 0.15, 0.6];  // Original dimensions preserved
 const BENCH_BACK_ARGS = [2, 0.6, 0.1];
 const BENCH_LEG_ARGS = [0.1, 0.6, 0.5];
 
@@ -44,10 +44,10 @@ const FOODCART_POLE_ARGS = [0.05, 0.05, 1.5, 8];
 const FOODCART_UMBRELLA_ARGS = [1.5, 0.6, 8];
 const FOODCART_WHEEL_ARGS = [0.2, 0.2, 0.1, 12];
 
-// StreetSign
-const STREETSIGN_PHYSICS_ARGS = [0.3, 2, 0.3];
-const STREETSIGN_POLE_ARGS = [0.1, 2, 0.1];
-const STREETSIGN_BOARD_ARGS = [1, 0.8, 0.05];
+// StreetSign (removed from scene, constants kept for potential future use)
+// const STREETSIGN_PHYSICS_ARGS = [0.3, 2, 0.3];
+// const STREETSIGN_POLE_ARGS = [0.1, 2, 0.1];
+// const STREETSIGN_BOARD_ARGS = [1, 0.8, 0.05];
 
 // ═══════════════════════════════════════════════════════════════
 // LAMPPOST - Pole with diamond light on top (STATIC)
@@ -289,49 +289,8 @@ function TrashBin({ position }: { position: [number, number, number] }) {
     );
 }
 
-// ═══════════════════════════════════════════════════════════════
-// STREET SIGN - Indonesian style (STATIC)
-// ═══════════════════════════════════════════════════════════════
-
-const SIGN_POSITIONS: { pos: [number, number, number]; rotation: number }[] = [
-    { pos: [-20, 0, -40], rotation: 0 },  // kept for speedrun near house
-    // Removed: [20, 0, 40] beside music studio - unused
-];
-
-function StreetSign({ position, rotation }: {
-     position: [number, number, number];
-     rotation: number;
- }) {
-     const [physicsRef] = useBox<Mesh>(() => ({
-         type: 'Static',
-         position: [position[0], position[1] + 1.5, position[2]],
-         args: STREETSIGN_PHYSICS_ARGS as any,
-     }));
-
-     return (
-         <group position={position} rotation={[0, rotation, 0]}>
-             <mesh ref={physicsRef} visible={false}>
-                 <boxGeometry args={STREETSIGN_PHYSICS_ARGS as any} />
-             </mesh>
-
-             {/* Pole - positioned from ground level (Y=0) upward */}
-              <mesh position={[0, 1, 0]}>
-                  <cylinderGeometry args={STREETSIGN_POLE_ARGS as any} />
-                  <meshStandardMaterial color="#654321" />
-              </mesh>
-              {/* Sign plate */}
-              <mesh position={[0.8, 2.3, 0]}>
-                  <boxGeometry args={STREETSIGN_BOARD_ARGS as any} />
-                  <meshStandardMaterial color="#1E3A5F" />
-              </mesh>
-              {/* White border */}
-              <mesh position={[0.8, 2.3, 0.03]}>
-                  <boxGeometry args={[1.7, 0.4, 0.02]} />
-                 <meshStandardMaterial color="#FFFFFF" />
-             </mesh>
-        </group>
-    );
-}
+// StreetSign component removed - no longer rendered in scene
+// (Kept geometry constants above for reference if needed in future)
 
 // ═══════════════════════════════════════════════════════════════
 // FOOD CART - Warung style (DYNAMIC - knockable!)
