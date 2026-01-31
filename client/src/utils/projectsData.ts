@@ -353,7 +353,7 @@ export const projects: Project[] = [
         links: {
             demo: 'https://asynchronope.my.id/',
             github: 'https://github.com/bO-05/3d-portfolio',
-            devPost: 'https://dev.to/asynchronope/jakarta-street-portfolio',
+            devPost: 'https://dev.to/asynchronope/i-built-bruno-simons-portfolio-in-20-days-heres-my-jakarta-street-3d-experience-2ghp',
         },
         buildingId: 'arcade',
         featured: true,
