@@ -168,6 +168,21 @@
     transform: translateX(20px);
 }
 
+/* Keyboard focus-visible indicator for accessibility */
+.toggle-option input:focus-visible + .toggle-slider {
+    outline: 2px solid #00aaff;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 170, 255, 0.25);
+}
+
+.toggle-option input:focus-visible + .toggle-slider::after {
+    transform: scale(1.1);
+}
+
+.toggle-option input:checked:focus-visible + .toggle-slider::after {
+    transform: translateX(20px) scale(1.1);
+}
+
 .settings-close-btn {
     width: 100%;
     padding: 12px;

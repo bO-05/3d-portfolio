@@ -110,6 +110,12 @@ export const useGraphicsStore = create<GraphicsStore>((set) => ({
 
     setQualityTier: (tier: QualityTier) => {
         set((state) => {
+            // Safe accessor for devicePixelRatio (SSR/test environments)
+            const nativeDPR =
+                typeof window !== 'undefined' && window.devicePixelRatio !== undefined
+                    ? window.devicePixelRatio
+                    : 1;
+
             let newState: GraphicsState;
 
             switch (tier) {
@@ -126,7 +132,7 @@ export const useGraphicsStore = create<GraphicsStore>((set) => ({
                 case 'medium':
                     newState = {
                         qualityTier: 'medium',
-                        dpr: Math.min(window.devicePixelRatio, 1.5),
+                        dpr: Math.min(nativeDPR, 1.5),
                         shadowsEnabled: true,
                         antialias: true,
                         effectsEnabled: false,
@@ -136,7 +142,7 @@ export const useGraphicsStore = create<GraphicsStore>((set) => ({
                 case 'high':
                     newState = {
                         qualityTier: 'high',
-                        dpr: Math.min(window.devicePixelRatio, 2),
+                        dpr: Math.min(nativeDPR, 2),
                         shadowsEnabled: true,
                         antialias: true,
                         effectsEnabled: true,

@@ -1,6 +1,7 @@
 /**
  * Device detection utilities for WebGL robustness
  * Detects device capabilities and returns quality recommendations
+ * Results are memoized to avoid repeated WebGL context probing
  * @module utils/deviceDetection
  */
 
@@ -13,6 +14,12 @@ interface DeviceInfo {
     isTouch: boolean;
     gpuRenderer: string | null;
     gpuVendor: string | null;
+}
+
+interface CachedDeviceData {
+    info: DeviceInfo;
+    tier: QualityTier;
+    score: number;
 }
 
 const LOW_END_GPU_KEYWORDS = [
@@ -39,7 +46,17 @@ const HIGH_END_GPU_KEYWORDS = [
     'quadro',
 ];
 
+// ─────────────────────────────────────────────────────────────
+// Memoization cache - computed once per session
+// ─────────────────────────────────────────────────────────────
+
+let cachedData: CachedDeviceData | null = null;
+
 function getWebGLInfo(): { renderer: string | null; vendor: string | null } {
+    if (typeof document === 'undefined') {
+        return { renderer: null, vendor: null };
+    }
+
     try {
         const canvas = document.createElement('canvas');
         const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -66,7 +83,12 @@ function isMobileDevice(): boolean {
 
 function isTouchDevice(): boolean {
     if (typeof window === 'undefined') return false;
-    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    const hasTouch = 'ontouchstart' in window;
+    const hasMaxTouchPoints =
+        typeof navigator !== 'undefined' && navigator.maxTouchPoints !== undefined && navigator.maxTouchPoints > 0;
+
+    return hasTouch || hasMaxTouchPoints;
 }
 
 function getDeviceMemory(): number {
@@ -77,19 +99,6 @@ function getDeviceMemory(): number {
 function getHardwareConcurrency(): number {
     if (typeof navigator === 'undefined') return 4;
     return navigator.hardwareConcurrency ?? 4;
-}
-
-export function getDeviceInfo(): DeviceInfo {
-    const webglInfo = getWebGLInfo();
-
-    return {
-        deviceMemory: getDeviceMemory(),
-        hardwareConcurrency: getHardwareConcurrency(),
-        isMobile: isMobileDevice(),
-        isTouch: isTouchDevice(),
-        gpuRenderer: webglInfo.renderer,
-        gpuVendor: webglInfo.vendor,
-    };
 }
 
 function scoreGPU(renderer: string | null): number {
@@ -112,9 +121,20 @@ function scoreGPU(renderer: string | null): number {
     return 50;
 }
 
-export function detectDeviceTier(): QualityTier {
-    const info = getDeviceInfo();
+function computeDeviceInfo(): DeviceInfo {
+    const webglInfo = getWebGLInfo();
 
+    return {
+        deviceMemory: getDeviceMemory(),
+        hardwareConcurrency: getHardwareConcurrency(),
+        isMobile: isMobileDevice(),
+        isTouch: isTouchDevice(),
+        gpuRenderer: webglInfo.renderer,
+        gpuVendor: webglInfo.vendor,
+    };
+}
+
+function computeDeviceScore(info: DeviceInfo): number {
     let score = 0;
 
     // Memory scoring (0-25 points)
@@ -135,15 +155,49 @@ export function detectDeviceTier(): QualityTier {
     if (info.isMobile) score -= 20;
 
     // Normalize score to 0-100
-    score = Math.max(0, Math.min(100, score));
+    return Math.max(0, Math.min(100, score));
+}
 
+function computeTierFromScore(score: number): QualityTier {
     if (score >= 70) return 'high';
     if (score >= 40) return 'medium';
     return 'low';
 }
 
+/**
+ * Initializes and caches device detection data
+ * Called once, results are memoized for the session
+ */
+function ensureCachedData(): CachedDeviceData {
+    if (cachedData === null) {
+        const info = computeDeviceInfo();
+        const score = computeDeviceScore(info);
+        const tier = computeTierFromScore(score);
+
+        cachedData = { info, tier, score };
+
+        // Log detection results once in development
+        if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
+            console.log('[DeviceDetection] Cached:', cachedData);
+        }
+    }
+    return cachedData;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Public API - all use memoized data
+// ─────────────────────────────────────────────────────────────
+
+export function getDeviceInfo(): DeviceInfo {
+    return ensureCachedData().info;
+}
+
+export function detectDeviceTier(): QualityTier {
+    return ensureCachedData().tier;
+}
+
 export function getRecommendedDPR(): number {
-    const tier = detectDeviceTier();
+    const tier = ensureCachedData().tier;
     const nativeDPR = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
 
     switch (tier) {
@@ -157,16 +211,20 @@ export function getRecommendedDPR(): number {
 }
 
 export function shouldEnableShadows(): boolean {
-    const tier = detectDeviceTier();
-    return tier !== 'low';
+    return ensureCachedData().tier !== 'low';
 }
 
 export function shouldEnableEffects(): boolean {
-    const tier = detectDeviceTier();
-    return tier === 'high';
+    return ensureCachedData().tier === 'high';
 }
 
 export function shouldEnableAntialias(): boolean {
-    const tier = detectDeviceTier();
-    return tier !== 'low';
+    return ensureCachedData().tier !== 'low';
+}
+
+/**
+ * Clears the cached device data (useful for testing)
+ */
+export function clearDeviceCache(): void {
+    cachedData = null;
 }

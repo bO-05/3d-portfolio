@@ -14,9 +14,14 @@ import { ContextRecoveryHandler } from './Scene/ContextRecoveryHandler';
 function SceneContainer() {
     const { dpr, shadowsEnabled, antialias } = useGraphicsStore();
 
+    // Key forces Canvas remount when critical WebGL settings change
+    // (these props are only read during Canvas initialization)
+    const canvasKey = `${shadowsEnabled}-${antialias}-${dpr}`;
+
     return (
         <WebGLErrorBoundary>
             <Canvas
+                key={canvasKey}
                 shadows={shadowsEnabled}
                 camera={{ position: [0, 15, 12], fov: 50 }}
                 gl={{
