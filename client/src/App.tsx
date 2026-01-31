@@ -49,7 +49,12 @@ export function App() {
     // Set initial time of day and mobile detection
     useEffect(() => {
         setTimeOfDay(getTimeOfDay());
-        setMobileControls(window.innerWidth < 768);
+
+        // Detect mobile: must have BOTH narrow screen AND touch capability
+        // This prevents narrow iframes (like DEV.to embed) from triggering mobile mode on desktop
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const isNarrowScreen = window.innerWidth < 768;
+        setMobileControls(isTouchDevice && isNarrowScreen);
 
         // Defer 3D scene loading until main thread is idle
         const loadScene = () => {
@@ -69,9 +74,10 @@ export function App() {
             setTimeOfDay(getTimeOfDay());
         }, 60000);
 
-        // Handle resize for mobile detection
+        // Handle resize for mobile detection (still requires touch capability)
         const handleResize = () => {
-            setMobileControls(window.innerWidth < 768);
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            setMobileControls(isTouchDevice && window.innerWidth < 768);
         };
         window.addEventListener('resize', handleResize);
 
