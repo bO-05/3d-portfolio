@@ -270,18 +270,6 @@ export const projects: Project[] = [
     // HOUSE - Personal & Life Projects (3 projects)
     // ═══════════════════════════════════════════════════════════════
     {
-        id: 'bondpath',
-        title: 'BondPath',
-        description: 'Relationship growth with Harada Method',
-        longDescription: 'A relationship growth and habit tracking app built with the Harada Method (原田メソッド). Features Turso edge database, Mistral AI insights, and Resend email notifications.',
-        tech: ['Next.js 16', 'TypeScript', 'Turso', 'Drizzle ORM', 'Mistral AI', 'Better Auth', 'Resend', 'Vercel'],
-        links: {
-            demo: 'https://bondpath.vercel.app/',
-        },
-        buildingId: 'house',
-        featured: true,
-    },
-    {
         id: 'chronolove',
         title: 'Chronolove',
         description: 'Micro-wedding planning app',
@@ -289,6 +277,18 @@ export const projects: Project[] = [
         tech: ['Next.js 16', 'React 19', 'Turso', 'Drizzle ORM', 'Better Auth', 'Stripe', 'OpenAI', 'Resend', 'Tailwind 4'],
         links: {
             demo: 'https://www.chronolove.app/',
+        },
+        buildingId: 'house',
+        featured: true,
+    },
+    {
+        id: 'bondpath',
+        title: 'BondPath',
+        description: 'Relationship growth with Harada Method',
+        longDescription: 'A relationship growth and habit tracking app built with the Harada Method (原田メソッド). Features Turso edge database, Mistral AI insights, and Resend email notifications.',
+        tech: ['Next.js 16', 'TypeScript', 'Turso', 'Drizzle ORM', 'Mistral AI', 'Better Auth', 'Resend', 'Vercel'],
+        links: {
+            demo: 'https://bondpath.vercel.app/',
         },
         buildingId: 'house',
         featured: true,

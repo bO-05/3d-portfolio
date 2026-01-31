@@ -50,6 +50,12 @@
     font-size: 0.85rem;
 }
 
+.settings-hint-small {
+    font-size: 0.75rem;
+    margin-bottom: 12px;
+    color: #666666;
+}
+
 .quality-options {
     display: flex;
     gap: 12px;

@@ -98,6 +98,9 @@ export const SettingsModal = memo(function SettingsModal({
 
                 <div className="settings-section">
                     <h3>Advanced</h3>
+                    <p className="settings-hint settings-hint-small">
+                        Changing shadows will reload the page
+                    </p>
                     <div className="toggle-options">
                         <label className="toggle-option">
                             <span>Shadows</span>
