@@ -107,8 +107,15 @@ class LightweightErrorBoundary extends Component<{ children: ReactNode }, ErrorB
  * PostHog loads after ~3 seconds via requestIdleCallback.
  * Sentry loads after 10 seconds to avoid blocking the Lighthouse measurement window,
  * since Sentry's initialization takes ~10 seconds of main thread time.
+ * 
+ * NOTE: DISABLED for submission - was causing console errors and potential lag
  */
 function deferAnalyticsInit(): void {
+    // DISABLED: Analytics causing console errors in production
+    // Re-enable after hackathon by uncommenting below
+    return;
+
+    /* eslint-disable no-unreachable */
     const initPostHog = async () => {
         // Initialize PostHog via the lazy wrapper
         const { initAnalytics, trackEvent } = await import('./lib/analytics');
@@ -139,6 +146,7 @@ function deferAnalyticsInit(): void {
     // Sentry loads much later (10 seconds) to avoid blocking Lighthouse
     // This is still fast enough to catch errors in real user sessions
     setTimeout(initSentry, 10000);
+    /* eslint-enable no-unreachable */
 }
 
 // Defer analytics to after page is interactive
