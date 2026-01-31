@@ -19,45 +19,53 @@ const STEER_TORQUE = 50;
  * Demonstrates the physics setup for the future vehicle
  */
 export const TestCube = memo(function TestCube() {
-    const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
-    const setPlayerSpeed = useGameStore((state) => state.setPlayerSpeed);
-    const keyboard = useKeyboard();
+     const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
+     const setPlayerSpeed = useGameStore((state) => state.setPlayerSpeed);
+     const keyboard = useKeyboard();
 
-    // Physics body - box shape for testing
-    const [ref, api] = useBox<Mesh>(() => ({
-        mass: 500,
-        args: [2, 1, 3], // width, height, depth
-        position: [0, 1, 0],
-        linearDamping: 0.5,
-        angularDamping: 0.5,
-    }));
+     // Physics body - box shape for testing
+     const [ref, api] = useBox<Mesh>(() => ({
+         mass: 500,
+         args: [2, 1, 3], // width, height, depth
+         position: [0, 1, 0],
+         linearDamping: 0.5,
+         angularDamping: 0.5,
+     }));
 
-    // Track velocity for speed display
-    const velocity = useRef([0, 0, 0]);
-    api.velocity.subscribe((v) => {
-        velocity.current = v;
-    });
+     // Track velocity for speed display
+     const velocity = useRef([0, 0, 0]);
+     api.velocity.subscribe((v) => {
+         velocity.current = v;
+     });
 
-    // Track position for store
-    const position = useRef([0, 0, 0]);
-    api.position.subscribe((p) => {
-        position.current = p;
-    });
+     // Track position for store
+     const position = useRef([0, 0, 0]);
+     api.position.subscribe((p) => {
+         position.current = p;
+     });
 
-    // Track rotation
-    const rotation = useRef([0, 0, 0, 1]);
-    api.quaternion.subscribe((q) => {
-        rotation.current = q;
-    });
+     // Track rotation
+     const rotation = useRef([0, 0, 0, 1]);
+     api.quaternion.subscribe((q) => {
+         rotation.current = q;
+     });
 
-    useFrame(() => {
-        const [vx = 0, , vz = 0] = velocity.current;
-        const speed = Math.sqrt(vx * vx + vz * vz);
-        setPlayerSpeed(speed);
+     // Throttle refs for store updates
+     const lastUpdateTime = useRef(0);
+     const UPDATE_INTERVAL = 50; // Update store every 50ms
 
-        // Update player position in store
-        const [px = 0, py = 0, pz = 0] = position.current;
-        setPlayerPosition({ x: px, y: py, z: pz });
+     useFrame(() => {
+         const now = performance.now();
+         const [vx = 0, , vz = 0] = velocity.current;
+         const speed = Math.sqrt(vx * vx + vz * vz);
+
+         // Update player position and speed in store only periodically
+         if (now - lastUpdateTime.current > UPDATE_INTERVAL) {
+             setPlayerSpeed(speed);
+             const [px = 0, py = 0, pz = 0] = position.current;
+             setPlayerPosition({ x: px, y: py, z: pz });
+             lastUpdateTime.current = now;
+         }
 
         // Apply forces based on keyboard input
         // Get forward direction from quaternion
