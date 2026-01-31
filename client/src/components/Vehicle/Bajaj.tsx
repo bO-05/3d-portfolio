@@ -263,6 +263,7 @@ export const Bajaj = memo(function Bajaj() {
 
   const showControls = useGameStore((state) => state.showControlsTooltip);
   const headlightsOn = useGameStore((state) => state.vehicle.headlightsOn);
+  const graphicsQuality = useGameStore((state) => state.settings.graphicsQuality);
 
   const handleClick = () => {
     showControls();
@@ -306,8 +307,8 @@ export const Bajaj = memo(function Bajaj() {
           {isTransJakarta && (
             <>
               {/* Left headlight */}
-               <mesh position={[-1.275, -1.1, 4.5]}>
-                 <sphereGeometry args={TJ_HEADLIGHT_SPHERE_ARGS} />
+              <mesh position={[-1.275, -1.1, 4.5]}>
+                <sphereGeometry args={TJ_HEADLIGHT_SPHERE_ARGS} />
                 <meshStandardMaterial
                   color={headlightsOn ? "#ffffcc" : "#696666"}
                   emissive={headlightsOn ? "#ffff00" : "#bebdbd"}
@@ -352,7 +353,7 @@ export const Bajaj = memo(function Bajaj() {
                 intensity={isTransJakarta ? 15 : 8}
                 distance={isTransJakarta ? 30 : 20}
                 color="#fffee0"
-                castShadow
+                castShadow={graphicsQuality !== 'low'}
                 shadow-mapSize-width={256}
                 shadow-mapSize-height={256}
               />

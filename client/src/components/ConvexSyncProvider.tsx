@@ -73,11 +73,13 @@ export function ConvexSyncProvider({ children }: { children: React.ReactNode }) 
             }));
         }
 
-        console.log('[ConvexSync] Merged server progress:', {
-            collectibles: mergedCollectibles.size,
-            achievements: mergedAchievements.size,
-            buildings: mergedBuildings.length,
-        });
+        if (import.meta.env.DEV) {
+            console.log('[ConvexSync] Merged server progress:', {
+                collectibles: mergedCollectibles.size,
+                achievements: mergedAchievements.size,
+                buildings: mergedBuildings.length,
+            });
+        }
     }, [serverProgress]);
 
     /**
@@ -95,9 +97,13 @@ export function ConvexSyncProvider({ children }: { children: React.ReactNode }) 
                 achievements,
                 visitedBuildings,
             });
-            console.log('[ConvexSync] Synced to server');
+            if (import.meta.env.DEV) {
+                console.log('[ConvexSync] Synced to server');
+            }
         } catch (error) {
-            console.warn('[ConvexSync] Sync failed (will retry):', error);
+            if (import.meta.env.DEV) {
+                console.warn('[ConvexSync] Sync failed (will retry):', error);
+            }
             // Don't throw - graceful degradation to localStorage-only mode
         }
     }, [visitorId, syncProgress]);

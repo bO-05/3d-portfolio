@@ -52,9 +52,13 @@ export function useConvexSync(): void {
                 achievements,
                 visitedBuildings,
             });
-            console.log('[ConvexSync] Synced to server');
+            if (import.meta.env.DEV) {
+                console.log('[ConvexSync] Synced to server');
+            }
         } catch (error) {
-            console.warn('[ConvexSync] Sync failed (will retry):', error);
+            if (import.meta.env.DEV) {
+                console.warn('[ConvexSync] Sync failed (will retry):', error);
+            }
             // Don't throw - graceful degradation to localStorage-only mode
         }
     }, [visitorId, syncProgress, collectibleStore, achievementStore, gameStore]);
@@ -131,12 +135,14 @@ export function useConvexSync(): void {
             scheduleSync();
         }
 
-        console.log('[ConvexSync] Merged server progress:', {
-            collectibles: mergedCollectibles.size,
-            achievements: mergedAchievements.size,
-            buildings: mergedBuildings.length,
-            uploadingLocal: localHasNewData,
-        });
+        if (import.meta.env.DEV) {
+            console.log('[ConvexSync] Merged server progress:', {
+                collectibles: mergedCollectibles.size,
+                achievements: mergedAchievements.size,
+                buildings: mergedBuildings.length,
+                uploadingLocal: localHasNewData,
+            });
+        }
     }, [serverProgress, collectibleStore, achievementStore, gameStore, scheduleSync]);
 
     /**
