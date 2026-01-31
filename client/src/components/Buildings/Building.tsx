@@ -5,7 +5,7 @@
  * @module components/Buildings/Building
  */
 
-import { memo, useEffect, useRef, useState, useCallback } from 'react';
+import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { useBox } from '@react-three/cannon';
 import { ThreeEvent } from '@react-three/fiber';
@@ -42,8 +42,11 @@ export const Building = memo(function Building({
     const spotlightTargetRef = useRef<Group>(null);
     const spotLightRef = useRef<SpotLight>(null);
     const dialogueTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const clonedScene = scene.clone();
     const [hovered, setHovered] = useState(false);
+
+    // Memoize cloned scene to prevent new Object3D on every render (memory leak fix)
+    // Clone shares geometry/material refs with cached useGLTF, so no disposal needed
+    const clonedScene = useMemo(() => scene.clone(), [scene]);
 
     const enterBuilding = useGameStore((state) => state.enterBuilding);
     const markBuildingVisited = useGameStore((state) => state.markBuildingVisited);
