@@ -146,12 +146,8 @@ function initKeyboardListeners() {
     window.addEventListener('keyup', handleKeyUp);
     document.addEventListener('focusin', handleFocusIn);
     
-    // Cleanup on unmount (though this hook runs once globally)
-    return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-        document.removeEventListener('focusin', handleFocusIn);
-    };
+    // Note: Listeners are intentionally not cleaned up as this hook uses a global singleton pattern
+    // via listenersInitialized flag, and keyboard state persists for the entire app lifecycle.
 }
 
 /**

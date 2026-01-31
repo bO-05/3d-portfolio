@@ -1122,6 +1122,29 @@ src/
 - ✅ Keyboard input focus (hotkeys blocked in chat)
 - ✅ Memory stable over 10+ minute session
 
+**Additional Improvements (Phase 7.1):**
+
+1. **r3f-perf Monitor Integration**
+   - Added real-time performance monitoring to Canvas
+   - Displays GPU time, CPU time, FPS, draw calls, and memory stats
+   - Essential for identifying performance bottlenecks in production
+
+2. **Geometry Constants with Type Safety**
+   - Replaced all unsafe `as any` casts with `satisfies ConstructorParameters<typeof THREE.XxxGeometry>`
+   - Applied consistently to StreetProps (26 constants) and Bajaj (4 constants)
+   - Catches type errors at compile time, improves maintainability
+
+3. **Keyboard Input Focus Handling**
+   - Added `focusin` event listener to reset movement state when input gains focus
+   - Prevents stuck keys from lingering when user switches between chat and driving
+   - Dual approach: always process keyup + reset on focus = bulletproof UX
+
+4. **Code Cleanup**
+   - Removed dead cleanup code in useKeyboard.ts (documented intentional design)
+   - Removed StreetSign component (was causing visual artifact with black circle)
+   - Cleaned up unused geometry constants (commented for future reference)
+   - All TypeScript warnings resolved except pre-existing markdownParser issues
+
 ---
 
 ## Task 7.2 — WebGL Robustness

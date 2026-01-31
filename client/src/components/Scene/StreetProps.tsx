@@ -11,38 +11,44 @@ import * as THREE from 'three';
 import type { Mesh, Group } from 'three';
 import { useCollectibleStore } from '../../stores/collectibleStore';
 
+// Type aliases for geometry args with proper tuple typing
+type BoxGeometryArgs = ConstructorParameters<typeof THREE.BoxGeometry>;
+type CylinderGeometryArgs = ConstructorParameters<typeof THREE.CylinderGeometry>;
+type SphereGeometryArgs = ConstructorParameters<typeof THREE.SphereGeometry>;
+type ConeGeometryArgs = ConstructorParameters<typeof THREE.ConeGeometry>;
+
 // ═══════════════════════════════════════════════════════════════
 // GEOMETRY CONSTANTS - prevent recreation on every render
 // ═══════════════════════════════════════════════════════════════
 
 // Lamppost
-const LAMPPOST_PHYSICS_ARGS = [0.4, 6, 0.4];
-const LAMPPOST_POLE_ARGS = [0.1, 0.15, 6, 8];
-const LAMPPOST_LIGHT_ARGS = [0.4];
+const LAMPPOST_PHYSICS_ARGS = [0.4, 6, 0.4] satisfies BoxGeometryArgs;
+const LAMPPOST_POLE_ARGS = [0.1, 0.15, 6, 8] satisfies CylinderGeometryArgs;
+const LAMPPOST_LIGHT_ARGS = [0.4] satisfies SphereGeometryArgs;
 
 // Tree
-const TREE_PHYSICS_ARGS = [1, 4, 1];
-const TREE_TRUNK_ARGS = [0.2, 0.35, 3, 8];
-const TREE_FOLIAGE_ARGS = [1.5, 4, 8];
+const TREE_PHYSICS_ARGS = [1, 4, 1] satisfies BoxGeometryArgs;
+const TREE_TRUNK_ARGS = [0.2, 0.35, 3, 8] satisfies CylinderGeometryArgs;
+const TREE_FOLIAGE_ARGS = [1.5, 4, 8] satisfies ConeGeometryArgs;
 
 // Bench
-const BENCH_PHYSICS_ARGS = [2.2, 1.4, 0.8];
-const BENCH_SEAT_ARGS = [2, 0.15, 0.6];  // Original dimensions preserved
-const BENCH_BACK_ARGS = [2, 0.6, 0.1];
-const BENCH_LEG_ARGS = [0.1, 0.6, 0.5];
+const BENCH_PHYSICS_ARGS = [2.2, 1.4, 0.8] satisfies BoxGeometryArgs;
+const BENCH_SEAT_ARGS = [2, 0.15, 0.6] satisfies BoxGeometryArgs;  // Original dimensions preserved
+const BENCH_BACK_ARGS = [2, 0.6, 0.1] satisfies BoxGeometryArgs;
+const BENCH_LEG_ARGS = [0.1, 0.6, 0.5] satisfies BoxGeometryArgs;
 
 // TrashBin
-const TRASHBIN_PHYSICS_ARGS = [0.7, 1.1, 0.7];
-const TRASHBIN_BODY_ARGS = [0.3, 0.25, 1, 12];
-const TRASHBIN_LID_ARGS = [0.35, 0.35, 0.1, 12];
+const TRASHBIN_PHYSICS_ARGS = [0.7, 1.1, 0.7] satisfies BoxGeometryArgs;
+const TRASHBIN_BODY_ARGS = [0.3, 0.25, 1, 12] satisfies CylinderGeometryArgs;
+const TRASHBIN_LID_ARGS = [0.35, 0.35, 0.1, 12] satisfies CylinderGeometryArgs;
 
 // FoodCart
-const FOODCART_PHYSICS_ARGS = [2.2, 2, 1.2];
-const FOODCART_BODY_ARGS = [2, 1.2, 1];
-const FOODCART_ROOF_ARGS = [2.2, 0.1, 1.2];
-const FOODCART_POLE_ARGS = [0.05, 0.05, 1.5, 8];
-const FOODCART_UMBRELLA_ARGS = [1.5, 0.6, 8];
-const FOODCART_WHEEL_ARGS = [0.2, 0.2, 0.1, 12];
+const FOODCART_PHYSICS_ARGS = [2.2, 2, 1.2] satisfies BoxGeometryArgs;
+const FOODCART_BODY_ARGS = [2, 1.2, 1] satisfies BoxGeometryArgs;
+const FOODCART_ROOF_ARGS = [2.2, 0.1, 1.2] satisfies BoxGeometryArgs;
+const FOODCART_POLE_ARGS = [0.05, 0.05, 1.5, 8] satisfies CylinderGeometryArgs;
+const FOODCART_UMBRELLA_ARGS = [1.5, 0.6, 8] satisfies ConeGeometryArgs;
+const FOODCART_WHEEL_ARGS = [0.2, 0.2, 0.1, 12] satisfies CylinderGeometryArgs;
 
 // StreetSign (removed from scene, constants kept for potential future use)
 // const STREETSIGN_PHYSICS_ARGS = [0.3, 2, 0.3];
@@ -66,24 +72,24 @@ function Lamppost({ position }: { position: [number, number, number] }) {
      const [physicsRef] = useBox<Mesh>(() => ({
          type: 'Static',
          position: [position[0], position[1] + 3, position[2]],
-         args: LAMPPOST_PHYSICS_ARGS as any,
+         args: LAMPPOST_PHYSICS_ARGS,
      }));
 
      return (
          <group position={position}>
              <mesh ref={physicsRef} visible={false}>
-                 <boxGeometry args={LAMPPOST_PHYSICS_ARGS as any} />
+                 <boxGeometry args={LAMPPOST_PHYSICS_ARGS} />
              </mesh>
 
              {/* Pole */}
              <mesh position={[0, 3, 0]}>
-                 <cylinderGeometry args={LAMPPOST_POLE_ARGS as any} />
+                 <cylinderGeometry args={LAMPPOST_POLE_ARGS} />
                 <meshStandardMaterial color="#333333" />
             </mesh>
 
             {/* Diamond light - ALWAYS glowing bright */}
             <mesh position={[0, 6.5, 0]} rotation={[0, Math.PI / 4, 0]}>
-                <octahedronGeometry args={LAMPPOST_LIGHT_ARGS as any} />
+                <octahedronGeometry args={LAMPPOST_LIGHT_ARGS} />
                 <meshStandardMaterial
                     color="#ffffcc"
                     emissive="#ffaa00"
@@ -123,23 +129,23 @@ function Tree({ position }: { position: [number, number, number] }) {
      const [physicsRef] = useBox<Mesh>(() => ({
          type: 'Static',
          position: [position[0], position[1] + 2, position[2]],
-         args: TREE_PHYSICS_ARGS as any,
+         args: TREE_PHYSICS_ARGS,
      }));
 
      return (
          <group position={position}>
              <mesh ref={physicsRef} visible={false}>
-                 <boxGeometry args={TREE_PHYSICS_ARGS as any} />
+                 <boxGeometry args={TREE_PHYSICS_ARGS} />
              </mesh>
 
              {/* Trunk */}
              <mesh position={[0, 1.5, 0]}>
-                 <cylinderGeometry args={TREE_TRUNK_ARGS as any} />
+                 <cylinderGeometry args={TREE_TRUNK_ARGS} />
                  <meshStandardMaterial color="#8B4513" />
              </mesh>
              {/* Foliage */}
              <mesh position={[0, 4.5, 0]}>
-                 <coneGeometry args={TREE_FOLIAGE_ARGS as any} />
+                 <coneGeometry args={TREE_FOLIAGE_ARGS} />
                 <meshStandardMaterial color="#228B22" />
             </mesh>
         </group>
@@ -165,7 +171,7 @@ function Bench({ position }: { position: [number, number, number] }) {
          type: 'Dynamic',
          mass: 15,
          position: [position[0], position[1] + 0.7, position[2]],
-         args: BENCH_PHYSICS_ARGS as any,
+         args: BENCH_PHYSICS_ARGS,
          angularDamping: 0.5,
          linearDamping: 0.3,
      }));
@@ -203,18 +209,18 @@ function Bench({ position }: { position: [number, number, number] }) {
         <group ref={visualRef}>
             {/* Seat */}
             <mesh position={[0, 0, 0]}>
-                <boxGeometry args={BENCH_SEAT_ARGS as any} />
+                <boxGeometry args={BENCH_SEAT_ARGS} />
                 <meshStandardMaterial color="#CD853F" />
             </mesh>
             {/* Back */}
             <mesh position={[0, 0.5, -0.25]} rotation={[0.2, 0, 0]}>
-                <boxGeometry args={BENCH_BACK_ARGS as any} />
+                <boxGeometry args={BENCH_BACK_ARGS} />
                 <meshStandardMaterial color="#CD853F" />
             </mesh>
             {/* Legs */}
             {[-0.8, 0.8].map((x, i) => (
                 <mesh key={i} position={[x, -0.3, 0]}>
-                    <boxGeometry args={BENCH_LEG_ARGS as any} />
+                    <boxGeometry args={BENCH_LEG_ARGS} />
                     <meshStandardMaterial color="#333333" />
                 </mesh>
             ))}
@@ -240,7 +246,7 @@ function TrashBin({ position }: { position: [number, number, number] }) {
          type: 'Dynamic',
          mass: 3,
          position: [position[0], position[1] + 0.6, position[2]],
-         args: TRASHBIN_PHYSICS_ARGS as any,
+         args: TRASHBIN_PHYSICS_ARGS,
          angularDamping: 0.3,
          linearDamping: 0.2,
      }));
@@ -277,12 +283,12 @@ function TrashBin({ position }: { position: [number, number, number] }) {
         <group ref={visualRef}>
             {/* Bin body */}
             <mesh position={[0, 0, 0]}>
-                <cylinderGeometry args={TRASHBIN_BODY_ARGS as any} />
+                <cylinderGeometry args={TRASHBIN_BODY_ARGS} />
                 <meshStandardMaterial color="#2E8B57" />
             </mesh>
             {/* Lid */}
             <mesh position={[0, 0.55, 0]}>
-                <cylinderGeometry args={TRASHBIN_LID_ARGS as any} />
+                <cylinderGeometry args={TRASHBIN_LID_ARGS} />
                 <meshStandardMaterial color="#1E6B47" />
             </mesh>
         </group>
@@ -303,7 +309,7 @@ function FoodCart({ position }: { position: [number, number, number] }) {
          type: 'Dynamic',
          mass: 25,
          position: [position[0], position[1] + 1, position[2]],
-         args: FOODCART_PHYSICS_ARGS as any,
+         args: FOODCART_PHYSICS_ARGS,
          angularDamping: 0.4,
          linearDamping: 0.3,
      }));
@@ -340,28 +346,28 @@ function FoodCart({ position }: { position: [number, number, number] }) {
         <group ref={visualRef}>
             {/* Cart body */}
             <mesh position={[0, -0.2, 0]}>
-                <boxGeometry args={FOODCART_BODY_ARGS as any} />
+                <boxGeometry args={FOODCART_BODY_ARGS} />
                 <meshStandardMaterial color="#8B0000" />
             </mesh>
             {/* Cart roof */}
             <mesh position={[0, 0.7, 0]}>
-                <boxGeometry args={FOODCART_ROOF_ARGS as any} />
+                <boxGeometry args={FOODCART_ROOF_ARGS} />
                 <meshStandardMaterial color="#FF4500" />
             </mesh>
             {/* Umbrella pole */}
             <mesh position={[0, 1.5, 0]}>
-                <cylinderGeometry args={FOODCART_POLE_ARGS as any} />
+                <cylinderGeometry args={FOODCART_POLE_ARGS} />
                 <meshStandardMaterial color="#654321" />
             </mesh>
             {/* Umbrella */}
             <mesh position={[0, 2.3, 0]}>
-                <coneGeometry args={FOODCART_UMBRELLA_ARGS as any} />
+                <coneGeometry args={FOODCART_UMBRELLA_ARGS} />
                 <meshStandardMaterial color="#FF6347" side={THREE.DoubleSide} />
             </mesh>
             {/* Wheels */}
             {[-0.8, 0.8].map((x, i) => (
                 <mesh key={i} position={[x, -0.8, -0.5]} rotation={[Math.PI / 2, 0, 0]}>
-                    <cylinderGeometry args={FOODCART_WHEEL_ARGS as any} />
+                    <cylinderGeometry args={FOODCART_WHEEL_ARGS} />
                     <meshStandardMaterial color="#333333" />
                 </mesh>
             ))}
