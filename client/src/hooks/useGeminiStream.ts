@@ -78,7 +78,8 @@ async function fetchWithRetry(
             // Client errors (4xx, except 429) will never succeed - throw immediately without retry
             if (response.status >= 400 && response.status < 500) {
                 const errorData = await response.json().catch(() => ({ error: 'Request failed' }));
-                throw new Error(errorData.error || `HTTP ${response.status}`);
+                const errorMsg = `${errorData.error || 'Request failed'} (HTTP ${response.status})`;
+                throw new Error(errorMsg);
             }
 
             // Other errors - throw immediately
@@ -89,7 +90,8 @@ async function fetchWithRetry(
 
             // Don't retry on abort or 4xx client errors
             if (lastError.name === 'AbortError') throw lastError;
-            if (lastError.message.includes('HTTP 4')) throw lastError;
+            // Check for HTTP 4xx status code in error message (more reliable than string matching)
+            if (/\(HTTP [45]00\)|HTTP [45]\d\d/i.test(lastError.message)) throw lastError;
 
             const delay = Math.pow(2, attempt) * 1000;
             await sleep(delay);
@@ -313,12 +315,22 @@ export function useGeminiStream({
             }
 
             const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+            
+            // Remove empty assistant message placeholder on error
+            setMessages((prev) => {
+                const lastIdx = prev.length - 1;
+                if (prev[lastIdx]?.role === 'assistant' && prev[lastIdx]?.content === '') {
+                    return prev.slice(0, -1);
+                }
+                return prev;
+            });
+            
             setError(errorMessage);
 
-            // Track error in Sentry
+            // Track error in Sentry (avoid sending sensitive prompt data)
             captureError(err instanceof Error ? err : new Error(errorMessage), {
                 feature: 'ai-chat-stream',
-                prompt,
+                promptLength: prompt.length,
                 buildingId,
             });
         } finally {
