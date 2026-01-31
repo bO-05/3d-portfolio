@@ -90,8 +90,8 @@ async function fetchWithRetry(
 
             // Don't retry on abort or 4xx client errors
             if (lastError.name === 'AbortError') throw lastError;
-            // Check for HTTP 4xx status code in error message (more reliable than string matching)
-            if (/\(HTTP [45]00\)|HTTP [45]\d\d/i.test(lastError.message)) throw lastError;
+            // Check for HTTP 4xx status code only (5xx should be retried)
+            if (/\(HTTP 4\d\d\)|HTTP 4\d\d/i.test(lastError.message)) throw lastError;
 
             const delay = Math.pow(2, attempt) * 1000;
             await sleep(delay);
